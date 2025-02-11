@@ -370,10 +370,10 @@ nav {
     /* start: Main */
     main {
         transition: padding-left .2s;
-        //padding-left: 16rem;
+        padding-left: 16rem;
     }
     .sidebar.collapsed ~ main {
-        //padding-left: 4.75rem;
+        padding-left: 4.75rem;
     }
     /* end: Main */
 }
