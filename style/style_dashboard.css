@@ -429,4 +429,35 @@ nav {
   .colored-toast .swal2-html-container {
     color: white;
   }
+
+.pagination>li>button {
+      border-radius: 50% !important;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      padding: 0;
+      margin: 0 5px;
+    }
+
+.dt-paging .dt-paging-button {
+      border-radius: 50% !important;
+      width: 40px !important;
+      height: 40px !important;
+      line-height: 40px !important;
+      padding: 0 !important;
+      margin: 0 5px !important;
+      background: #eee !important;
+      border: 1px solid #ddd !important;
+    }
+
+    .dt-paging .dt-paging-button:hover {
+      background: #0d6efd !important;
+      color: #fff !important;
+    }
+
+    .dt-paging .dt-paging-button.current {
+      background: #0d6efd !important;
+      color: #fff !important;
+    }
 </style>
