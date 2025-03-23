@@ -15,25 +15,25 @@
 
 
     <script>
-        window.onload = function () {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const frame = document.getElementById("gasFrame");
+    window.onload = function () {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const frame = document.getElementById("gasFrame");
 
-                    // ส่งพิกัดไปยัง iframe โดยไม่กำหนด Origin ตายตัว
-                    frame.onload = function () {
-                        const targetOrigin = frame.contentWindow.location.origin; 
-                        frame.contentWindow.postMessage({ lat, lng }, targetOrigin);
-                    };
-                }, function (error) {
-                    console.error("Geolocation Error:", error);
-                });
-            } else {
-                console.error("Geolocation is not supported");
-            }
-        };
-    </script>
+                // ส่งพิกัดไปยัง Google Apps Script Web App
+                frame.onload = function () {
+                    frame.contentWindow.postMessage({ lat, lng }, "*");
+                };
+            }, function (error) {
+                console.error("Geolocation Error:", error);
+            });
+        } else {
+            console.error("Geolocation is not supported");
+        }
+    };
+</script>
+
 </body>
 </html>
