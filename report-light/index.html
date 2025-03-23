@@ -1,13 +1,32 @@
 <!DOCTYPE html>
-
 <html>
-   <head>
-      <title>แจ้งเรื่องร้องเรียนไฟฟ้าสาธารณะ (องค์การบริหารส่วนจังหวัดนครปฐม)</title>
-      <link rel="icon" type="image/x-icon" href="https://www.nkppao.go.th/customers/webpages/images/master_001.png">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-      <base target="_top">
-   </head>
-   <body>
-      <iframe style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;" src="https://script.google.com/macros/s/AKfycbyOs48gXjQrWThy6UkF2vR4RU30kF7Aqz4RRUFlaxB6xwTDz9nOmeGndrJMjyz2PMpacw/exec"></iframe>
-   </body>
+<head>
+    <title>แจ้งเรื่องร้องเรียนไฟฟ้าสาธารณะ (องค์การบริหารส่วนจังหวัดนครปฐม)</title>
+    <link rel="icon" type="image/x-icon" href="https://www.nkppao.go.th/customers/webpages/images/master_001.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <base target="_top">
+</head>
+<body>
+    <iframe id="gasFrame" style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;" 
+        src="https://script.google.com/macros/s/AKfycbyOs48gXjQrWThy6UkF2vR4RU30kF7Aqz4RRUFlaxB6xwTDz9nOmeGndrJMjyz2PMpacw/exec">
+    </iframe>
+
+    <script>
+        // รอให้ iframe โหลดเสร็จ แล้วส่งพิกัดไปให้
+        window.onload = function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const frame = document.getElementById("gasFrame");
+                    frame.contentWindow.postMessage({ lat, lng }, "https://script.google.com");
+                }, function (error) {
+                    console.error("Geolocation Error:", error);
+                });
+            } else {
+                console.error("Geolocation is not supported");
+            }
+        };
+    </script>
+</body>
 </html>
