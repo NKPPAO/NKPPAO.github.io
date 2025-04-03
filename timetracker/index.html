@@ -9,5 +9,48 @@
    </head>
    <body>
       <iframe style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;" src="https://script.google.com/macros/s/AKfycbwf58xl9NMJclM71K0Mk2IuKDm0qd5L2ghr22oqINMzIgKD_VoEHyb4DccpoDoq_1KyIA/exec" allow="geolocation" ></iframe>
+   <script>
+  document.addEventListener("DOMContentLoaded", function() {
+    getLocationAndSend();
+  });
+
+  async function getLocationAndSend() {
+    if (!navigator.geolocation) {
+      alert("Geolocation ไม่รองรับบนเบราว์เซอร์นี้");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async function(position) {
+        let lat = position.coords.latitude;
+        let lng = position.coords.longitude;
+
+        let scriptURL = "https://script.google.com/macros/s/AKfycbwf58xl9NMJclM71K0Mk2IuKDm0qd5L2ghr22oqINMzIgKD_VoEHyb4DccpoDoq_1KyIA/exec";
+        let data = {
+          action: "logLocation",
+          latitude: lat,
+          longitude: lng
+        };
+
+        try {
+          let response = await fetch(scriptURL, {
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: { "Content-Type": "application/json" }
+          });
+
+          let result = await response.json();
+          console.log("Server response:", result);
+        } catch (error) {
+          console.error("Error sending location:", error);
+        }
+      },
+      function(error) {
+        console.error("Geolocation error:", error.message);
+      }
+    );
+  }
+</script>
+
    </body>
 </html>
