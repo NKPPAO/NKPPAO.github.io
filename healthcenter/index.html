@@ -14,21 +14,25 @@
       sandbox="allow-scripts allow-same-origin allow-popups allow-forms">
     </iframe>
 
+    <button onclick="downloadFile('pdf')">ดาวน์โหลด PDF</button>
+    <button onclick="downloadFile('xlsx')">ดาวน์โหลด EXCEL</button>
+
     <script>
+      function downloadFile(type) {
+        google.script.run.withSuccessHandler(function(url) {
+          // เปิดไฟล์ในหน้าต่างใหม่แทนการดาวน์โหลด
+          window.open(url, '_blank');  // ให้เปิด URL ในหน้าต่างใหม่
+        }).getExportUrl(type);
+      }
+
       window.addEventListener("message", function(event) {
         // ป้องกันถ้าไม่ใช่ message ที่เราส่งมา
         if (!event.data || event.data.type !== "export") return;
 
-        // ตรวจสอบว่า URL ของไฟล์ที่ได้รับเป็น URL ที่ถูกต้อง
         const url = event.data.url;
         if (url) {
-          // สร้างลิงก์ดาวน์โหลด
-          const link = document.createElement("a");
-          link.href = url;
-          link.target = "_blank"; // เปิดในหน้าต่างใหม่
-          document.body.appendChild(link);
-          link.click();  // คลิกที่ลิงก์เพื่อเริ่มดาวน์โหลด
-          document.body.removeChild(link);
+          // เปิดไฟล์ในหน้าต่างใหม่แทนการดาวน์โหลด
+          window.open(url, '_blank');  // ให้เปิด URL ในหน้าต่างใหม่
         }
       });
     </script>
