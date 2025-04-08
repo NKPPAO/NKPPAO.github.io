@@ -14,7 +14,7 @@
       sandbox="allow-scripts allow-same-origin allow-popups">
     </iframe>
 
-    <!--<script>
+    <script>
       window.addEventListener("message", function(event) {
         // ป้องกันถ้าไม่ใช่ message ที่เราส่งมา
         if (!event.data || event.data.type !== "export") return;
@@ -27,6 +27,6 @@
         link.click();
         document.body.removeChild(link);
       });
-    </script>-->
+    </script>
   </body>
 </html>
