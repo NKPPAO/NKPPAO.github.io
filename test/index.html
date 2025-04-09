@@ -14,8 +14,35 @@
   <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 </head>
 <body>
-  <div class="container mt-5">
-    <h2 class="mb-4 text-center">ข้อมูลสถานพยาบาลในจังหวัด</h2>
+  <!-- Navbar ด้านบน -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand text-sm" href="javascript:void(0);">
+      <img src="https://www.nkppao.go.th/customers/webpages/images/master_001.png" alt="องค์การบริหารส่วนจังหวัดนครปฐม" class="me-3" style="width: 50px; height: 50px;">
+      <span>ข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบลในสังกัด อบจ.นครปฐม</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="javascript:void(0);"  onclick="event.preventDefault(); showContainer('dashboard-content')">
+            <i class="bi bi-map-fill"></i> หน้าหลัก
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="javascript:void(0);" onclick="event.preventDefault(); showContainer('detail-content')">
+            <i class="bi bi-info-square-fill"></i> รายละเอียด
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+  
+  <div class="content">
+    
     <table id="locationTable" class="table table-bordered table-striped">
       <thead class="table-dark">
         <tr>
@@ -30,7 +57,38 @@
         <!-- ข้อมูลจะถูกเติมที่นี่ผ่าน JS -->
       </tbody>
     </table>
+    
   </div>
+
+  <!-- Footer ที่มี 3 คอลัมน์ -->
+<footer class="footer py-4">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- คอลัมน์ที่ 1 -->
+      <div class="col-md-3 d-flex flex-column flex-md-row align-items-start">
+        <img src="https://www.nkppao.go.th/customers/webpages/images/master_001.png" 
+             alt="องค์การบริหารส่วนจังหวัดนครปฐม" class="me-3" 
+             style="width: 50px; height: 50px;">
+        <div class="text-md-start">
+          ข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบล
+          สังกัดองค์การบริหารส่วนจังหวัดนครปฐม
+        </div>
+      </div>
+
+      <!-- คอลัมน์ที่ 2 -->
+      <div class="col-md-6 text-start text-md-center">
+        Copyright © 2025 All rights reserved <br/>องค์การบริหารส่วนจังหวัดนครปฐม
+      </div>
+
+      <!-- คอลัมน์ที่ 3 -->
+      <div class="col-md-3 text-start">
+        <i class="bi bi-code-square"></i> พัฒนาโดย<br/>
+        กองยุทธศาสตร์และงบประมาณ
+      </div>
+    </div>
+  </div>
+</footer>
+
 
   <!-- jQuery (DataTables ต้องใช้) -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
