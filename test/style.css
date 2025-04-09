@@ -1,731 +1,194 @@
-@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
-:root {
-  --primary-color: #e0ebed;
-  --text-dark: #231e22;
-  --text-light: #767268;
-  --extra-light: #f3f4f6;
-  --white: #ffffff;
-  --max-width: 1200px;
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+    html {
+    margin: 0;
+    padding: 0;
+  }
+  /* ปรับให้เนื้อหาหลักไม่โดน navbar บดบัง */
+  body {
+    font-family: "Kanit", sans-serif;
+    padding-top: 0; /* ลด padding-top */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    font-size: 1rem;
+  }
+  .nav-btn i {
+    font-size: 18px;
+    display: inline-block;
+    margin-left: 5px;
 }
 
-* {
-  font-family: "Kanit", sans-serif;
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
+.navbar {
+  background: linear-gradient(to right, #0062E6, #33AEFF); /* ไล่จากสีฟ้าเข้มไปอ่อน */
 }
 
-table.dataTable {
-    width: 100% !important;
-  }
-
-  .dataTables_wrapper .dataTables_scroll {
-    overflow-x: auto;
-  }
-
-  /* ป้องกันข้อความใน td ยืดตาราง */
-  table.dataTable td {
-    white-space: nowrap;
-  }
-
-.section__container {
-  max-width: var(--max-width);
-  margin: auto;
-  padding: 5rem 1rem;
-}
-
-.section__header {
+.navbar .navbar-nav .nav-link {
+  color: white;
   position: relative;
-  isolation: isolate;
-  padding-bottom: 1rem;
-  font-size: 3rem;
-  font-weight: 500;
-  line-height: 3.5rem;
-  color: var(--text-dark);
-  text-align: center;
-  overflow: hidden;
+  padding: 10px 15px;
 }
 
-.section__header::before {
-  position: absolute;
+.navbar .navbar-nav .nav-link:hover {
+  color: #FFD700;
+}
+
+.navbar .navbar-nav .nav-link::after {
   content: "";
-  height: 5px;
-  width: 5rem;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #25453a;
-  border-radius: 1rem;
-}
-
-.section__header::after {
-  position: absolute;
-  content: "";
-  height: 5px;
-  width: 6px;
-  bottom: 0;
-  left: calc(50% + 3rem);
-  transform: translateX(-50%);
-  background-color: #25453a;
-  border-radius: 1rem;
-}
-
-.btn {
-  padding: 1rem 2rem;
-  outline: none;
-  border: none;
-  font-size: 1rem;
-  color: var(--white);
-  background-color: var(--text-dark);
-  transition: 0.3s;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background-color: var(--text-light);
-}
-
-img {
-  display: flex;
-  width: 100%;
-}
-
-a {
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-ul {
-  list-style: none;
-}
-
-html,
-body {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: "Lato", serif;
-}
-
-nav {
-  position: fixed;
-  isolation: isolate;
-  width: 100%;
-  z-index: 9;
-}
-
-.nav__header {
-  padding: 1rem;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--primary-color);
-}
-
-.nav__logo a {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.nav__menu__btn {
-  font-size: 1.5rem;
-  color: var(--text-dark);
-  cursor: pointer;
-}
-
-.nav__links {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
+  height: 3px;
+  background-color: white;
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.4s ease-out;
+}
+
+.navbar .navbar-nav .nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+    /* ✅ Card แสดงจำนวน */
+    .stats-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 2rem;
-  padding: 2rem;
-  background-color: var(--primary-color);
-  transition: transform 0.5s;
-  z-index: -1;
-}
-
-.nav__links.open {
-  transform: translateY(100%);
-}
-
-.nav__links a {
-  font-weight: 500;
-  color: var(--text-dark);
-  white-space: nowrap;
-}
-
-header {
-  padding-block: 5rem 4rem;
-  display: grid;
-  position: relative;
-  isolation: isolate;
-}
-
-.header__image {
-  height: 100%;
-  background-image: url("https://nkppao.github.io/images/background.png");
-  background-position: center top;
-  background-size: cover;
-  background-repeat: no-repeat;
-  min-height: 15rem;
-}
-
-.header__content {
-  padding-inline: 1rem;
-  padding-block: 2rem 22rem;
-}
-
-.header__content h1 {
-  /*font-size: 5.125rem;*/
-  font-size: 4.725rem;
-  font-weight: 500;
-  line-height: 5.5rem;
-  color: var(--text-dark);
-  text-align: center;
-}
-
-.header__stats {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 900px;
-  padding: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-direction: column;
-  gap: 2rem 1rem;
-  background-color: var(--white);
-  box-shadow: 0px 5px 50px var(--primary-color);
-}
-
-.header__stats h4 {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.header__stats p {
-  font-weight: 500;
-  color: var(--text-light);
-}
-
-header form {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 900px;
-  padding: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-direction: column;
-  gap: 2rem 1rem;
-  background-color: var(--white);
-  box-shadow: 0px 5px 50px var(--primary-color);
-}
-
-header .input__group {
-  display: grid;
-  gap: 0.5rem;
-}
-
-header label {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-header input {
-  padding-bottom: 0.5rem;
-  width: 100%;
-  font-size: 1rem;
-  color: var(--text-dark);
-  outline: none;
-  border: none;
-  border-bottom: 1px solid var(--text-light);
-}
-
-header .btn {
-  padding: 0.75rem;
-  font-size: 1.5rem;
-}
-
-.service {
-  overflow: hidden;
-}
-
-.service__grid {
-  margin-top: 4rem;
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  gap: 2rem 1rem;
-}
-
-.service__grid::before {
-  position: absolute;
-  content: "";
-  height: calc(50% + 5rem);
-  width: 100vw;
-  bottom: -5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--primary-color);
-  z-index: -1;
-}
-
-.service__card {
-  position: relative;
-  isolation: isolate;
-  padding: 2rem 1rem;
-  background-color: var(--white);
-  box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.service__card::before {
-  position: absolute;
-  content: "";
-  width: 100%;
-  max-width: 10rem;
-  aspect-ratio: 1;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: var(--primary-color);
-  border-radius: 100%;
-  z-index: -1;
-}
-
-.service__card img {
-  max-width: 70px;
-  margin-inline: auto;
-  margin-bottom: 2rem;
-}
-
-.service__card h4 {
-  margin-bottom: 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-dark);
-  text-align: center;
-}
-
-.service__card p {
-  font-weight: 500;
-  color: var(--text-light);
-  text-align: center;
-  line-height: 1.75rem;
-}
-
-.experience {
-  padding-block: 5rem;
-  display: grid;
-  position: relative;
-  isolation: isolate;
-}
-
-.experience__image {
-  height: 100%;
-  background-image: url("https://nkppao.github.io/images/background.png");
-  background-position: center top;
-  background-size: cover;
-  background-repeat: no-repeat;
-  min-height: 15rem;
-}
-
-.experience__content {
-  padding-inline: 1rem;
-  padding-block: 2rem 20rem;
-}
-
-.experience__content p {
-  margin-block: 2rem;
-  font-weight: 500;
-  line-height: 1.75rem;
-  color: var(--text-dark);
-  text-align: center;
-}
-
-.experience__btn {
-  text-align: center;
-}
-
-.experience__stats {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translate(-50%, -1rem);
-  width: 100%;
-  max-width: 900px;
-  padding: 2rem;
-  display: flex;
-  align-items: center;
   justify-content: space-around;
-  flex-direction: column;
-  gap: 2rem 1rem;
-  text-align: center;
-  background-color: var(--white);
-  box-shadow: 0px 5px 50px var(--primary-color);
-}
-
-.experience__stats h4 {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.experience__stats p {
-  font-weight: 500;
-  color: var(--text-light);
-}
-
-.swiper {
-  padding-block: 4rem;
-  width: 100%;
-  max-width: 900px;
-}
-
-.swiper-slide {
-  min-width: 425px;
-}
-
-.property__card {
-  box-shadow: 0px 5px 50px var(--primary-color);
-}
-
-.property__details {
-  padding: 1rem;
-}
-
-.property__details__header {
-  margin-bottom: 1rem;
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
   flex-wrap: wrap;
+  padding: 10px;
 }
 
-.property__details__header h4 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--text-dark);
+.chart-container {
+  width: 300px;
+  height: 300px;
 }
 
-.property__details__header h5 {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: var(--text-dark);
-}
-
-.property__amenities {
-  margin-bottom: 1rem;
+#districtStats {
   display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.property__amenities > div {
-  display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-light);
+  justify-content: center;
 }
 
-.property__amenities span {
-  font-size: 1.2rem;
-  color: var(--text-dark);
-}
-
-.property__location {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-light);
-}
-
-.subscribe {
-  padding-inline: 1rem;
-  padding-block: 5rem 2rem;
-  margin-bottom: 5rem;
-  background-color: var(--primary-color);
-}
-
-.subscribe form {
-  width: 100%;
-  max-width: 600px;
-  margin-inline: auto;
-  transform: translateY(calc(50% + 2rem));
-  display: flex;
-  align-items: center;
-  background-color: var(--white);
-  box-shadow: 0px 10px 50px var(--primary-color);
-}
-
-.subscribe input {
-  width: 100%;
-  padding-inline: 1rem;
-  font-display: 1rem;
-  color: var(--text-dark);
-  background-color: transparent;
-  outline: none;
-  border: none;
-}
-
-.subscribe .btn {
-  padding: 1.5rem 2rem;
-}
-
-.footer__container {
-  display: grid;
-  gap: 4rem 2rem;
-}
-
-.footer__logo a {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.footer__col p {
-  margin-block: 1rem 2rem;
-  max-width: 350px;
-  font-weight: 500;
-  line-height: 1.75rem;
-  color: var(--text-dark);
-}
-
-.footer__socials {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.footer__socials a {
-  padding: 5px 7px;
-  font-size: 1rem;
-  color: var(--text-dark);
-  background-color: var(--primary-color);
-  border-radius: 100%;
-}
-
-.footer__col h4 {
-  margin-bottom: 2rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.footer__links {
-  display: grid;
-  gap: 1rem;
-}
-
-.footer__links a {
-  font-weight: 500;
-  color: var(--text-dark);
-}
-
-.footer__links a:hover {
-  color: var(--text-light);
-}
-
-.footer__property__detail {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.footer__property__detail img {
-  max-width: 50px;
-}
-
-.footer__property__detail h5 {
-  margin-bottom: 0.25rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.footer__property__detail p {
-  margin: 0;
-  line-height: 1.25rem;
-}
-
-.footer__bar {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  color: var(--text-dark);
-  background-color: var(--primary-color);
+    .stat-card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   text-align: center;
+  width: 150px;
+  color: white; /* ✅ ตั้งค่าเริ่มต้นเป็นสีขาว */
 }
 
-@media (width > 540px) {
-  .header__image {
-    min-height: 20rem;
-  }
-
-  .header__content {
-    padding-block: 2rem 6rem;
-  }
-
-  header form {
-    flex-direction: row;
-  }
-
-  .service__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .experience__image {
-    min-height: 20rem;
-  }
-
-  .experience__content {
-    padding-block: 2rem 8rem;
-  }
-
-  .experience__stats {
-    flex-direction: row;
-    text-align: left;
-  }
-
-  .property__details {
-    padding: 1.5rem;
-  }
-
-  .footer__container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (width > 768px) {
-  nav {
-    position: static;
-    padding: 2rem 1rem;
-    max-width: var(--max-width);
-    margin-inline: auto;
+    .stat-card h2 { font-size: 1.2rem; margin-bottom: 5px; }
+    .stat-card p { font-size: 1rem; font-weight: bold; }
+    .container {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+    height: 90vh;
+    padding: 10px;
   }
 
-  .nav__header {
-    flex: 1;
-    padding: 0;
-    background-color: transparent;
+  #map { 
+    height: 400px; 
+    width: 100%; 
+    font-family: "Kanit", sans-serif;
+    font-size: 0.875rem;
   }
 
-  .nav__logo a {
-    font-size: 1.55em;
+  #districtChart {
+    width: 80% !important;  /* ปรับความกว้าง (ค่าปกติ 100%) */
+    height: 300px !important; /* ปรับความสูง */
+    max-width: 600px; /* จำกัดขนาดไม่ให้ใหญ่เกินไป */
+    margin: 0 auto; /* จัดให้อยู่กึ่งกลาง */
   }
 
-  .nav__menu__btn {
-    display: none;
-  }
-
-  .nav__links {
-    position: static;
-    width: fit-content;
-    padding: 0;
-    flex-direction: row;
-    background-color: transparent;
-    transform: none !important;
-  }
-
-  .nav__links a:hover {
-    color: var(--text-light);
-  }
-
-  header {
-    padding-top: 0;
-    grid-template-columns:
-      minmax(0, 1fr)
-      minmax(0, calc(var(--max-width) / 2))
-      minmax(0, calc(var(--max-width) / 2))
-      minmax(0, 1fr);
-    align-items: center;
-  }
-
-  .header__image {
-    grid-area: 1/3/2/5;
-    min-height: 30rem;
-    border-top-left-radius: 100%;
-  }
-
-  .header__content {
-    grid-column: 2/3;
-    padding-block: 6rem 12rem;
-  }
-
-  .header__content h1 {
-    text-align: left;
-  }
-
-  .service__grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .experience {
-    grid-template-columns:
-      minmax(0, 1fr)
-      minmax(0, calc(var(--max-width) / 2))
-      minmax(0, calc(var(--max-width) / 2))
-      minmax(0, 1fr);
-    align-items: center;
-  }
-
-  .experience__image {
-    grid-column: 1/3;
-    min-height: 30rem;
-    border-top-right-radius: 100%;
-  }
-
-  .experience__content {
-    grid-column: 3/4;
-    padding-block: 5rem 8rem;
-  }
-
-  .experience__content :is(.section__header, p, .experience__btn) {
-    text-align: right;
-  }
-
-  .footer__container {
-    grid-template-columns: repeat(5, 1fr);
-  }
-
-  .footer__col:nth-child(1) {
-    grid-column: 1/3;
-  }
+    .leaflet-popup-content {
+      font-family: "Kanit", sans-serif;
+      font-size: 0.875rem;
+      color: #333;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .leaflet-popup-content i {
+      color: white !important; /* ✅ กำหนดให้เป็นสีขาว */
+    }
+    .popup-content p {
+  margin: 2px 0; /* ปรับช่องว่างด้านบน-ล่างให้แคบลง */
 }
 
-@media (width > 1024px) {
-  .service__grid {
-    gap: 2rem;
+.custom-pin {
+    font-size: 30px; /* ปรับขนาด Emoji */
+    text-align: center;
+    line-height: 30px;
+}
+
+
+
+/* กำหนด gradient ให้ navbar */
+  .footer {
+    background: linear-gradient(to right, #33AEFF, #0062E6); /* ไล่จากสีฟ้าเข้มไปอ่อน */
+    color: white; /* สีข้อความปกติ */
+    font-size: 0.875rem;
   }
 
-  .service__card {
-    padding: 2rem;
+  .content {
+    padding: 20px;
+    /*margin-top: 56px;*/ /* เพิ่มเพื่อไม่ให้เนื้อหาถูกบังจาก navbar */
+    flex-grow: 1;
+  }
+
+  table {
+    font-size: 0.875rem;
+    /*text-align: center !important;*/
+    border-radius: 12px; /* กำหนดขอบโค้ง */
+    overflow: hidden; /* ป้องกันการล้นออกของขอบ */
+    border-collapse: separate; /* แยกขอบเซลล์ */
+    border-spacing: 0; /* ลบช่องว่างขอบเซลล์ */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* เพิ่มเงาให้ดูนุ่มนวล */
+  }
+
+  th {
+    background-color: var(--bs-primary) !important; /* บังคับให้สีพื้นหลังแสดงผล */
+    color: white !important; /* บังคับให้ตัวอักษรเป็นสีขาว */
+      text-align: center !important; /* จัดข้อความให้อยู่ตรงกลาง */
+      vertical-align: middle !important; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+      padding: 12px !important; /* เพิ่ม padding ให้ดูดีขึ้น */
+  }
+
+  .dt-button {
+  background-color: #007bff !important; /* สี primary ของ Bootstrap */
+  color: white !important; /* ตัวหนังสือสีขาว */
+  /*border-color: #007bff !important;*/ /* กรอบปุ่มสี primary */
+  border: 0px !important;
+  border-radius: 12px !important;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1) !important; /* เพิ่มเงาให้ดูนุ่มนวล */
+}
+
+
+  /*@media (max-width: 992px) {
+  .navbar-brand {
+    font-size: 1rem; // ลดขนาดฟอนต์ 
+    white-space: normal; //ให้ขึ้นบรรทัดใหม่เมื่อพื้นที่ไม่พอ 
+    display: block; // บังคับให้อยู่ในบรรทัดเดียว 
+    text-align: center; //* จัดให้อยู่ตรงกลาง 
+    max-width: 70%; // จำกัดความกว้างเพื่อให้ขึ้นบรรทัดใหม่เร็วขึ้น 
+    margin: 0 auto; // จัดให้อยู่ตรงกลาง 
+  }
+}*/
+
+@media (max-width: 768px) {
+  .navbar-brand::after {
+    content: "รพ.สต. สังกัด อบจ.นครปฐม"; /* เปลี่ยนข้อความเมื่อจอเล็ก */
+    white-space: normal;
+  }
+  
+  .navbar-brand {
+    font-size: 0.9rem; /* ลดขนาดฟอนต์ */
+  }
+  
+  .navbar-brand span {
+    display: none; /* ซ่อนข้อความเดิม */
   }
 }
