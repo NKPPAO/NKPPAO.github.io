@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ข้อมูลจาก Google Sheets</title>
+  <script>
+    // ฟังก์ชันที่ดึงข้อมูลจาก Google Apps Script Web App
+    function getDataFromGoogleAppsScript() {
+      fetch('https://script.google.com/macros/s/AKfycbyXCU051jNoySQ55604lLQI5kNLFAmvo6ildLVdq22gEs1GHgwZ8ZwallIAeJ_5U2Sr/exec') // ใส่ URL ของ Google Apps Script Web App ที่ได้จากขั้นตอนที่ 1
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);  // ดูข้อมูลใน console
+          displayData(data);  // แสดงข้อมูลใน HTML
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    // ฟังก์ชันที่แสดงข้อมูลในหน้า HTML
+    function displayData(data) {
+      var container = document.getElementById('data-container');
+      data.forEach(function(item) {
+        var div = document.createElement('div');
+        div.innerHTML = `
+          <p><strong>Name:</strong> ${item.name}</p>
+          <p><strong>Phone:</strong> ${item.phone}</p>
+          <p><strong>Location:</strong> <a href="${item.mapUrl}" target="_blank">Open in Maps</a></p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // เรียกใช้ฟังก์ชันเมื่อหน้าโหลดเสร็จ
+    window.onload = getDataFromGoogleAppsScript;
+  </script>
+</head>
+<body>
+  <h1>ข้อมูลจาก Google Sheets</h1>
+  <div id="data-container"></div> <!-- ใช้ที่นี้เพื่อแสดงข้อมูล -->
+</body>
+</html>
