@@ -3,6 +3,11 @@ html {
   margin: 0;
   padding: 0;
 }
+
+* {
+  font-family: 'Kanit', sans-serif !important;
+}
+
 /* ปรับให้เนื้อหาหลักไม่โดน navbar บดบัง */
 body {
   font-family: 'Kanit', sans-serif !important;
