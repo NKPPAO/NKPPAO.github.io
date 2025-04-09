@@ -5,7 +5,7 @@ html {
 }
 /* ปรับให้เนื้อหาหลักไม่โดน navbar บดบัง */
 body {
-  ont-family: 'Kanit', sans-serif !important;
+  font-family: 'Kanit', sans-serif !important;
   padding-top: 0; /* ลด padding-top */
   display: flex;
   flex-direction: column;
