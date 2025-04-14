@@ -2,36 +2,84 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>404 - ไม่พบหน้านี้</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
+      margin: 0;
       font-family: 'Kanit', sans-serif;
-      text-align: center;
-      padding: 100px;
-      background-color: #f2f2f2;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
       color: #333;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     h1 {
-      font-size: 72px;
+      font-size: 120px;
+      margin: 0;
+      color: #ff6b6b;
     }
+
+    h2 {
+      font-size: 32px;
+      margin-top: 10px;
+    }
+
     p {
-      font-size: 24px;
-    }
-    a {
-      color: #007bff;
-      text-decoration: none;
       font-size: 20px;
+      margin: 20px 0;
     }
-    a:hover {
-      text-decoration: underline;
+
+    a.button {
+      display: inline-block;
+      padding: 12px 24px;
+      font-size: 18px;
+      color: #fff;
+      background-color: #007bff;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+
+    a.button:hover {
+      background-color: #0056b3;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 72px;
+      }
+      h2 {
+        font-size: 24px;
+      }
+      p {
+        font-size: 16px;
+      }
+      a.button {
+        font-size: 16px;
+        padding: 10px 20px;
+      }
     }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
 </head>
 <body>
   <h1>404</h1>
-  <p>ไม่พบหน้าที่คุณต้องการ</p>
-  <a href="/">กลับไปหน้าหลัก</a>
+  <h2>ไม่พบหน้านี้</h2>
+  <p>ขออภัย! หน้าที่คุณค้นหาไม่อยู่ในระบบ หรืออาจถูกย้ายไปแล้ว</p>
+  <a href="/" class="button">กลับหน้าหลัก</a>
 </body>
 </html>
