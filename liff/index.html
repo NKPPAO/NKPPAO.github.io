@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover">
+
+  <title>LIFF App</title>
+
+</head>
+
+<body>
+
+  <script src="https://static.line-scdn.net/liff/edge/versions/2.5.0/sdk.js"></script>
+
+  <script>
+
+      async function main() {
+
+      await liff.init({ liffId: "2007299505-BQ3xM32g" })
+
+      await liff.shareTargetPicker([
+
+       {
+
+          type: "flex",
+
+          altText: "Flex message From Share Target Picker",
+
+          contents:{
+
+  "type": "bubble",
+
+  "size": "deca",
+
+  "hero": {
+
+    "type": "image",
+
+    "url": "https://thumb.ac-illust.com/ea/ea9ab9d37fda71094af53fd345675f2d_t.jpeg",
+
+    "size": "sm",
+
+    "aspectMode": "fit",
+
+    "action": {
+
+      "type": "uri",
+
+      "uri": "https://script.google.com/macros/s/AKfycbw0VNMzCnotZzF0iTOMbtK2T33k6CRA4FtFSvyKLchhgt18xr3YxU5Ok-NSb6NK6xNcfA/exec?openExternalBrowser=1"
+
+    }
+
+  },
+
+  "body": {
+
+    "type": "box",
+
+    "layout": "vertical",
+
+    "contents": [
+
+      {
+
+        "type": "text",
+
+        "text": "Sheets Auto",
+
+        "weight": "bold",
+
+        "size": "xl",
+
+        "align": "center",
+
+        "gravity": "center"
+
+      }
+
+    ]
+
+  },
+
+  "footer": {
+
+    "type": "box",
+
+    "layout": "vertical",
+
+    "spacing": "sm",
+
+    "contents": [
+
+      {
+
+        "type": "button",
+
+        "style": "primary",
+
+        "height": "sm",
+
+        "action": {
+
+          "type": "uri",
+
+          "label": "Report",
+
+          "uri": "https://script.google.com/macros/s/AKfycbw0VNMzCnotZzF0iTOMbtK2T33k6CRA4FtFSvyKLchhgt18xr3YxU5Ok-NSb6NK6xNcfA/exec"
+
+        }
+
+      },
+
+      {
+
+        "type": "button",
+
+        "style": "secondary",
+
+        "height": "sm",
+
+        "action": {
+
+          "type": "uri",
+
+          "label": "Share Flex Message",
+
+          "uri": "https://liff.line.me/2007299505-BQ3xM32g"
+
+        },
+
+        "color": "#edcee8"
+
+      }
+
+    ],
+
+    "flex": 0
+
+  }
+
+}
+
+        }  
+
+      ])
+
+      liff.closeWindow()
+
+        }
+
+    main()
+
+  </script>
+
+</body>
+
+</html>
