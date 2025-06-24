@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เลือกสถานสงเคราะห์</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1100px;
+    }
+
+    .menu-card {
+      position: relative;
+      background-size: cover;
+      background-position: center;
+      height: 300px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 51, 102, 0.2);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      border: 3px solid white;
+    }
+
+    .menu-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 15px 30px rgba(0, 51, 102, 0.35);
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 51, 102, 0.5);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .overlay h3 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .btn-direction {
+      margin-top: 1rem;
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid #fff;
+      color: #fff;
+      transition: 0.3s ease;
+    }
+
+    .btn-direction:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+      color: #003366;
+    }
+
+    h2 {
+      color: #0d47a1;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2 class="text-center mb-4">เลือกสถานสงเคราะห์เพื่อจองเป็นเจ้าภาพ</h2>
+
+  <div class="row g-4">
+    <!-- การ์ด: นครปฐม -->
+    <div class="col-md-6">
+      <div class="menu-card" style="background-image: url('https://www.nkppao.go.th/customers/webpages/images/master_001.png');" onclick="goTo('nakhonpathom')">
+        <div class="overlay">
+          <h3>สถานสงเคราะห์คนชรานครปฐม</h3>
+          <button class="btn btn-direction btn-sm" onclick="event.stopPropagation(); openMap('https://www.google.com/maps?q=สถานสงเคราะห์+คนชรานครปฐม')">
+            📍 ขอเส้นทาง
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- การ์ด: หลวงพ่อเปิ่น -->
+    <div class="col-md-6">
+      <div class="menu-card" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Wat_Luang_Por_Pern.jpg/800px-Wat_Luang_Por_Pern.jpg');" onclick="goTo('luangporpen')">
+        <div class="overlay">
+          <h3>สถานสงเคราะห์คนชราหลวงพ่อเปิ่น</h3>
+          <button class="btn btn-direction btn-sm" onclick="event.stopPropagation(); openMap('https://www.google.com/maps?q=สถานสงเคราะห์+คนชราหลวงพ่อเปิ่น')">
+            📍 ขอเส้นทาง
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function goTo(target) {
+    if (target === 'nakhonpathom') {
+      window.location.href = 'nkppao.github.io/booking-nkp'; // ลิงก์หน้า Web App จริง
+    } else if (target === 'luangporpen') {
+      window.location.href = 'nkppao.github.io/booking-lpp';
+    }
+  }
+
+  function openMap(url) {
+    window.open(url, '_blank');
+  }
+</script>
+
+</body>
+</html>
