@@ -156,6 +156,18 @@
 </footer>
 
 <script>
+  const ua = navigator.userAgent;
+  if (ua.includes("FBAN") || ua.includes("FBAV")) {
+    document.body.innerHTML = `
+      <div style="font-family:Kanit,sans-serif;text-align:center;padding:2rem;">
+        <h2>⚠️ ไม่สามารถเปิดหน้านี้ในแอป Facebook ได้</h2>
+        <p>กรุณาเปิดลิงก์นี้ในเบราว์เซอร์ เช่น Chrome หรือ Safari</p>
+        <p><strong>แตะปุ่มเมนู ⋮ หรือ 𝄘 บนมุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์"</strong></p>
+        <br>
+        <a href="https://nkppao.github.io/booking-nkp" style="padding: 1rem 2rem; background: #0d47a1; color: white; text-decoration: none; border-radius: 10px;">เปิดในเบราว์เซอร์</a>
+      </div>`;
+  }
+  
   function goTo(target) {
     if (target === 'nakhonpathom') {
       window.location.href = 'https://nkppao.github.io/booking-nkp'; // ลิงก์หน้า Web App จริง
