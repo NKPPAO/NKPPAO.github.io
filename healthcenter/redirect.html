@@ -2,8 +2,59 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Redirecting...</title>
+  <title>กำลังเปลี่ยนเส้นทาง...</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+      background: linear-gradient(to right, #007bff, #00c6ff);
+      color: #fff;
+      text-align: center;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+
+    button {
+      background-color: #ffffff;
+      color: #007bff;
+      border: none;
+      padding: 14px 28px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #e0e0e0;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 30px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+  </style>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
 
   <!-- ตรวจสอบว่าอยู่ใน Facebook In-App Browser หรือไม่ -->
   <script>
@@ -11,11 +62,12 @@
       var ua = navigator.userAgent || "";
       var isFacebookApp = ua.includes("FBAV") || ua.includes("FBAN");
 
-      var targetUrl = "https://script.google.com/a/~/macros/s/AKfycbylNkieouFBwf-XOIOpNDSpMR6UEVn0Ul_8QIWi3x94b9riE59TX1I9HRMiLud0IMsCIQ/exe"; // แทนที่ตรงนี้
+      var targetUrl = "https://script.google.com/a/~/macros/s/AKfycbylNkieouFBwf-XOIOpNDSpMR6UEVn0Ul_8QIWi3x94b9riE59TX1I9HRMiLud0IMsCIQ/exec"; // แทนที่ตรงนี้
 
       if (isFacebookApp) {
         document.getElementById("msg").innerHTML = `
-          <p>กรุณาเปิดลิงก์นี้ในเบราว์เซอร์ เช่น Chrome หรือ Safari</p>
+          <h1>ไม่สามารถเปิดหน้านี้ใน Facebook ได้</h1>
+          <p>กรุณาเปิดลิงก์นี้ในเบราว์เซอร์ เช่น <strong>Chrome</strong> หรือ <strong>Safari</strong></p>
           <button onclick="window.open('${targetUrl}', '_blank')">เปิดในเบราว์เซอร์</button>
         `;
       } else {
@@ -25,8 +77,11 @@
   </script>
 </head>
 <body>
-  <div id="msg">
-    <p>กำลังเปลี่ยนเส้นทาง...</p>
+  <div class="container">
+    <div id="msg">
+      <h1>กำลังเปลี่ยนเส้นทาง...</h1>
+      <p>กรุณารอสักครู่</p>
+    </div>
   </div>
 </body>
 </html>
