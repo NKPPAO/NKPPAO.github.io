@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ตรวจสอบว่าอยู่ใน Facebook In-App Browser หรือไม่ -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var ua = navigator.userAgent || "";
+      var isFacebookApp = ua.includes("FBAV") || ua.includes("FBAN");
+
+      var targetUrl = "https://script.google.com/a/~/macros/s/AKfycbylNkieouFBwf-XOIOpNDSpMR6UEVn0Ul_8QIWi3x94b9riE59TX1I9HRMiLud0IMsCIQ/exe"; // แทนที่ตรงนี้
+
+      if (isFacebookApp) {
+        document.getElementById("msg").innerHTML = `
+          <p>กรุณาเปิดลิงก์นี้ในเบราว์เซอร์ เช่น Chrome หรือ Safari</p>
+          <button onclick="window.open('${targetUrl}', '_blank')">เปิดในเบราว์เซอร์</button>
+        `;
+      } else {
+        window.location.href = targetUrl;
+      }
+    });
+  </script>
+</head>
+<body>
+  <div id="msg">
+    <p>กำลังเปลี่ยนเส้นทาง...</p>
+  </div>
+</body>
+</html>
