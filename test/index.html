@@ -2,155 +2,28 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>โรงพยาบาลส่งเสริมสุขภาพตำบลในสังกัดองค์การบริหารส่วนจังหวัดนครปฐม</title>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=TH+Sarabun&display=swap" rel="stylesheet">
-  <link href="https://nkppao.github.io/test/style.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"/>
-  
-
-  <!-- DataTables -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+  <title>ทดสอบเปิดใน Browser อื่น</title>
+  <style>
+    .open-btn {
+      display: inline-block;
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    .open-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-  <!-- Navbar ด้านบน -->
-<nav class="navbar navbar-expand-lg navbar-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand text-sm" href="javascript:void(0);">
-      <img src="https://www.nkppao.go.th/customers/webpages/images/master_001.png" alt="องค์การบริหารส่วนจังหวัดนครปฐม" class="me-3" style="width: 50px; height: 50px;">
-      <span>ข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบลในสังกัด อบจ.นครปฐม</span>
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" href="javascript:void(0);"  onclick="event.preventDefault(); showContainer('dashboard-content')">
-            <i class="bi bi-map-fill"></i> หน้าหลัก
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="javascript:void(0);" onclick="event.preventDefault(); showContainer('detail-content')">
-            <i class="bi bi-info-square-fill"></i> รายละเอียด
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
-  
-  <div class="content">
-    <div id="detail-content" class="">
-  <button class ="btn btn-primary" onclick="downloadPdf()" title="ดาวน์โหลดไฟล์ PDF">
-    <i class="bi bi-filetype-pdf"></i> PDF</button>
-  <button class ="btn btn-primary" onclick="downloadExcel()" title="ดาวน์โหลดไฟล์ EXCEL">
-    <i class="bi bi-filetype-xlsx"></i> EXCEL</button>
-    
-  <div class="table-responsive-sm">
-    <table id="locationTable"  class="table" style="width:100%">
-      <thead>
-        <tr>
-          <th>ชื่อสถานที่</th>
-          <th>โทรศัพท์</th>
-          <th>ที่อยู่</th>
-          <th>อำเภอ</th>
-          <th>แผนที่</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        <!-- ข้อมูลจะถูกเติมที่นี่ผ่าน JS -->
-      </tbody>
-    </table>
-    
-  </div>
-      </div>
-    </div>
+  <h2>ทดสอบเปิดใน Browser อื่น</h2>
+  <p>หากคุณเปิดหน้านี้จาก Facebook ให้กดปุ่มด้านล่างเพื่อเปิดใน Browser จริง เช่น Chrome หรือ Safari</p>
 
-  <!-- Footer ที่มี 3 คอลัมน์ -->
-<footer class="footer py-4">
-  <div class="container-fluid">
-    <div class="row">
-      <!-- คอลัมน์ที่ 1 -->
-      <div class="col-md-3 d-flex flex-column flex-md-row align-items-start">
-        <img src="https://www.nkppao.go.th/customers/webpages/images/master_001.png" 
-             alt="องค์การบริหารส่วนจังหวัดนครปฐม" class="me-3" 
-             style="width: 50px; height: 50px;">
-        <div class="text-md-start">
-          ข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบล
-          สังกัดองค์การบริหารส่วนจังหวัดนครปฐม
-        </div>
-      </div>
-
-      <!-- คอลัมน์ที่ 2 -->
-      <div class="col-md-6 text-start text-md-center">
-        Copyright © 2025 All rights reserved <br/>องค์การบริหารส่วนจังหวัดนครปฐม
-      </div>
-
-      <!-- คอลัมน์ที่ 3 -->
-      <div class="col-md-3 text-start">
-        <i class="bi bi-code-square"></i> พัฒนาโดย<br/>
-        กองยุทธศาสตร์และงบประมาณ
-      </div>
-    </div>
-  </div>
-</footer>
-
-
-  <!-- jQuery (DataTables ต้องใช้) -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- DataTables JS -->
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
-  <script>
-    async function getDataFromScript() {
-      const response = await fetch("https://script.google.com/macros/s/AKfycbyXCU051jNoySQ55604lLQI5kNLFAmvo6ildLVdq22gEs1GHgwZ8ZwallIAeJ_5U2Sr/exec");
-      const data = await response.json();
-
-      let tbody = '';
-      data.forEach(item => {
-        tbody += `
-          <tr>
-            <td>${item.name}</td>
-            <td>${item.phone}</td>
-            <td>${item.address}</td>
-            <td>${item.district}</td>
-            <td>
-              <a href="${item.navigation}" target="_blank" rel="noopener noreferrer">
-                <i class="bi bi-geo-alt-fill text-danger" style="font-size: 1.2rem;"></i>
-              </a>
-            </td>
-          </tr>
-        `;
-      });
-
-      document.getElementById("tableBody").innerHTML = tbody;
-      $('#locationTable').DataTable({
-        responsive: true,
-        scrollX: true, // เพิ่มการเลื่อนแนวนอน
-        language: {
-          url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json"
-        }
-      });
-    }
-
-    window.onload = getDataFromScript;
-  </script>
-
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-  <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <a href="https://nkppao.github.io" target="_blank" class="open-btn">
+    เปิดใน Browser อื่น
+  </a>
 </body>
 </html>
