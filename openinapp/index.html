@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi Sheet Viewer</title>
+  <style>
+    body { font-family: "Sarabun", sans-serif; padding: 20px; background: #f9fafb; }
+    h2 { color: #1e3a8a; margin-bottom: 20px; }
+    section { margin-bottom: 40px; }
+    h3 { margin-bottom: 10px; color: #2563eb; border-left: 4px solid #2563eb; padding-left: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px;
+            overflow: hidden; background: white; }
+    th { background: #2563eb; color: white; padding: 10px; text-align: left; }
+    td { padding: 10px; border-bottom: 1px solid #e5e7eb; }
+    tr:nth-child(even) { background: #f3f4f6; }
+    tr:hover { background: #e0f2fe; }
+  </style>
+</head>
+<body>
+  <h2>📊 ข้อมูลจากหลายชีท</h2>
+
+  <section>
+    <h3>Sheet1</h3>
+    <table id="sheet1-table"></table>
+  </section>
+
+  <section>
+    <h3>Sheet2</h3>
+    <table id="sheet2-table"></table>
+  </section>
+
+  <section>
+    <h3>Sheet3</h3>
+    <table id="sheet3-table"></table>
+  </section>
+
+  <script>
+    async function loadData() {
+      try {
+        // 👉 ใส่ URL ของ GAS API ที่ Deploy ไว้
+        const url = "https://script.google.com/macros/s/AKfycbybh--jvoKKxx9isbwDyk4i2jGem8LugT3R9U8kwoSB4YmGtBVlhThVdf2YHbPJGWfL/exec";
+        const res = await fetch(url);
+        const data = await res.json();
+
+        renderTable("sheet1-table", data.Sheet1);
+        renderTable("sheet2-table", data.Sheet2);
+        renderTable("sheet3-table", data.Sheet3);
+      } catch (err) {
+        document.body.innerHTML = "<p style='color:red'>Error: " + err + "</p>";
+      }
+    }
+
+    function renderTable(tableId, rows) {
+      const table = document.getElementById(tableId);
+      if (!rows || rows.length === 0) {
+        table.innerHTML = "<tr><td>No data</td></tr>";
+        return;
+      }
+
+      let html = "<tr>";
+      Object.keys(rows[0]).forEach(h => html += `<th>${h}</th>`);
+      html += "</tr>";
+
+      rows.forEach(r => {
+        html += "<tr>";
+        Object.values(r).forEach(v => html += `<td>${v ?? ""}</td>`);
+        html += "</tr>";
+      });
+
+      table.innerHTML = html;
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
