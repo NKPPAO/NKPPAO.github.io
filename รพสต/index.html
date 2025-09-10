@@ -5,23 +5,61 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="h-screen flex text-sm bg-gray-50">
+<body class="h-screen flex bg-gray-50 text-sm">
   <!-- Sidebar -->
-  <div id="hospitalList" class="w-1/3 border-r overflow-y-auto p-4"></div>
+  <div id="hospitalList" class="w-1/3 border-r overflow-y-auto p-4 bg-white"></div>
 
-  <!-- Form -->
+  <!-- Main Form -->
   <div class="flex-1 p-6">
     <form id="dataForm" class="space-y-4">
-      <h2 class="text-lg font-bold mb-2">ข้อมูล รพ.สต.</h2>
+      <h2 class="text-lg font-bold mb-4">แบบฟอร์มข้อมูล รพ.สต.</h2>
+
+      <!-- Basic Info -->
+      <div>
+        <label class="block mb-1">ชื่อ รพ.สต.</label>
+        <input name="ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล" readonly class="w-full border rounded p-2 bg-gray-100"/>
+      </div>
+
       <div>
         <label class="block mb-1">ประวัติความเป็นมา</label>
         <textarea name="ประวัติความเป็นมา" class="w-full border rounded p-2"></textarea>
       </div>
+
       <div>
         <label class="block mb-1">เขตรับผิดชอบ</label>
         <input name="เขตรับผิดชอบ" class="w-full border rounded p-2"/>
       </div>
-      <!-- TODO: dynamic personnel groups -->
+
+      <div>
+        <label class="block mb-1">หมายเลขโทรศัพท์</label>
+        <input name="หมายเลขโทรศัพท์" class="w-full border rounded p-2"/>
+      </div>
+
+      <div>
+        <label class="block mb-1">Facebook</label>
+        <input name="Facebook" class="w-full border rounded p-2"/>
+      </div>
+
+      <!-- Dynamic Personnel -->
+      <div>
+        <label class="block mb-2 font-semibold">บุคลากร (ข้าราชการ)</label>
+        <div id="personnelWrapper" class="space-y-2"></div>
+        <button type="button" onclick="addPersonnel()" 
+          class="bg-green-500 text-white px-3 py-1 rounded flex items-center space-x-1">
+          <i data-lucide="plus" class="w-4 h-4"></i><span>เพิ่มบุคลากร</span>
+        </button>
+      </div>
+
+      <!-- Schedule -->
+      <div>
+        <label class="block mb-2 font-semibold">ตารางเวลาปฏิบัติงาน</label>
+        <div id="scheduleWrapper" class="space-y-2"></div>
+        <button type="button" onclick="addSchedule()" 
+          class="bg-indigo-500 text-white px-3 py-1 rounded flex items-center space-x-1">
+          <i data-lucide="plus" class="w-4 h-4"></i><span>เพิ่มตารางเวลา</span>
+        </button>
+      </div>
+
       <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded shadow">
         บันทึกข้อมูล
       </button>
@@ -29,12 +67,18 @@
   </div>
 
   <script>
+    lucide.createIcons();
     const API_URL = "https://script.google.com/macros/s/AKfycbxh2bz0GFAM5JztFUfuHnTJVTxdGjQJ2Xe2yLCYa6M_RZ0RPyhJx8o4xcVHxjuZHkzL3w/exec";
+    let currentHosp = "";
 
+    // -------------------------
+    // Load hospitals list
+    // -------------------------
     async function loadHospitals() {
       const res = await fetch(`${API_URL}?action=settings`);
       const data = await res.json();
       const list = document.getElementById("hospitalList");
+
       list.innerHTML = data.map(h => `
         <div class="p-2 border-b cursor-pointer hover:bg-gray-100" onclick="loadForm('${h.hosp}')">
           <div class="font-semibold">${h.hosp}</div>
@@ -43,17 +87,74 @@
       `).join("");
     }
 
+    // -------------------------
+    // Load form by hospital
+    // -------------------------
     async function loadForm(hosp) {
+      currentHosp = hosp;
+      document.querySelector("[name='ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล']").value = hosp;
+
       const res = await fetch(`${API_URL}?action=datas&hosp=${encodeURIComponent(hosp)}`);
       const data = await res.json();
+
       document.querySelector("[name='ประวัติความเป็นมา']").value = data["ประวัติความเป็นมา"] || "";
       document.querySelector("[name='เขตรับผิดชอบ']").value = data["เขตรับผิดชอบ"] || "";
+      document.querySelector("[name='หมายเลขโทรศัพท์']").value = data["หมายเลขโทรศัพท์"] || "";
+      document.querySelector("[name='Facebook']").value = data["Facebook"] || "";
+
+      // TODO: load บุคลากร + ตารางเวลา (parse JSON / split string)
     }
 
+    // -------------------------
+    // Dynamic Personnel
+    // -------------------------
+    function addPersonnel(name="", position="", dept="") {
+      const wrapper = document.getElementById("personnelWrapper");
+      const div = document.createElement("div");
+      div.className = "flex space-x-2 items-center";
+
+      div.innerHTML = `
+        <input name="คำนำหน้า-ชื่อ-สกุล[]" placeholder="ชื่อ-สกุล" value="${name}" class="flex-1 border rounded p-1"/>
+        <input name="ตำแหน่ง[]" placeholder="ตำแหน่ง" value="${position}" class="flex-1 border rounded p-1"/>
+        <input name="ฝ่าย/กลุ่มงาน[]" placeholder="ฝ่าย/กลุ่มงาน" value="${dept}" class="flex-1 border rounded p-1"/>
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500"><i data-lucide="x"></i></button>
+      `;
+      wrapper.appendChild(div);
+      lucide.createIcons();
+    }
+
+    // -------------------------
+    // Dynamic Schedule
+    // -------------------------
+    function addSchedule(role="แพทย์") {
+      const wrapper = document.getElementById("scheduleWrapper");
+      const div = document.createElement("div");
+      div.className = "flex space-x-2 items-center";
+
+      div.innerHTML = `
+        <select name="schedule_role[]" class="border rounded p-1">
+          <option ${role==="แพทย์"?"selected":""}>แพทย์</option>
+          <option ${role==="เภสัชกร"?"selected":""}>เภสัชกร</option>
+          <option ${role==="ทันตแพทย์"?"selected":""}>ทันตแพทย์</option>
+        </select>
+        <select name="schedule_day[]" class="border rounded p-1">
+          <option>จันทร์</option><option>อังคาร</option><option>พุธ</option>
+          <option>พฤหัสบดี</option><option>ศุกร์</option><option>เสาร์</option><option>อาทิตย์</option>
+        </select>
+        <input name="schedule_time[]" placeholder="เวลา (เช่น 08:30-12:00)" class="flex-1 border rounded p-1"/>
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500"><i data-lucide="x"></i></button>
+      `;
+      wrapper.appendChild(div);
+      lucide.createIcons();
+    }
+
+    // -------------------------
+    // Submit form
+    // -------------------------
     document.getElementById("dataForm").addEventListener("submit", async e => {
       e.preventDefault();
       const formData = Object.fromEntries(new FormData(e.target).entries());
-      formData["ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล"] = "กำหนดจากการเลือกด้านซ้าย";
+      formData["ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล"] = currentHosp;
 
       await fetch(API_URL, {
         method: "POST",
