@@ -65,33 +65,20 @@
         <div>
           <label class="block mb-2 font-semibold text-blue-700">บุคลากร (ข้าราชการ)</label>
           <div id="personnelWrapper" class="space-y-2"></div>
-          <div class="flex space-x-2 mt-2">
-            <button type="button" onclick="addPersonnel()" 
-              class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-xl flex items-center space-x-1 transition shadow">
-              <i data-lucide="plus" class="w-4 h-4"></i><span>เพิ่มบุคลากร</span>
-            </button>
-            <button type="button" onclick="clearPersonnel()" class="px-3 py-1 rounded-xl border">ล้างทั้งหมด</button>
-          </div>
+          <button type="button" onclick="addPersonnel()" 
+            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-xl flex items-center space-x-1 transition shadow">
+            <i data-lucide="plus" class="w-4 h-4"></i><span>เพิ่มบุคลากร</span>
+          </button>
         </div>
 
         <!-- Schedule -->
         <div>
           <label class="block mb-2 font-semibold text-blue-700">ตารางเวลาปฏิบัติงาน</label>
           <div id="scheduleWrapper" class="space-y-2"></div>
-          <div class="flex space-x-2 mt-2">
-            <button type="button" onclick="addSchedule()" 
-              class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-xl flex items-center space-x-1 transition shadow">
-              <i data-lucide="plus" class="w-4 h-4"></i><span>เพิ่มตารางเวลา</span>
-            </button>
-            <button type="button" onclick="clearSchedule()" class="px-3 py-1 rounded-xl border">ล้างทั้งหมด</button>
-          </div>
-        </div>
-
-        <!-- Images -->
-        <div>
-          <label class="block mb-2 font-semibold text-blue-700">รูปภาพ (อัปโหลดหลายภาพได้)</label>
-          <input id="imageInput" type="file" accept="image/*" multiple class="mb-2"/>
-          <div id="imagePreview" class="flex flex-wrap gap-2"></div>
+          <button type="button" onclick="addSchedule()" 
+            class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-xl flex items-center space-x-1 transition shadow">
+            <i data-lucide="plus" class="w-4 h-4"></i><span>เพิ่มตารางเวลา</span>
+          </button>
         </div>
 
         <button type="submit" 
@@ -104,11 +91,11 @@
 
   <script>
     lucide.createIcons();
-    const API_URL = "https://script.google.com/macros/s/AKfycbxh2bz0GFAM5JztFUfuHnTJVTxdGjQJ2Xe2yLCYa6M_RZ0RPyhJx8o4xcVHxjuZHkzL3w/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxh2bz0GFAM5JztFUfuHnTJVTxdGjQJ2Xe2yLCYa6M_RZ0RPyhJx8o4xcVHxjuZHkzL3w/exec"; // <-- เปลี่ยนเป็น URL ของ Google Apps Script
     let currentHosp = "";
 
     // -------------------------
-    // Load hospitals list with status
+    // Load hospitals list
     // -------------------------
     async function loadHospitals() {
       const [settingsRes, datasRes] = await Promise.all([
@@ -116,16 +103,13 @@
         fetch(`${API_URL}?action=datas_all`)
       ]);
       const settings = await settingsRes.json();
-      const datas = await datasRes.json(); // array of rows
-      // convert datas to map by hosp name for status check
-      const datasMap = {};
-      datas.forEach(r => datasMap[r["ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล"]] = r || {});
-
+      const datas = await datasRes.json();
       const list = document.getElementById("hospitalList");
+
       list.innerHTML += settings.map(h => {
         const hospName = h.hosp;
-        const hospData = datasMap[hospName] || {};
-        let statusClass = "bg-red-500"; // default: ไม่ได้กรอก
+        const hospData = datas.find(d => d["ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล"] === hospName) || {};
+        let statusClass = "bg-red-500";
         let statusText = "ยังไม่ได้กรอก";
 
         if (Object.keys(hospData).length > 0) {
@@ -141,7 +125,7 @@
         }
 
         return `
-          <div class="p-3 mb-2 rounded-lg cursor-pointer bg-white/10 hover:bg-blue-500 transition flex justify-between items-center" onclick="loadForm('${hospName.replace(/'/g, "\\'")}')">
+          <div class="p-3 mb-2 rounded-lg cursor-pointer bg-white/10 hover:bg-blue-500 transition flex justify-between items-center" onclick="loadForm('${hospName}')">
             <div>
               <div class="font-semibold">${hospName}</div>
               <div class="text-xs text-blue-100">${h.tambon}, ${h.amphur}</div>
@@ -153,7 +137,7 @@
     }
 
     // -------------------------
-    // Load form by hospital
+    // Load form data
     // -------------------------
     async function loadForm(hosp) {
       currentHosp = hosp;
@@ -167,206 +151,120 @@
       document.querySelector("[name='หมายเลขโทรศัพท์']").value = data["หมายเลขโทรศัพท์"] || "";
       document.querySelector("[name='Facebook']").value = data["Facebook"] || "";
 
-      // บุคลากร: three possible columns (คำนำหน้า-ชื่อ-สกุล, ตำแหน่ง, ฝ่าย/กลุ่มงาน)
-      clearPersonnel();
-      const names = (data["คำนำหน้า-ชื่อ-สกุล"] || "").split(",").map(s => s.trim()).filter(Boolean);
-      const positions = (data["ตำแหน่ง"] || "").split(",").map(s => s.trim());
-      const depts = (data["ฝ่าย/กลุ่มงาน"] || "").split(",").map(s => s.trim());
-      for (let i=0;i<names.length;i++) {
-        addPersonnel(names[i]||"", positions[i]||"", depts[i]||"");
+      // load บุคลากร
+      document.getElementById("personnelWrapper").innerHTML = "";
+      const names = (data["คำนำหน้า-ชื่อ-สกุล"] || "").split(",");
+      const positions = (data["ตำแหน่ง"] || "").split(",");
+      const depts = (data["ฝ่าย/กลุ่มงาน"] || "").split(",");
+      const imgs = (data["บุคลากร (ข้าราชการ)"] || "").split(",");
+
+      for (let i = 0; i < names.length; i++) {
+        if (names[i] || positions[i] || depts[i] || imgs[i]) {
+          addPersonnel(names[i], positions[i], depts[i], imgs[i]);
+        }
       }
-
-      // ตารางเวลา: columns for แพทย์ / เภสัชกร / ทันตแพทย์ (each comma-separated entries)
-      clearSchedule();
-      const docSchedules = (data["ตารางเวลาปฏิบัติงานของแพทย์"]||"").split(",").map(s=>s.trim()).filter(Boolean);
-      const phaSchedules = (data["ตารางเวลาปฏิบัติงานของเภสัชกร"]||"").split(",").map(s=>s.trim()).filter(Boolean);
-      const denSchedules = (data["ตารางเวลาปฏิบัติงานของทันตแพทย์"]||"").split(",").map(s=>s.trim()).filter(Boolean);
-      docSchedules.forEach(s => {
-        // expected format e.g. "จันทร์ 08:30-12:00"
-        const parts = s.split(" ");
-        const day = parts[0] || "จันทร์";
-        const time = parts.slice(1).join(" ") || "";
-        addSchedule("แพทย์", day, time);
-      });
-      phaSchedules.forEach(s => {
-        const parts = s.split(" ");
-        const day = parts[0] || "จันทร์";
-        const time = parts.slice(1).join(" ") || "";
-        addSchedule("เภสัชกร", day, time);
-      });
-      denSchedules.forEach(s => {
-        const parts = s.split(" ");
-        const day = parts[0] || "จันทร์";
-        const time = parts.slice(1).join(" ") || "";
-        addSchedule("ทันตแพทย์", day, time);
-      });
-
-      // รูปภาพ: header 'รูปภาพ' (comma separated URLs)
-      const imagePreview = document.getElementById("imagePreview");
-      imagePreview.innerHTML = "";
-      const imageUrls = (data["รูปภาพ"]||"").split(",").map(s=>s.trim()).filter(Boolean);
-      imageUrls.forEach(url => {
-        const a = document.createElement("a");
-        a.href = url;
-        a.target = "_blank";
-        a.className = "block border rounded p-1";
-        a.innerHTML = `<img src="${url}" class="w-28 h-20 object-cover rounded" alt="image"/>`;
-        imagePreview.appendChild(a);
-      });
     }
 
     // -------------------------
     // Dynamic Personnel
     // -------------------------
-    function addPersonnel(name="", position="", dept="") {
+    function addPersonnel(name="", position="", dept="", imgUrl="") {
       const wrapper = document.getElementById("personnelWrapper");
       const div = document.createElement("div");
-      div.className = "flex space-x-2 items-center";
+      div.className = "grid grid-cols-5 gap-2 items-center";
 
       div.innerHTML = `
-        <input name="p_name" placeholder="คำนำหน้า-ชื่อ-สกุล" value="${escapeHtml(name)}" class="flex-1 border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-        <input name="p_position" placeholder="ตำแหน่ง" value="${escapeHtml(position)}" class="flex-1 border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-        <input name="p_dept" placeholder="ฝ่าย/กลุ่มงาน" value="${escapeHtml(dept)}" class="flex-1 border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 transition"><i data-lucide="x"></i></button>
+        <input name="ชื่อ[]" placeholder="ชื่อ-สกุล" value="${name}" class="border p-2 rounded-xl"/>
+        <input name="ตำแหน่ง[]" placeholder="ตำแหน่ง" value="${position}" class="border p-2 rounded-xl"/>
+        <input name="ฝ่าย[]" placeholder="ฝ่าย/กลุ่มงาน" value="${dept}" class="border p-2 rounded-xl"/>
+        <div>
+          ${imgUrl ? `<img src="${imgUrl}" class="h-10 mb-1 rounded"/>` : ""}
+          <input type="file" name="image[]" accept="image/*" class="border p-1 rounded-xl"/>
+          <input type="hidden" name="image_old[]" value="${imgUrl}">
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" 
+          class="text-red-500 hover:text-red-700"><i data-lucide="x"></i></button>
       `;
       wrapper.appendChild(div);
       lucide.createIcons();
-    }
-
-    function clearPersonnel() {
-      document.getElementById("personnelWrapper").innerHTML = "";
     }
 
     // -------------------------
     // Dynamic Schedule
     // -------------------------
-    function addSchedule(role="แพทย์", day="จันทร์", time="") {
+    function addSchedule(role="แพทย์") {
       const wrapper = document.getElementById("scheduleWrapper");
       const div = document.createElement("div");
       div.className = "flex space-x-2 items-center";
 
       div.innerHTML = `
-        <select name="s_role" class="border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <select name="schedule_role[]" class="border border-gray-300 rounded-xl p-2">
           <option ${role==="แพทย์"?"selected":""}>แพทย์</option>
           <option ${role==="เภสัชกร"?"selected":""}>เภสัชกร</option>
           <option ${role==="ทันตแพทย์"?"selected":""}>ทันตแพทย์</option>
         </select>
-        <select name="s_day" class="border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option ${day==="จันทร์"?"selected":""}>จันทร์</option><option ${day==="อังคาร"?"selected":""}>อังคาร</option><option ${day==="พุธ"?"selected":""}>พุธ</option>
-          <option ${day==="พฤหัสบดี"?"selected":""}>พฤหัสบดี</option><option ${day==="ศุกร์"?"selected":""}>ศุกร์</option><option ${day==="เสาร์"?"selected":""}>เสาร์</option><option ${day==="อาทิตย์"?"selected":""}>อาทิตย์</option>
+        <select name="schedule_day[]" class="border border-gray-300 rounded-xl p-2">
+          <option>จันทร์</option><option>อังคาร</option><option>พุธ</option>
+          <option>พฤหัสบดี</option><option>ศุกร์</option><option>เสาร์</option><option>อาทิตย์</option>
         </select>
-        <input name="s_time" placeholder="เวลา (เช่น 08:30-12:00)" value="${escapeHtml(time)}" class="flex-1 border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 transition"><i data-lucide="x"></i></button>
+        <input name="schedule_time[]" placeholder="เวลา (เช่น 08:30-12:00)" class="flex-1 border p-2 rounded-xl"/>
+        <button type="button" onclick="this.parentElement.remove()" 
+          class="text-red-500 hover:text-red-700"><i data-lucide="x"></i></button>
       `;
       wrapper.appendChild(div);
       lucide.createIcons();
     }
 
-    function clearSchedule() {
-      document.getElementById("scheduleWrapper").innerHTML = "";
-    }
-
     // -------------------------
-    // Image input preview & read
-    // -------------------------
-    document.getElementById("imageInput").addEventListener("change", (ev) => {
-      const files = Array.from(ev.target.files);
-      const preview = document.getElementById("imagePreview");
-      preview.innerHTML = "";
-      files.forEach(file => {
-        const fr = new FileReader();
-        fr.onload = () => {
-          const img = document.createElement("img");
-          img.src = fr.result;
-          img.className = "w-28 h-20 object-cover rounded border";
-          preview.appendChild(img);
-        };
-        fr.readAsDataURL(file);
-      });
-    });
-
-    // -------------------------
-    // Submit form (custom handling arrays & images)
+    // Submit form
     // -------------------------
     document.getElementById("dataForm").addEventListener("submit", async e => {
       e.preventDefault();
-      if (!currentHosp) {
-        alert("กรุณาเลือกโรงพยาบาลจากฝั่งซ้ายก่อน");
-        return;
+      const formEl = e.target;
+      const formData = new FormData(formEl);
+
+      const names = formData.getAll("ชื่อ[]");
+      const positions = formData.getAll("ตำแหน่ง[]");
+      const depts = formData.getAll("ฝ่าย[]");
+      const files = formData.getAll("image[]");
+      const oldImgs = formData.getAll("image_old[]");
+
+      let imgUrls = [];
+      for (let i = 0; i < files.length; i++) {
+        if (files[i] && files[i].size > 0) {
+          const uploadFd = new FormData();
+          uploadFd.append("action", "uploadImage");
+          uploadFd.append("hosp", currentHosp);
+          uploadFd.append("file", files[i]);
+
+          const res = await fetch(API_URL, { method: "POST", body: uploadFd });
+          const data = await res.json();
+          imgUrls.push(data.url);
+        } else {
+          imgUrls.push(oldImgs[i] || "");
+        }
       }
 
-      // collect simple fields
       const payload = {
         "ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล": currentHosp,
-        "ประวัติความเป็นมา": document.querySelector("[name='ประวัติความเป็นมา']").value || "",
-        "เขตรับผิดชอบ": document.querySelector("[name='เขตรับผิดชอบ']").value || "",
-        "หมายเลขโทรศัพท์": document.querySelector("[name='หมายเลขโทรศัพท์']").value || "",
-        "Facebook": document.querySelector("[name='Facebook']").value || ""
+        "ประวัติความเป็นมา": formData.get("ประวัติความเป็นมา"),
+        "เขตรับผิดชอบ": formData.get("เขตรับผิดชอบ"),
+        "หมายเลขโทรศัพท์": formData.get("หมายเลขโทรศัพท์"),
+        "Facebook": formData.get("Facebook"),
+        "บุคลากร (ข้าราชการ)": imgUrls.join(","),
+        "คำนำหน้า-ชื่อ-สกุล": names.join(","),
+        "ตำแหน่ง": positions.join(","),
+        "ฝ่าย/กลุ่มงาน": depts.join(",")
       };
 
-      // collect personnel inputs -> join with comma into three columns
-      const nameEls = Array.from(document.getElementsByName("p_name"));
-      const posEls = Array.from(document.getElementsByName("p_position"));
-      const deptEls = Array.from(document.getElementsByName("p_dept"));
-      const names = nameEls.map(i => i.value.trim()).filter(Boolean);
-      const positions = posEls.map(i => i.value.trim());
-      const depts = deptEls.map(i => i.value.trim());
-      payload["คำนำหน้า-ชื่อ-สกุล"] = names.join(", ");
-      payload["ตำแหน่ง"] = positions.join(", ");
-      payload["ฝ่าย/กลุ่มงาน"] = depts.join(", ");
-
-      // collect schedule: split into three category arrays and join into comma-separated strings
-      const sRoles = Array.from(document.getElementsByName("s_role")).map(e=>e.value);
-      const sDays = Array.from(document.getElementsByName("s_day")).map(e=>e.value);
-      const sTimes = Array.from(document.getElementsByName("s_time")).map(e=>e.value.trim());
-      const docArr = [];
-      const phaArr = [];
-      const denArr = [];
-      for (let i=0;i<sRoles.length;i++) {
-        const role = sRoles[i];
-        const day = sDays[i] || "";
-        const t = sTimes[i] || "";
-        const entry = (day + (t?(" "+t):"")).trim();
-        if (role === "แพทย์") docArr.push(entry);
-        else if (role === "เภสัชกร") phaArr.push(entry);
-        else if (role === "ทันตแพทย์") denArr.push(entry);
-      }
-      payload["ตารางเวลาปฏิบัติงานของแพทย์"] = docArr.join(", ");
-      payload["ตารางเวลาปฏิบัติงานของเภสัชกร"] = phaArr.join(", ");
-      payload["ตารางเวลาปฏิบัติงานของทันตแพทย์"] = denArr.join(", ");
-
-      // images -> read as dataURL array
-      const files = Array.from(document.getElementById("imageInput").files || []);
-      const imagesData = await Promise.all(files.map(f => readFileAsDataURL(f).then(dataUrl => ({ name: f.name, dataUrl })) ));
-
-      // attach images to payload
-      payload.images = imagesData; // server will store to Drive and return URLs
-
-      // submit
-      const res = await fetch(API_URL, {
+      await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({ action: "save", payload })
       });
-      const ret = await res.json();
-      if (ret.status==="ok") {
-        alert("บันทึกสำเร็จ");
-        // reload to update status and show saved data (including Drive URLs)
-        location.reload();
-      } else {
-        alert("เกิดข้อผิดพลาด: " + (ret.message||JSON.stringify(ret)));
-      }
+
+      alert("บันทึกสำเร็จ");
+      location.reload();
     });
-
-    function readFileAsDataURL(file) {
-      return new Promise((resolve, reject) => {
-        const fr = new FileReader();
-        fr.onload = () => resolve(fr.result);
-        fr.onerror = reject;
-        fr.readAsDataURL(file);
-      });
-    }
-
-    function escapeHtml(s){ return (s||"").replaceAll('"','&quot;').replaceAll("'", "&#39;"); }
 
     loadHospitals();
   </script>
