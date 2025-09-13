@@ -98,43 +98,44 @@
     // Load hospitals list with status
     // -------------------------
     async function loadHospitals() {
-      const [settingsRes, datasRes] = await Promise.all([
-        fetch(`${API_URL}?action=settings`),
-        fetch(`${API_URL}?action=datas_all`)
-      ]);
-      const settings = await settingsRes.json();
-      const datas = await datasRes.json();
-      const list = document.getElementById("hospitalList");
+  const [settingsRes, datasRes] = await Promise.all([
+    fetch(`${API_URL}?action=settings`),
+    fetch(`${API_URL}?action=datas_all`)
+  ]);
+  const settings = await settingsRes.json();
+  const datas = await datasRes.json();
+  const list = document.getElementById("hospitalList");
 
-      list.innerHTML += settings.map(h => {
-        const hospName = h.hosp;
-        const hospData = datas[hospName] || {};
-        let statusClass = "bg-red-500"; // default: ไม่ได้กรอก
-        let statusText = "ยังไม่ได้กรอก";
+  list.innerHTML += settings.map(h => {
+    const hospName = h.hosp;
+    // 🔧 แก้ตรงนี้
+    const hospData = datas.find(d => d["ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล"] === hospName) || {};
+    let statusClass = "bg-red-500"; // default: ยังไม่ได้กรอก
+    let statusText = "ยังไม่ได้กรอก";
 
-        if (Object.keys(hospData).length > 0) {
-          const requiredFields = ["ประวัติความเป็นมา","เขตรับผิดชอบ","หมายเลขโทรศัพท์","Facebook"];
-          const filled = requiredFields.filter(f => hospData[f] && hospData[f].trim() !== "");
-          if (filled.length === requiredFields.length) {
-            statusClass = "bg-green-500"; 
-            statusText = "ครบถ้วน";
-          } else {
-            statusClass = "bg-yellow-500";
-            statusText = "ยังไม่ครบ";
-          }
-        }
-
-        return `
-          <div class="p-3 mb-2 rounded-lg cursor-pointer bg-white/10 hover:bg-blue-500 transition flex justify-between items-center" onclick="loadForm('${hospName}')">
-            <div>
-              <div class="font-semibold">${hospName}</div>
-              <div class="text-xs text-blue-100">${h.tambon}, ${h.amphur}</div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded ${statusClass} text-white">${statusText}</span>
-          </div>
-        `;
-      }).join("");
+    if (Object.keys(hospData).length > 0) {
+      const requiredFields = ["ประวัติความเป็นมา","เขตรับผิดชอบ","หมายเลขโทรศัพท์","Facebook"];
+      const filled = requiredFields.filter(f => hospData[f] && hospData[f].trim() !== "");
+      if (filled.length === requiredFields.length) {
+        statusClass = "bg-green-500"; 
+        statusText = "ครบถ้วน";
+      } else {
+        statusClass = "bg-yellow-500";
+        statusText = "ยังไม่ครบ";
+      }
     }
+
+    return `
+      <div class="p-3 mb-2 rounded-lg cursor-pointer bg-white/10 hover:bg-blue-500 transition flex justify-between items-center" onclick="loadForm('${hospName}')">
+        <div>
+          <div class="font-semibold">${hospName}</div>
+          <div class="text-xs text-blue-100">${h.tambon}, ${h.amphur}</div>
+        </div>
+        <span class="text-xs px-2 py-1 rounded ${statusClass} text-white">${statusText}</span>
+      </div>
+    `;
+  }).join("");
+}
 
     // -------------------------
     // Load form by hospital
