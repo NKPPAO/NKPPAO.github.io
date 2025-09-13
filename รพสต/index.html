@@ -199,23 +199,41 @@
     }
 
     // -------------------------
-    // Submit form
-    // -------------------------
-    document.getElementById("dataForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      const formData = Object.fromEntries(new FormData(e.target).entries());
-      formData["ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล"] = currentHosp;
+// Submit form
+// -------------------------
+document.getElementById("dataForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
 
-      await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "save", payload: formData })
-      });
+  // เก็บค่าธรรมดา
+  const formData = Object.fromEntries(fd.entries());
+  formData["ชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล"] = currentHosp;
 
-      alert("บันทึกสำเร็จ");
-      location.reload(); // reload เพื่ออัปเดตสถานะสี
-    });
+  // เก็บ array บุคลากร
+  const personnels = fd.getAll("คำนำหน้า-ชื่อ-สกุล[]").map((name, i) => ({
+    name,
+    position: fd.getAll("ตำแหน่ง[]")[i],
+    dept: fd.getAll("ฝ่าย/กลุ่มงาน[]")[i]
+  }));
+  formData["บุคลากร (ข้าราชการ)"] = JSON.stringify(personnels);
 
-    loadHospitals();
+  // เก็บ array ตารางเวลา
+  const schedules = fd.getAll("schedule_role[]").map((role, i) => ({
+    role,
+    day: fd.getAll("schedule_day[]")[i],
+    time: fd.getAll("schedule_time[]")[i]
+  }));
+  formData["ตารางเวลาปฏิบัติงาน"] = JSON.stringify(schedules);
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "save", payload: formData })
+  });
+
+  alert("บันทึกสำเร็จ");
+  loadHospitals(); // refresh status โดยไม่ต้อง reload ทั้งหน้า
+});
+
   </script>
 </body>
 </html>
