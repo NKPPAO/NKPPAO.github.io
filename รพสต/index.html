@@ -116,7 +116,10 @@ async function loadHospitals() {
 
     if (Object.keys(hospData).length > 0) {
       const requiredFields = ["ประวัติความเป็นมา","เขตรับผิดชอบ","หมายเลขโทรศัพท์","Facebook"];
-      const filled = requiredFields.filter(f => hospData[f] && hospData[f].trim() !== "");
+      const filled = requiredFields.filter(f => {
+        const val = hospData[f];
+        return val && typeof val === "string" && val.trim() !== "";
+      });
       if (filled.length === requiredFields.length) {
         statusClass = "bg-green-500";
         statusText = "ครบถ้วน";
