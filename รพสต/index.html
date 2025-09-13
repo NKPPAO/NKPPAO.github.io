@@ -113,7 +113,7 @@
     let statusText = "ยังไม่ได้กรอก";
 
     if (Object.keys(hospData).length > 0) {
-      const requiredFields = ["ประวัติความเป็นมา","เขตรับผิดชอบ","หมายเลขโทรศัพท์","Facebook"];
+      const requiredFields = ["ประวัติความเป็นมา","เขตรับผิดชอบ","หมายเลขโทรศัพท์","Facebook","บุคลากร (ข้าราชการ)","คำนำหน้า-ชื่อ-สกุล","ตำแหน่ง","ฝ่าย/กลุ่มงาน","ตารางเวลาปฏิบัติงานของแพทย์","ตารางเวลาปฏิบัติงานของเภสัชกร","ตารางเวลาปฏิบัติงานของทันตแพทย์"];
       const filled = requiredFields.filter(f => {
         const val = String(hospData[f] || "").trim();
         return val !== "";
