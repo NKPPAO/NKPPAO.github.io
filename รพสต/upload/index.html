@@ -1,139 +1,76 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>ระบบอัปโหลดไฟล์ รพ.สต.</title>
-  <style>
-    body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; }
-    .sidebar { width: 250px; background: #f8f9fa; border-right: 1px solid #ddd; overflow-y: auto; }
-    .sidebar h2 { margin: 0; padding: 10px; background: #007bff; color: white; font-size: 16px; }
-    .sidebar ul { list-style: none; padding: 0; margin: 0; }
-    .sidebar li { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
-    .sidebar li:hover { background: #e9ecef; }
-    .sidebar .uploaded { color: green; font-weight: bold; }
-    .content { flex: 1; padding: 20px; }
-    .upload-box { border: 2px dashed #007bff; border-radius: 6px; padding: 30px; text-align: center; color: #666; cursor: pointer; }
-    .upload-box.dragover { background: #e6f0ff; }
-    .hidden { display: none; }
-    #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white;
-             padding: 10px 20px; border-radius: 4px; display: none; }
-  </style>
+<meta charset="UTF-8">
+<title>ระบบอัปโหลดไฟล์ รพ.สต.</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+select, input[type=file], button { margin: 5px 0; padding: 5px; }
+#toast { position: fixed; bottom:10px; right:10px; background:#333;color:white;padding:10px;border-radius:4px; display:none; }
+</style>
 </head>
 <body>
-  <div class="sidebar">
-    <h2>รายชื่อ รพ.สต.</h2>
-    <ul id="hospitalList"></ul>
-  </div>
+<h2>อัปโหลดไฟล์โรงพยาบาล</h2>
 
-  <div class="content">
-    <h1>อัปโหลดไฟล์</h1>
-      <form id="uploadForm" 
-      action="https://script.google.com/macros/s/AKfycbw-_P9n2Qyf_QgFSVOrNZ5WWQAsrXEY2DRhpmeaJvtZIM7O4LN4_nL4AVqEO-tklfz3_A/exec" 
-      target="uploadFrame" 
-      method="post" 
-      enctype="multipart/form-data">
-      <label>รพ.สต.:</label><br>
-      <input type="text" id="hospitalName" name="hospitalName" readonly required><br><br>
-      <div id="dropZone" class="upload-box">ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือก</div>
-      <input type="file" id="fileInput" name="file" class="hidden" required>
-      <br><br>
-      <button type="submit">อัปโหลด</button>
-    </form>
-    <iframe name="uploadFrame" style="display:none;"></iframe>
-  </div>
+<form id="uploadForm" method="post" enctype="multipart/form-data" target="hiddenFrame">
+  <label>เลือกโรงพยาบาล:</label><br>
+  <select name="hospitalId" id="hospitalSelect" required>
+    <option value="">โหลดรายชื่อ...</option>
+  </select>
+  <br>
+  <label>ไฟล์:</label><br>
+  <input type="file" name="file" required><br><br>
+  <button type="submit">อัปโหลด</button>
+</form>
 
-  <div id="toast"></div>
+<div id="toast"></div>
+<iframe name="hiddenFrame" style="display:none;"></iframe>
 
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-_P9n2Qyf_QgFSVOrNZ5WWQAsrXEY2DRhpmeaJvtZIM7O4LN4_nL4AVqEO-tklfz3_A/exec"; // <<< ใส่ URL จาก Deploy > Web App ของ code.gs
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-_P9n2Qyf_QgFSVOrNZ5WWQAsrXEY2DRhpmeaJvtZIM7O4LN4_nL4AVqEO-tklfz3_A/exec';
+const toast = document.getElementById("toast");
 
-    // โหลดรายชื่อโรงพยาบาลด้วย JSONP
-    function loadHospitals() {
-      const cbName = "cb_" + Date.now();
-      window[cbName] = function(data) {
-        if (data.ok) renderHospitalList(data.hospitals);
-      };
-      const script = document.createElement("script");
-      script.src = SCRIPT_URL + "?action=list&callback=" + cbName;
-      document.body.appendChild(script);
-    }
-
-    function renderHospitalList(hospitals) {
-      const ul = document.getElementById("hospitalList");
-      ul.innerHTML = "";
-      hospitals.forEach(h => {
-        const li = document.createElement("li");
-        li.textContent = h.hospitalName + (h.status === "uploaded" ? " ✅" : "");
-        if (h.status === "uploaded") li.classList.add("uploaded");
-        li.onclick = () => {
-          document.getElementById("hospitalName").value = h.hospitalName;
-          document.getElementById("hospitalName").dataset.hospitalId = h.id;
-        };
-        ul.appendChild(li);
+// โหลดรายชื่อโรงพยาบาลจาก sheet (JSONP)
+function loadHospitals(){
+  const cbName = 'cb_' + Date.now();
+  window[cbName] = function(data){
+    if(data.ok){
+      const select = document.getElementById('hospitalSelect');
+      select.innerHTML = '<option value="">-- เลือกโรงพยาบาล --</option>';
+      data.hospitals.forEach(h=>{
+        const opt = document.createElement('option');
+        opt.value = h.id;
+        opt.textContent = h.hospitalName;
+        select.appendChild(opt);
       });
     }
+  };
+  const script = document.createElement('script');
+  script.src = SCRIPT_URL + '?action=list&callback=' + cbName;
+  document.body.appendChild(script);
+}
 
-    // Drag & Drop
-    const dropZone = document.getElementById("dropZone");
-    const fileInput = document.getElementById("fileInput");
+// toast
+function showToast(msg, ok=true){
+  toast.textContent = msg;
+  toast.style.background = ok ? '#28a745':'#dc3545';
+  toast.style.display = 'block';
+  setTimeout(()=>toast.style.display='none',3000);
+}
 
-    dropZone.addEventListener("click", () => fileInput.click());
-    dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover"); });
-    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
-    dropZone.addEventListener("drop", e => {
-      e.preventDefault();
-      dropZone.classList.remove("dragover");
-      if (e.dataTransfer.files.length > 0) {
-        fileInput.files = e.dataTransfer.files;
-        dropZone.textContent = "เลือกแล้ว: " + e.dataTransfer.files[0].name;
-      }
-    });
-    fileInput.addEventListener("change", () => {
-      if (fileInput.files.length > 0) {
-        dropZone.textContent = "เลือกแล้ว: " + fileInput.files[0].name;
-      }
-    });
+// รับผลลัพธ์จาก iframe
+window.addEventListener('message', e=>{
+  if(!e.data) return;
+  try{
+    const res = typeof e.data==='string'?JSON.parse(e.data):e.data;
+    showToast(res.message,res.ok);
+  }catch(err){ console.error(err); }
+});
 
-    // Toast
-    function showToast(msg, ok=true) {
-      const toast = document.getElementById("toast");
-      toast.textContent = msg;
-      toast.style.background = ok ? "#28a745" : "#dc3545";
-      toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 3000);
-    }
+// set form action
+document.getElementById('uploadForm').action = SCRIPT_URL;
 
-    // ฟังผลลัพธ์จาก iframe (Apps Script doPost → postMessage)
-    window.addEventListener("message", e => {
-    console.log("Message from iframe:", e.data); // << debug ตรงนี้
-    if (!e.data) return;
-    try {
-      const res = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
-      if (res.ok) {
-        showToast("✔ อัปโหลดสำเร็จ: " + res.filename, true);
-        loadHospitals(); // refresh sidebar
-      } else {
-        showToast("✖ " + res.message, false);
-      }
-    } catch(err) {
-      console.error("Parse error:", err);
-    }
-  });
-
-
-    // ตอนกด submit
-    document.getElementById("uploadForm").addEventListener("submit", () => {
-      showToast("⏳ กำลังอัปโหลด...");
-      // ส่ง hospitalId ไปด้วย
-      const inputHidden = document.createElement("input");
-      inputHidden.type = "hidden";
-      inputHidden.name = "hospitalId";
-      inputHidden.value = document.getElementById("hospitalName").dataset.hospitalId || "";
-      document.getElementById("uploadForm").appendChild(inputHidden);
-    });
-
-    // เริ่มโหลดรายชื่อ
-    loadHospitals();
-  </script>
+loadHospitals();
+</script>
 </body>
 </html>
