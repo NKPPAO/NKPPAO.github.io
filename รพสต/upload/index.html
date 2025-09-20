@@ -4,198 +4,126 @@
   <meta charset="UTF-8">
   <title>ระบบอัปโหลดไฟล์โรงพยาบาล</title>
   <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      display: flex;
-      height: 100vh;
-    }
-    .sidebar {
-      width: 260px;
-      background: #f8f8f8;
-      border-right: 1px solid #ddd;
-      overflow-y: auto;
-      padding: 10px;
-    }
-    .sidebar h2 {
-      font-size: 16px;
-      margin: 0 0 10px 0;
-    }
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .sidebar li {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-      cursor: pointer;
-    }
-    .sidebar li:hover {
-      background: #e8e8e8;
-    }
-    .content {
-      flex: 1;
-      padding: 20px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    input[readonly] {
-      background: #f2f2f2;
-      border: 1px solid #ccc;
-      padding: 8px;
-      width: 100%;
-    }
-    .dropzone {
-      border: 2px dashed #bbb;
-      border-radius: 6px;
-      padding: 40px;
-      text-align: center;
-      color: #666;
-      margin-bottom: 15px;
-      cursor: pointer;
-    }
-    .dropzone.dragover {
-      background: #f0f8ff;
-      border-color: #3399ff;
-      color: #000;
-    }
-    #toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #333;
-      color: #fff;
-      padding: 12px 18px;
-      border-radius: 6px;
-      opacity: 0;
-      transition: opacity 0.4s;
-      z-index: 9999;
-    }
-    #uploadFrame {
-      display: none;
-    }
+    body {margin:0;font-family:sans-serif;display:flex;}
+    .sidebar {width:250px;background:#f4f4f4;padding:10px;border-right:1px solid #ccc;height:100vh;overflow-y:auto;}
+    .sidebar h3 {margin-top:0;}
+    .sidebar ul {list-style:none;padding:0;}
+    .sidebar li {padding:6px;cursor:pointer;border-bottom:1px solid #ddd;}
+    .sidebar li:hover {background:#e0e0e0;}
+    .sidebar li.uploaded {color:green;font-weight:bold;}
+    .content {flex:1;padding:20px;}
+    .dropzone {border:2px dashed #999;border-radius:10px;padding:40px;text-align:center;color:#777;cursor:pointer;transition:background 0.3s;}
+    .dropzone.dragover {background:#e6f7ff;border-color:#3399ff;color:#3399ff;}
+    #toast {visibility:hidden;min-width:200px;background:#333;color:#fff;text-align:center;border-radius:4px;padding:10px;position:fixed;z-index:1;left:50%;bottom:30px;transform:translateX(-50%);}
+    #toast.show {visibility:visible;animation:fadein 0.5s, fadeout 0.5s 2.5s;}
+    @keyframes fadein {from{bottom:0;opacity:0;}to{bottom:30px;opacity:1;}}
+    @keyframes fadeout {from{bottom:30px;opacity:1;}to{bottom:0;opacity:0;}}
   </style>
 </head>
 <body>
   <div class="sidebar">
-    <h2>รายชื่อโรงพยาบาล</h2>
+    <h3>รายชื่อโรงพยาบาล</h3>
     <ul id="hospitalList"></ul>
   </div>
+
   <div class="content">
-    <h1>อัปโหลดไฟล์</h1>
-    <form id="uploadForm" method="POST" target="uploadFrame" enctype="multipart/form-data">
-      <div class="form-group">
-        <label>โรงพยาบาล:</label>
-        <input type="text" id="hospitalName" name="hospitalName" readonly required>
-        <input type="hidden" id="hospitalId" name="hospitalId">
-      </div>
-      <div class="dropzone" id="dropzone">
-        <label for="fileInput" style="cursor:pointer;display:block;width:100%;height:100%;">
-          ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์
-        </label>
-        <input type="file" id="fileInput" name="file" hidden required>
-      </div>
+    <h2>อัปโหลดไฟล์</h2>
+    <form id="uploadForm" target="hidden_iframe" method="post" enctype="multipart/form-data"
+      action="YOUR_WEB_APP_URL_HERE">
+      <input type="hidden" id="hospitalId" name="hospitalId">
+      <label>โรงพยาบาล:</label><br>
+      <input type="text" id="hospitalName" name="hospitalName" readonly><br><br>
+      <div class="dropzone" id="dropzone">ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</div>
+      <input type="file" id="fileInput" name="file" style="display:none"><br><br>
       <button type="submit">อัปโหลด</button>
     </form>
+    <iframe name="hidden_iframe" style="display:none;"></iframe>
   </div>
 
-  <iframe id="uploadFrame" name="uploadFrame"></iframe>
   <div id="toast"></div>
 
   <script>
-    // ===== CONFIG =====
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-_P9n2Qyf_QgFSVOrNZ5WWQAsrXEY2DRhpmeaJvtZIM7O4LN4_nL4AVqEO-tklfz3_A/exec";
-    // ==================
-
-    let hospitals = [];
-
-    function showToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.textContent = msg;
-      toast.style.opacity = "1";
-      setTimeout(() => { toast.style.opacity = "0"; }, 3000);
-    }
-
-    function renderHospitals(list) {
-      hospitals = list;
-      const ul = document.getElementById("hospitalList");
-      ul.innerHTML = "";
-      list.forEach(h => {
-        const li = document.createElement("li");
-        li.textContent = h.hospitalName + (h.status ? ` [${h.status}]` : "");
-        li.onclick = () => {
-          document.getElementById("hospitalName").value = h.hospitalName;
-          document.getElementById("hospitalId").value = h.id;
-        };
-        ul.appendChild(li);
-      });
-    }
-
-    // JSONP load hospitals
-    function loadHospitals() {
-      const cbName = "cb_" + Date.now();
-      window[cbName] = function(res) {
-        if (res.ok) {
-          renderHospitals(res.hospitals);
-        } else {
-          showToast("โหลดรายชื่อโรงพยาบาลล้มเหลว");
-        }
-        delete window[cbName];
-      };
-      const script = document.createElement("script");
-      script.src = SCRIPT_URL + "?action=list&callback=" + cbName;
-      document.body.appendChild(script);
-    }
-
-    // Drag & drop
+    const hospitalList = document.getElementById("hospitalList");
+    const hospitalIdInput = document.getElementById("hospitalId");
+    const hospitalNameInput = document.getElementById("hospitalName");
     const dropzone = document.getElementById("dropzone");
     const fileInput = document.getElementById("fileInput");
+    const uploadForm = document.getElementById("uploadForm");
+    const toast = document.getElementById("toast");
 
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw-_P9n2Qyf_QgFSVOrNZ5WWQAsrXEY2DRhpmeaJvtZIM7O4LN4_nL4AVqEO-tklfz3_A/exec"; // URL deploy จาก Apps Script
+
+    // JSONP โหลดรายชื่อรพ.
+    function loadHospitals() {
+      const cb = "cb" + Date.now();
+      window[cb] = function(res) {
+        if (res.ok) {
+          res.hospitals.forEach(h => {
+            const li = document.createElement("li");
+            li.textContent = h.hospitalName;
+            if (h.status === "uploaded") li.classList.add("uploaded");
+            li.onclick = () => {
+              hospitalIdInput.value = h.id;
+              hospitalNameInput.value = h.hospitalName;
+            };
+            hospitalList.appendChild(li);
+          });
+        } else {
+          alert("โหลดรายชื่อไม่สำเร็จ");
+        }
+      };
+      const s = document.createElement("script");
+      s.src = WEB_APP_URL + "?action=list&callback=" + cb;
+      document.body.appendChild(s);
+    }
+
+    // dropzone
     dropzone.addEventListener("click", () => fileInput.click());
-    dropzone.addEventListener("dragover", e => {
-      e.preventDefault();
-      dropzone.classList.add("dragover");
-    });
-    dropzone.addEventListener("dragleave", e => {
-      dropzone.classList.remove("dragover");
-    });
+    dropzone.addEventListener("dragover", e => {e.preventDefault();dropzone.classList.add("dragover");});
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
     dropzone.addEventListener("drop", e => {
       e.preventDefault();
       dropzone.classList.remove("dragover");
       fileInput.files = e.dataTransfer.files;
+      if (fileInput.files.length > 0) dropzone.textContent = "เลือกไฟล์แล้ว: " + fileInput.files[0].name;
+    });
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files.length > 0) dropzone.textContent = "เลือกไฟล์แล้ว: " + fileInput.files[0].name;
+      else dropzone.textContent = "ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์";
     });
 
-    // Upload handling
-    document.getElementById("uploadForm").addEventListener("submit", e => {
-      if (!document.getElementById("hospitalId").value) {
-        e.preventDefault();
-        showToast("กรุณาเลือกโรงพยาบาล");
-        return;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.className = "show";
+      setTimeout(() => {toast.className = toast.className.replace("show", "");}, 3000);
+    }
+
+    uploadForm.addEventListener("submit", e => {
+      if (!hospitalIdInput.value) {
+        e.preventDefault(); alert("กรุณาเลือกโรงพยาบาล"); return;
       }
-      if (!fileInput.files.length) {
-        e.preventDefault();
-        showToast("กรุณาเลือกไฟล์");
-        return;
+      if (fileInput.files.length === 0) {
+        e.preventDefault(); alert("กรุณาเลือกไฟล์"); return;
       }
-      showToast("⏳ กำลังอัปโหลด...");
-      document.getElementById("uploadForm").action = SCRIPT_URL;
+      showToast("กำลังอัปโหลด...");
     });
 
-    // Listen to iframe postMessage
-    window.addEventListener("message", function(e) {
-      if (e.data && typeof e.data === "object") {
-        if (e.data.ok) {
-          showToast("✅ อัปโหลดสำเร็จ: " + e.data.filename);
-          loadHospitals(); // refresh status
-        } else {
-          showToast("❌ " + e.data.message);
+    // ฟังผลลัพธ์จาก iframe (Apps Script postMessage)
+    window.addEventListener("message", ev => {
+      if (ev.data && ev.data.ok) {
+        showToast("อัปโหลดเสร็จสิ้น");
+        const items = hospitalList.getElementsByTagName("li");
+        for (let li of items) {
+          if (li.textContent === ev.data.hospitalName) {
+            li.classList.add("uploaded");
+          }
         }
+      } else if (ev.data && !ev.data.ok) {
+        showToast("ผิดพลาด: " + ev.data.message);
       }
     });
 
-    // Init
+    // เริ่มโหลดรายชื่อ
     loadHospitals();
   </script>
 </body>
