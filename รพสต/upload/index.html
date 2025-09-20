@@ -101,19 +101,21 @@
 
     // ฟังผลลัพธ์จาก iframe (Apps Script doPost → postMessage)
     window.addEventListener("message", e => {
-      if (!e.data) return;
-      try {
-        const res = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
-        if (res.ok) {
-          showToast("✔ อัปโหลดสำเร็จ: " + res.filename, true);
-          loadHospitals(); // refresh sidebar
-        } else {
-          showToast("✖ " + res.message, false);
-        }
-      } catch(err) {
-        console.error(err);
+    console.log("Message from iframe:", e.data); // << debug ตรงนี้
+    if (!e.data) return;
+    try {
+      const res = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+      if (res.ok) {
+        showToast("✔ อัปโหลดสำเร็จ: " + res.filename, true);
+        loadHospitals(); // refresh sidebar
+      } else {
+        showToast("✖ " + res.message, false);
       }
-    });
+    } catch(err) {
+      console.error("Parse error:", err);
+    }
+  });
+
 
     // ตอนกด submit
     document.getElementById("uploadForm").addEventListener("submit", () => {
