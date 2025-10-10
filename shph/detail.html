@@ -1,0 +1,47 @@
+<!-- FILE: detail.html -->
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>รายละเอียด รพ.สต.</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site-header">
+<div class="container">
+<div class="brand">
+<img src="https://via.placeholder.com/90x60.png?text=Logo" alt="logo">
+<div>
+<h1>รายละเอียดโรงพยาบาลส่งเสริมสุขภาพตำบล</h1>
+<div class="subtitle">คลิกที่เมนูเพื่อดูข้อมูล</div>
+</div>
+</div>
+</div>
+</header>
+
+
+<main class="container detail-page">
+<a class="back-link" href="index.html">← กลับสู่รายการ รพ.สต.</a>
+
+
+<div id="detail-root">
+<!-- จะถูกเติมโดย JavaScript -->
+</div>
+</main>
+
+
+<footer class="site-footer">
+<div class="container">© 2025 หน่วยงานสาธารณสุขจังหวัดตัวอย่าง</div>
+</footer>
+
+
+<script src="data/sample-data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', ()=>{
+App.initDetailPage(sampleData);
+});
+</script>
+</body>
+</html>
