@@ -1,0 +1,51 @@
+<!-- FILE: index.html -->
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>รายชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site-header">
+<div class="container">
+<div class="brand">
+<img src="https://via.placeholder.com/90x60.png?text=Logo" alt="logo">
+<div>
+<h1>หน่วยงานสาธารณสุขจังหวัดตัวอย่าง</h1>
+<div class="subtitle">ระบบบริหารจัดการโรงพยาบาลส่งเสริมสุขภาพตำบล</div>
+</div>
+</div>
+</div>
+</header>
+
+
+<main class="container">
+<section class="list-actions">
+<input id="search" placeholder="ค้นหารพ.สต., อำเภอ" />
+<select id="filter-district">
+<option value="">ทั้งหมด</option>
+</select>
+</section>
+
+
+<section id="list" class="rph-list"></section>
+</main>
+
+
+<footer class="site-footer">
+<div class="container">© 2025 หน่วยงานสาธารณสุขจังหวัดตัวอย่าง</div>
+</footer>
+
+
+<script src="data/sample-data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+// เรียกฟังก์ชันเริ่มต้นสำหรับหน้ารายชื่อ
+window.addEventListener('DOMContentLoaded', ()=>{
+App.initListPage(sampleData);
+});
+</script>
+</body>
+</html>
