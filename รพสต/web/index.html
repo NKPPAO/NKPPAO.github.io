@@ -32,9 +32,9 @@
    <div id="mainPage" class="container mx-auto px-4 py-8"><!-- Header -->
     <header class="text-center mb-8">
      <h1 id="mainTitle" class="text-4xl font-bold text-blue-800 mb-2">โรงพยาบาลส่งเสริมสุขภาพตำบล อบจ.นครปฐม</h1>
-     <!--<p id="subtitle" class="text-lg text-blue-600">ระบบจัดการข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบล</p>-->
+     <p id="subtitle" class="text-lg text-blue-600">ระบบจัดการข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบล</p>
     </header><!-- Summary Cards -->
-    <!--<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
      <div class="bg-white rounded-lg shadow-md p-6 text-center">
       <div class="text-3xl font-bold text-blue-600">
        36
@@ -67,7 +67,7 @@
        อำเภอกำแพงแสน
       </div>
      </div>
-    </div>--><!-- District Filter -->
+    </div><!-- District Filter -->
     <div class="mb-6">
      <div class="flex flex-wrap gap-2 justify-center"><button onclick="filterByDistrict('all')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" id="filter-all">ทั้งหมด</button> <button onclick="filterByDistrict('เมืองนครปฐม')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">เมืองนครปฐม</button> <button onclick="filterByDistrict('สามพราน')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">สามพราน</button> <button onclick="filterByDistrict('กำแพงแสน')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">กำแพงแสน</button> <button onclick="filterByDistrict('นครชัยศรี')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">นครชัยศรี</button> <button onclick="filterByDistrict('บางเลน')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">บางเลน</button> <button onclick="filterByDistrict('พุทธมณฑล')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">พุทธมณฑล</button>
      </div>
@@ -903,6 +903,41 @@
                     news_content: 'เปิดโครงการส่งเสริมการกินผักผลไม้ 5 หน่วยต่อวัน จัดนิทรรศการและแจกเมล็ดพันธุ์ผักฟรี เพื่อส่งเสริมสุขภาพที่ดีของประชาชน',
                     news_date: '2024-03-22',
                     news_type: 'กิจกรรม'
+                },
+                {
+                    hospital_id: '1',
+                    news_title: 'โครงการตรวจคัดกรองโรคไต',
+                    news_content: 'เปิดให้บริการตรวจคัดกรองโรคไตฟรีสำหรับผู้ป่วยเบาหวานและความดันโลหิตสูง ตรวจปัสสาวะและเลือด วันที่ 15 มีนาคม 2567',
+                    news_date: '2024-03-10',
+                    news_type: 'ข่าวประชาสัมพันธ์'
+                },
+                {
+                    hospital_id: '1',
+                    news_title: 'กิจกรรมวันสุขภาพแห่งชาติ',
+                    news_content: 'จัดกิจกรรมวันสุขภาพแห่งชาติ ตรวจสุขภาพฟรี วัดดัชนีมวลกาย ตรวจระดับน้ำตาลและคอเลสเตอรอล พร้อมให้คำแนะนำโภชนาการ',
+                    news_date: '2024-04-07',
+                    news_type: 'กิจกรรม'
+                },
+                {
+                    hospital_id: '1',
+                    news_title: 'อบรมการดูแลสุขภาพช่องปาก',
+                    news_content: 'จัดอบรมการดูแลสุขภาพช่องปากและฟันสำหรับเด็กและผู้ปกครอง สอนเทคนิคการแปรงฟันที่ถูกต้อง วันเสาร์ที่ 20 เมษายน 2567',
+                    news_date: '2024-04-15',
+                    news_type: 'กิจกรรม'
+                },
+                {
+                    hospital_id: '1',
+                    news_title: 'โครงการรณรงค์ลดเค็ม ลดหวาน ลดมัน',
+                    news_content: 'เริ่มโครงการรณรงค์ลดเค็ม ลดหวาน ลดมัน ในชุมชน จัดนิทรรศการและแจกเอกสารความรู้ด้านโภชนาการ เพื่อป้องกันโรคไม่ติดต่อเรื้อรัง',
+                    news_date: '2024-05-12',
+                    news_type: 'กิจกรรม'
+                },
+                {
+                    hospital_id: '1',
+                    news_title: 'เปิดบริการตรวจมะเร็งปากมดลูก',
+                    news_content: 'เปิดให้บริการตรวจคัดกรองมะเร็งปากมดลูกด้วยวิธี Pap smear สำหรับสตรีอายุ 30-60 ปี ฟรี! ทุกวันพฤหัสบดี เวลา 08:30-11:30 น.',
+                    news_date: '2024-02-28',
+                    news_type: 'ข่าวประชาสัมพันธ์'
                 }
             ];
 
@@ -922,5 +957,5 @@
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9962b7df07b69b9c',t:'MTc2MTc0MTM4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9962cc99b52a2035',t:'MTc2MTc0MjIzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
