@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>โรงพยาบาลส่งเสริมสุขภาพตำบล อบจ.นครปฐม</title>
-  <script src="/_sdk/data_sdk.js"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,48 +25,15 @@
         }
     </style>
   <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
  <body class="bg-gradient-to-br from-blue-50 to-sky-100 min-h-full">
   <div id="app" class="min-h-full"><!-- Main Page -->
    <div id="mainPage" class="container mx-auto px-4 py-8"><!-- Header -->
     <header class="text-center mb-8">
      <h1 id="mainTitle" class="text-4xl font-bold text-blue-800 mb-2">โรงพยาบาลส่งเสริมสุขภาพตำบล อบจ.นครปฐม</h1>
-     <p id="subtitle" class="text-lg text-blue-600">ระบบจัดการข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบล</p>
-    </header><!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-     <div class="bg-white rounded-lg shadow-md p-6 text-center">
-      <div class="text-3xl font-bold text-blue-600">
-       36
-      </div>
-      <div class="text-gray-600">
-       โรงพยาบาลทั้งหมด
-      </div>
-     </div>
-     <div class="bg-white rounded-lg shadow-md p-6 text-center">
-      <div class="text-3xl font-bold text-sky-600">
-       3
-      </div>
-      <div class="text-gray-600">
-       อำเภอเมืองนครปฐม
-      </div>
-     </div>
-     <div class="bg-white rounded-lg shadow-md p-6 text-center">
-      <div class="text-3xl font-bold text-blue-500">
-       9
-      </div>
-      <div class="text-gray-600">
-       อำเภอสามพราน
-      </div>
-     </div>
-     <div class="bg-white rounded-lg shadow-md p-6 text-center">
-      <div class="text-3xl font-bold text-sky-500">
-       7
-      </div>
-      <div class="text-gray-600">
-       อำเภอกำแพงแสน
-      </div>
-     </div>
-    </div><!-- District Filter -->
+     <!--<p id="subtitle" class="text-lg text-blue-600">ระบบจัดการข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบล</p>-->
+    </header><!-- District Filter -->
     <div class="mb-6">
      <div class="flex flex-wrap gap-2 justify-center"><button onclick="filterByDistrict('all')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" id="filter-all">ทั้งหมด</button> <button onclick="filterByDistrict('เมืองนครปฐม')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">เมืองนครปฐม</button> <button onclick="filterByDistrict('สามพราน')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">สามพราน</button> <button onclick="filterByDistrict('กำแพงแสน')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">กำแพงแสน</button> <button onclick="filterByDistrict('นครชัยศรี')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">นครชัยศรี</button> <button onclick="filterByDistrict('บางเลน')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">บางเลน</button> <button onclick="filterByDistrict('พุทธมณฑล')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">พุทธมณฑล</button>
      </div>
@@ -257,35 +223,182 @@
         let currentHospital = null;
         let currentEditField = null;
         let currentEditGroup = null;
-        let hospitalData = [];
-        let newsData = [];
+        let hospitalData = {};
+        let newsData = {};
 
-        // Data SDK handler
-        const dataHandler = {
-            onDataChanged(data) {
-                hospitalData = data.filter(item => item.hospital_id && !item.news_title);
-                newsData = data.filter(item => item.news_title);
-                
-                if (currentHospital) {
-                    loadHospitalData(currentHospital.id);
-                    if (document.getElementById('newsTab').classList.contains('hidden') === false) {
-                        loadNews();
-                    }
+        // JSON Data Storage
+        const jsonData = {
+            hospitals: {
+                '1': {
+                    about_history: 'โรงพยาบาลส่งเสริมสุขภาพตำบลพระประโทน ก่อตั้งขึ้นเมื่อปี พ.ศ. 2540 เพื่อให้บริการสุขภาพแก่ประชาชนในพื้นที่ตำบลพระประโทน มีการพัฒนาอย่างต่อเนื่องเพื่อยกระดับคุณภาพการบริการ',
+                    about_area: 'ตำบลพระประโทน หมู่ที่ 1-8 จำนวนประชากร 12,500 คน',
+                    about_phone: '034-123456',
+                    about_email: 'phrapratone.hc@nakhonpathom.go.th',
+                    about_address: '123 หมู่ 1 ตำบลพระประโทน อำเภอเมืองนครปฐม จังหวัดนครปฐม 73000',
+                    about_facebook: 'facebook.com/phrapratone.hc',
+                    about_maps: 'https://maps.google.com/phrapratone',
+                    about_image: '',
+                    director_name: 'นายสมชาย ใจดี',
+                    group1_name: 'กลุ่มงานบริการปฐมภูมิ',
+                    group1_staff: 'นางสาวมาลี สุขใส, นายสมศักดิ์ เก่งกาจ, นางวิไล ขยันดี',
+                    group2_name: 'กลุ่มงานส่งเสริมป้องกัน',
+                    group2_staff: 'นายประยุทธ์ รักสุขภาพ, นางสาวสุดา ใส่ใจ, นายวิชัย ห่วงใย',
+                    group3_name: 'กลุ่มงานบริหารทั่วไป',
+                    group3_staff: 'นางสมหญิง จัดการดี, นายอนุชา คิดเก่ง, นางสาวปิยะ ทำงานดี',
+                    schedule_content: '<div class="bg-blue-50 p-4 rounded-lg"><h4 class="font-bold mb-2">เวลาทำการ</h4><p>จันทร์-ศุกร์: 08:30-16:30 น.</p><p>เสาร์: 08:30-12:00 น.</p><p>วันหยุดราชการ: ปิดทำการ</p></div>'
                 }
+            },
+            news: {
+                '1': [
+                    {
+                        id: 'news1',
+                        title: 'โครงการฉีดวัคซีนไข้หวัดใหญ่ประจำปี 2567',
+                        content: 'ขอเชิญประชาชนในพื้นที่มาร่วมโครงการฉีดวัคซีนไข้หวัดใหญ่ฟรี สำหรับผู้สูงอายุ 65 ปีขึ้นไป และกลุ่มเสี่ยง ระหว่างวันที่ 15-30 พฤศจิกายน 2567 ณ โรงพยาบาลส่งเสริมสุขภาพตำบลพระประโทน',
+                        date: '2024-11-01',
+                        type: 'ข่าวประชาสัมพันธ์'
+                    },
+                    {
+                        id: 'news2',
+                        title: 'กิจกรรมตรวจสุขภาพประจำเดือน',
+                        content: 'กิจกรรมตรวจสุขภาพฟรีสำหรับประชาชนทุกวันพุธแรกของเดือน ตรวจวัดความดันโลหิต น้ำตาลในเลือด และให้คำแนะนำด้านสุขภาพ เวลา 08:00-11:00 น.',
+                        date: '2024-10-15',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news3',
+                        title: 'อบรมการดูแลผู้ป่วยเบาหวานที่บ้าน',
+                        content: 'จัดอบรมให้ความรู้เรื่องการดูแลผู้ป่วยเบาหวานที่บ้าน สำหรับญาติผู้ป่วยและผู้สนใจ วันเสาร์ที่ 25 พฤศจิกายน 2567 เวลา 09:00-12:00 น. ลงทะเบียนล่วงหน้า',
+                        date: '2024-11-10',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news4',
+                        title: 'ประกาศปิดปรับปรุงระบบน้ำประปา',
+                        content: 'ขอแจ้งให้ทราบว่าจะมีการปิดน้ำประปาเพื่อปรับปรุงระบบ ในวันที่ 20 พฤศจิกายน 2567 เวลา 08:00-16:00 น. ขออภัยในความไม่สะดวก',
+                        date: '2024-11-18',
+                        type: 'ข่าวประชาสัมพันธ์'
+                    },
+                    {
+                        id: 'news5',
+                        title: 'โครงการหมอครอบครัวเยี่ยมบ้าน',
+                        content: 'เริ่มโครงการหมอครอบครัวเยี่ยมบ้านสำหรับผู้ป่วยติดเตียงและผู้สูงอายุที่เดินทางมาโรงพยาบาลไม่ได้ ติดต่อนัดหมายล่วงหน้า 3 วัน',
+                        date: '2024-10-28',
+                        type: 'ข่าวประชาสัมพันธ์'
+                    },
+                    {
+                        id: 'news6',
+                        title: 'กิจกรรมวันงดสูบบุหรี่โลก',
+                        content: 'ร่วมกิจกรรมรณรงค์งดสูบบุหรี่ในวันงดสูบบุหรี่โลก พร้อมให้คำปรึกษาการเลิกบุหรี่ฟรี และตรวจสุขภาพปอด วันที่ 31 พฤษภาคม 2567',
+                        date: '2024-05-25',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news7',
+                        title: 'เปิดบริการตรวจคัดกรองมะเร็งเต้านม',
+                        content: 'เปิดให้บริการตรวจคัดกรองมะเร็งเต้านมสำหรับสตรีอายุ 40-69 ปี ฟรี! ทุกวันจันทร์และพุธ เวลา 08:30-11:30 น. โทรนัดหมายล่วงหน้า',
+                        date: '2024-09-15',
+                        type: 'ข่าวประชาสัมพันธ์'
+                    },
+                    {
+                        id: 'news8',
+                        title: 'อบรมการปฐมพยาบาลเบื้องต้น',
+                        content: 'จัดอบรมการปฐมพยาบาลเบื้องต้นสำหรับประชาชนทั่วไป สอนการช่วยเหลือผู้ป่วยฉุกเฉิน การทำ CPR วันเสาร์ที่ 7 ธันวาคม 2567 เวลา 08:00-16:00 น.',
+                        date: '2024-11-25',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news9',
+                        title: 'โครงการตรวจสุขภาพนักเรียน',
+                        content: 'ดำเนินโครงการตรวจสุขภาพนักเรียนประจำปีการศึกษา 2567 ในโรงเรียนต่างๆ ในพื้นที่รับผิดชอบ ตรวจสุขภาพทั่วไป วัดส่วนสูง น้ำหนัก และตรวจสายตา',
+                        date: '2024-08-20',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news10',
+                        title: 'ประกาศเปลี่ยนแปลงเวลาทำการ',
+                        content: 'ขอแจ้งเปลี่ยนแปลงเวลาทำการในช่วงเทศกาลปีใหม่ วันที่ 29-31 ธันวาคม 2567 เปิดบริการ 08:30-15:00 น. และวันที่ 1 มกราคม 2568 ปิดทำการ',
+                        date: '2024-12-20',
+                        type: 'ข่าวประชาสัมพันธ์'
+                    },
+                    {
+                        id: 'news11',
+                        title: 'กิจกรรมวันสุขภาพจิตโลก',
+                        content: 'จัดกิจกรรมรณรงค์วันสุขภาพจิตโลก ให้คำปรึกษาด้านสุขภาพจิต การจัดการความเครียด และแจกเอกสารความรู้ วันที่ 10 ตุลาคม 2567',
+                        date: '2024-10-08',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news12',
+                        title: 'โครงการรณรงค์ป้องกันไข้เลือดออก',
+                        content: 'เริ่มโครงการรณรงค์ป้องกันไข้เลือดออกในชุมชน ออกหน่วยพ่นหมอกควันกำจัดยุงลาย และให้ความรู้การป้องกันแก่ประชาชน',
+                        date: '2024-07-10',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news13',
+                        title: 'เปิดบริการฉีดวัคซีนโควิด-19 เข็มเสริม',
+                        content: 'เปิดให้บริการฉีดวัคซีนโควิด-19 เข็มเสริมสำหรับกลุ่มเสี่ยงและผู้สูงอายุ ทุกวันอังคารและพฤหัสบดี เวลา 13:00-15:00 น. นำบัตรประชาชนมาด้วย',
+                        date: '2024-06-15',
+                        type: 'ข่าวประชาสัมพันธ์'
+                    },
+                    {
+                        id: 'news14',
+                        title: 'กิจกรรมวันผู้สูงอายุแห่งชาติ',
+                        content: 'จัดกิจกรรมวันผู้สูงอายุแห่งชาติ ตรวจสุขภาพฟรี แจกของรางวัล และจัดกิจกรรมสันทนาการสำหรับผู้สูงอายุ วันที่ 13 เมษายน 2567',
+                        date: '2024-04-10',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news15',
+                        title: 'โครงการส่งเสริมการกินผักผลไม้',
+                        content: 'เปิดโครงการส่งเสริมการกินผักผลไม้ 5 หน่วยต่อวัน จัดนิทรรศการและแจกเมล็ดพันธุ์ผักฟรี เพื่อส่งเสริมสุขภาพที่ดีของประชาชน',
+                        date: '2024-03-22',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news16',
+                        title: 'โครงการตรวจคัดกรองโรคไต',
+                        content: 'เปิดให้บริการตรวจคัดกรองโรคไตฟรีสำหรับผู้ป่วยเบาหวานและความดันโลหิตสูง ตรวจปัสสาวะและเลือด วันที่ 15 มีนาคม 2567',
+                        date: '2024-03-10',
+                        type: 'ข่าวประชาสัมพันธ์'
+                    },
+                    {
+                        id: 'news17',
+                        title: 'กิจกรรมวันสุขภาพแห่งชาติ',
+                        content: 'จัดกิจกรรมวันสุขภาพแห่งชาติ ตรวจสุขภาพฟรี วัดดัชนีมวลกาย ตรวจระดับน้ำตาลและคอเลสเตอรอล พร้อมให้คำแนะนำโภชนาการ',
+                        date: '2024-04-07',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news18',
+                        title: 'อบรมการดูแลสุขภาพช่องปาก',
+                        content: 'จัดอบรมการดูแลสุขภาพช่องปากและฟันสำหรับเด็กและผู้ปกครอง สอนเทคนิคการแปรงฟันที่ถูกต้อง วันเสาร์ที่ 20 เมษายน 2567',
+                        date: '2024-04-15',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news19',
+                        title: 'โครงการรณรงค์ลดเค็ม ลดหวาน ลดมัน',
+                        content: 'เริ่มโครงการรณรงค์ลดเค็ม ลดหวาน ลดมัน ในชุมชน จัดนิทรรศการและแจกเอกสารความรู้ด้านโภชนาการ เพื่อป้องกันโรคไม่ติดต่อเรื้อรัง',
+                        date: '2024-05-12',
+                        type: 'กิจกรรม'
+                    },
+                    {
+                        id: 'news20',
+                        title: 'เปิดบริการตรวจมะเร็งปากมดลูก',
+                        content: 'เปิดให้บริการตรวจคัดกรองมะเร็งปากมดลูกด้วยวิธี Pap smear สำหรับสตรีอายุ 30-60 ปี ฟรี! ทุกวันพฤหัสบดี เวลา 08:30-11:30 น.',
+                        date: '2024-02-28',
+                        type: 'ข่าวประชาสัมพันธ์'
+                    }
+                ]
             }
         };
 
         // Initialize app
         async function initApp() {
-            if (window.dataSdk) {
-                const result = await window.dataSdk.init(dataHandler);
-                if (!result.isOk) {
-                    console.error('Failed to initialize data SDK');
-                } else {
-                    // เพิ่มข้อมูลตัวอย่างเมื่อเริ่มต้น
-                    await initializeSampleData();
-                }
-            }
+            // Initialize data from JSON
+            hospitalData = jsonData.hospitals;
+            newsData = jsonData.news;
 
             if (window.elementSdk) {
                 const defaultConfig = {
@@ -365,14 +478,9 @@
             
             hospitalList.innerHTML = filteredHospitals.map(hospital => `
                 <div class="hospital-card bg-white rounded-lg shadow-md p-6 cursor-pointer transition-all duration-300" onclick="showHospitalDetail(${hospital.id})">
-                    <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                            <span class="text-blue-600 text-xl">🏥</span>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-800 text-lg">${hospital.name}</h3>
-                            <p class="text-blue-600">${hospital.district}</p>
-                        </div>
+                    <div class="mb-4">
+                        <h3 class="font-semibold text-gray-800 text-lg mb-2">${hospital.name}</h3>
+                        <p class="text-blue-600">${hospital.district}</p>
                     </div>
                     <div class="text-right">
                         <span class="text-blue-600 hover:text-blue-800">ดูรายละเอียด →</span>
@@ -417,7 +525,7 @@
 
         // Load hospital data
         function loadHospitalData(hospitalId) {
-            const data = hospitalData.find(item => item.hospital_id === hospitalId.toString());
+            const data = hospitalData[hospitalId.toString()];
             
             // Load about data
             document.getElementById('hospitalHistory').textContent = data?.about_history || 'ยังไม่มีข้อมูล';
@@ -479,7 +587,7 @@
         function loadNews() {
             if (!currentHospital) return;
             
-            const hospitalNews = newsData.filter(item => item.hospital_id === currentHospital.id.toString()).slice(0, 15);
+            const hospitalNews = newsData[currentHospital.id.toString()] || [];
             const newsList = document.getElementById('newsList');
             
             if (hospitalNews.length === 0) {
@@ -488,14 +596,14 @@
             }
             
             newsList.innerHTML = hospitalNews.map(news => `
-                <div class="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors" onclick="showNewsDetail('${news.__backendId}')">
+                <div class="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors" onclick="showNewsDetail('${news.id}')">
                     <div class="flex justify-between items-start">
                         <div class="flex-1">
-                            <h4 class="font-semibold text-gray-800 mb-2">${news.news_title}</h4>
-                            <p class="text-gray-600 text-sm mb-2">${news.news_content.substring(0, 100)}${news.news_content.length > 100 ? '...' : ''}</p>
+                            <h4 class="font-semibold text-gray-800 mb-2">${news.title}</h4>
+                            <p class="text-gray-600 text-sm mb-2">${news.content.substring(0, 100)}${news.content.length > 100 ? '...' : ''}</p>
                             <div class="flex items-center gap-4 text-xs text-gray-500">
-                                <span>📅 ${news.news_date}</span>
-                                <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded">${news.news_type}</span>
+                                <span>📅 ${news.date}</span>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded">${news.type}</span>
                             </div>
                         </div>
                         <span class="text-blue-600 ml-4">→</span>
@@ -506,240 +614,21 @@
 
         // Show news detail
         function showNewsDetail(newsId) {
-            const news = newsData.find(item => item.__backendId === newsId);
+            if (!currentHospital) return;
+            
+            const hospitalNews = newsData[currentHospital.id.toString()] || [];
+            const news = hospitalNews.find(item => item.id === newsId);
             if (!news) return;
             
-            document.getElementById('newsModalTitle').textContent = news.news_title;
-            document.getElementById('newsModalDate').textContent = `📅 ${news.news_date} | ${news.news_type}`;
-            document.getElementById('newsModalContent').innerHTML = news.news_content.replace(/\n/g, '<br>');
+            document.getElementById('newsModalTitle').textContent = news.title;
+            document.getElementById('newsModalDate').textContent = `📅 ${news.date} | ${news.type}`;
+            document.getElementById('newsModalContent').innerHTML = news.content.replace(/\n/g, '<br>');
             document.getElementById('newsModal').classList.remove('hidden');
         }
 
         // Close news modal
         function closeNewsModal() {
             document.getElementById('newsModal').classList.add('hidden');
-        }
-
-        // Edit field
-        function editField(field) {
-            currentEditField = field;
-            const titles = {
-                'history': 'แก้ไขประวัติความเป็นมา',
-                'area': 'แก้ไขเขตรับผิดชอบ',
-                'phone': 'แก้ไขหมายเลขโทรศัพท์',
-                'email': 'แก้ไข Email',
-                'address': 'แก้ไขที่อยู่',
-                'facebook': 'แก้ไข Facebook',
-                'maps': 'แก้ไข Google Maps',
-                'director': 'แก้ไขชื่อผู้อำนวยการ'
-            };
-            
-            const currentData = hospitalData.find(item => item.hospital_id === currentHospital.id.toString());
-            const currentValue = currentData ? currentData[`about_${field}`] || currentData[`${field}_name`] : '';
-            
-            document.getElementById('editModalTitle').textContent = titles[field];
-            document.getElementById('editModalContent').innerHTML = `
-                <textarea id="editInput" class="w-full p-3 border border-gray-300 rounded-lg resize-none" rows="4" placeholder="กรอกข้อมูล...">${currentValue}</textarea>
-            `;
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        // Edit group
-        function editGroup(groupNumber) {
-            currentEditGroup = groupNumber;
-            const currentData = hospitalData.find(item => item.hospital_id === currentHospital.id.toString());
-            const currentName = currentData ? currentData[`group${groupNumber}_name`] : '';
-            const currentStaff = currentData ? currentData[`group${groupNumber}_staff`] : '';
-            
-            document.getElementById('editModalTitle').textContent = `แก้ไขกลุ่มงานที่ ${groupNumber}`;
-            document.getElementById('editModalContent').innerHTML = `
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อกลุ่มงาน</label>
-                        <input type="text" id="groupNameInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="ชื่อกลุ่มงาน" value="${currentName}">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">รายชื่อบุคลากร</label>
-                        <textarea id="groupStaffInput" class="w-full p-3 border border-gray-300 rounded-lg resize-none" rows="4" placeholder="รายชื่อบุคลากร (แยกด้วยเครื่องหมายจุลภาค)">${currentStaff}</textarea>
-                    </div>
-                </div>
-            `;
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        // Edit hospital image
-        function editHospitalImage() {
-            currentEditField = 'image';
-            const currentData = hospitalData.find(item => item.hospital_id === currentHospital.id.toString());
-            const currentValue = currentData ? currentData.about_image : '';
-            
-            document.getElementById('editModalTitle').textContent = 'แก้ไขรูปภาพโรงพยาบาล';
-            document.getElementById('editModalContent').innerHTML = `
-                <div class="space-y-4">
-                    <label class="block text-sm font-medium text-gray-700">URL รูปภาพ</label>
-                    <input type="url" id="editInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="https://example.com/image.jpg" value="${currentValue}">
-                    <p class="text-sm text-gray-500">กรุณาใส่ URL ของรูปภาพที่ต้องการแสดง</p>
-                </div>
-            `;
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        // Edit schedule
-        function editSchedule() {
-            currentEditField = 'schedule';
-            const currentData = hospitalData.find(item => item.hospital_id === currentHospital.id.toString());
-            const currentValue = currentData ? currentData.schedule_content : '';
-            
-            document.getElementById('editModalTitle').textContent = 'แก้ไขตารางปฏิบัติงาน';
-            document.getElementById('editModalContent').innerHTML = `
-                <div class="space-y-4">
-                    <label class="block text-sm font-medium text-gray-700">เนื้อหาตาราง</label>
-                    <textarea id="editInput" class="w-full p-3 border border-gray-300 rounded-lg resize-none" rows="6" placeholder="สามารถใส่ข้อความหรือ HTML ได้">${currentValue}</textarea>
-                    <p class="text-sm text-gray-500">สามารถใส่ข้อความธรรมดาหรือ HTML สำหรับตารางได้</p>
-                </div>
-            `;
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        // Add news
-        function addNews() {
-            if (newsData.filter(item => item.hospital_id === currentHospital.id.toString()).length >= 15) {
-                showToast('ไม่สามารถเพิ่มข่าวได้ เนื่องจากมีข่าวครบ 15 รายการแล้ว', 'error');
-                return;
-            }
-
-            document.getElementById('editModalTitle').textContent = 'เพิ่มข่าวประชาสัมพันธ์/กิจกรรม';
-            document.getElementById('editModalContent').innerHTML = `
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">หัวข้อข่าว</label>
-                        <input type="text" id="newsTitle" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="หัวข้อข่าว">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">ประเภท</label>
-                        <select id="newsType" class="w-full p-3 border border-gray-300 rounded-lg">
-                            <option value="ข่าวประชาสัมพันธ์">ข่าวประชาสัมพันธ์</option>
-                            <option value="กิจกรรม">กิจกรรม</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">วันที่</label>
-                        <input type="date" id="newsDate" class="w-full p-3 border border-gray-300 rounded-lg" value="${new Date().toISOString().split('T')[0]}">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">เนื้อหา</label>
-                        <textarea id="newsContent" class="w-full p-3 border border-gray-300 rounded-lg resize-none" rows="6" placeholder="เนื้อหาข่าว"></textarea>
-                    </div>
-                </div>
-            `;
-            currentEditField = 'addNews';
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        // Save edit
-        async function saveEdit() {
-            if (!currentHospital) return;
-
-            const hospitalId = currentHospital.id.toString();
-            let existingData = hospitalData.find(item => item.hospital_id === hospitalId);
-
-            if (currentEditField === 'addNews') {
-                const title = document.getElementById('newsTitle').value.trim();
-                const content = document.getElementById('newsContent').value.trim();
-                const date = document.getElementById('newsDate').value;
-                const type = document.getElementById('newsType').value;
-
-                if (!title || !content) {
-                    showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
-                    return;
-                }
-
-                const newsItem = {
-                    hospital_id: hospitalId,
-                    news_title: title,
-                    news_content: content,
-                    news_date: date,
-                    news_type: type
-                };
-
-                const result = await window.dataSdk.create(newsItem);
-                if (result.isOk) {
-                    showToast('เพิ่มข่าวสำเร็จ', 'success');
-                    closeEditModal();
-                } else {
-                    showToast('เกิดข้อผิดพลาดในการเพิ่มข่าว', 'error');
-                }
-                return;
-            }
-
-            const inputValue = document.getElementById('editInput').value.trim();
-
-            if (currentEditGroup) {
-                const groupName = document.getElementById('groupNameInput').value.trim();
-                const groupStaff = document.getElementById('groupStaffInput').value.trim();
-
-                const updateData = {
-                    [`group${currentEditGroup}_name`]: groupName,
-                    [`group${currentEditGroup}_staff`]: groupStaff
-                };
-
-                if (existingData) {
-                    Object.assign(existingData, updateData);
-                    const result = await window.dataSdk.update(existingData);
-                    if (result.isOk) {
-                        showToast('บันทึกข้อมูลสำเร็จ', 'success');
-                    } else {
-                        showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
-                    }
-                } else {
-                    const newData = {
-                        hospital_id: hospitalId,
-                        ...updateData
-                    };
-                    const result = await window.dataSdk.create(newData);
-                    if (result.isOk) {
-                        showToast('บันทึกข้อมูลสำเร็จ', 'success');
-                    } else {
-                        showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
-                    }
-                }
-            } else {
-                let fieldName;
-                if (currentEditField === 'director') {
-                    fieldName = 'director_name';
-                } else if (currentEditField === 'image') {
-                    fieldName = 'about_image';
-                } else if (currentEditField === 'schedule') {
-                    fieldName = 'schedule_content';
-                } else {
-                    fieldName = `about_${currentEditField}`;
-                }
-
-                if (existingData) {
-                    existingData[fieldName] = inputValue;
-                    const result = await window.dataSdk.update(existingData);
-                    if (result.isOk) {
-                        showToast('บันทึกข้อมูลสำเร็จ', 'success');
-                    } else {
-                        showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
-                    }
-                } else {
-                    const newData = {
-                        hospital_id: hospitalId,
-                        [fieldName]: inputValue
-                    };
-                    const result = await window.dataSdk.create(newData);
-                    if (result.isOk) {
-                        showToast('บันทึกข้อมูลสำเร็จ', 'success');
-                    } else {
-                        showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
-                    }
-                }
-            }
-
-            closeEditModal();
-            currentEditField = null;
-            currentEditGroup = null;
         }
 
         // Close edit modal
@@ -756,206 +645,10 @@
             currentHospital = null;
         }
 
-        // Show toast message
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
 
-        // Initialize sample data
-        async function initializeSampleData() {
-            // ตรวจสอบว่ามีข้อมูลอยู่แล้วหรือไม่
-            if (hospitalData.length > 0 || newsData.length > 0) {
-                return; // มีข้อมูลแล้ว ไม่ต้องเพิ่ม
-            }
-
-            // ข้อมูลตัวอย่างโรงพยาบาล
-            const sampleHospitalData = [
-                {
-                    hospital_id: '1',
-                    about_history: 'โรงพยาบาลส่งเสริมสุขภาพตำบลพระประโทน ก่อตั้งขึ้นเมื่อปี พ.ศ. 2540 เพื่อให้บริการสุขภาพแก่ประชาชนในพื้นที่ตำบลพระประโทน มีการพัฒนาอย่างต่อเนื่องเพื่อยกระดับคุณภาพการบริการ',
-                    about_area: 'ตำบลพระประโทน หมู่ที่ 1-8 จำนวนประชากร 12,500 คน',
-                    about_phone: '034-123456',
-                    about_email: 'phrapratone.hc@nakhonpathom.go.th',
-                    about_address: '123 หมู่ 1 ตำบลพระประโทน อำเภอเมืองนครปฐม จังหวัดนครปฐม 73000',
-                    about_facebook: 'facebook.com/phrapratone.hc',
-                    about_maps: 'https://maps.google.com/phrapratone',
-                    director_name: 'นายสมชาย ใจดี',
-                    group1_name: 'กลุ่มงานบริการปฐมภูมิ',
-                    group1_staff: 'นางสาวมาลี สุขใส, นายสมศักดิ์ เก่งกาจ, นางวิไล ขยันดี',
-                    group2_name: 'กลุ่มงานส่งเสริมป้องกัน',
-                    group2_staff: 'นายประยุทธ์ รักสุขภาพ, นางสาวสุดา ใส่ใจ, นายวิชัย ห่วงใย',
-                    group3_name: 'กลุ่มงานบริหารทั่วไป',
-                    group3_staff: 'นางสมหญิง จัดการดี, นายอนุชา คิดเก่ง, นางสาวปิยะ ทำงานดี',
-                    schedule_content: '<div class="bg-blue-50 p-4 rounded-lg"><h4 class="font-bold mb-2">เวลาทำการ</h4><p>จันทร์-ศุกร์: 08:30-16:30 น.</p><p>เสาร์: 08:30-12:00 น.</p><p>วันหยุดราชการ: ปิดทำการ</p></div>'
-                }
-            ];
-
-            // ข้อมูลตัวอย่างข่าวประชาสัมพันธ์
-            const sampleNewsData = [
-                {
-                    hospital_id: '1',
-                    news_title: 'โครงการฉีดวัคซีนไข้หวัดใหญ่ประจำปี 2567',
-                    news_content: 'ขอเชิญประชาชนในพื้นที่มาร่วมโครงการฉีดวัคซีนไข้หวัดใหญ่ฟรี สำหรับผู้สูงอายุ 65 ปีขึ้นไป และกลุ่มเสี่ยง ระหว่างวันที่ 15-30 พฤศจิกายน 2567 ณ โรงพยาบาลส่งเสริมสุขภาพตำบลพระประโทน',
-                    news_date: '2024-11-01',
-                    news_type: 'ข่าวประชาสัมพันธ์'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'กิจกรรมตรวจสุขภาพประจำเดือน',
-                    news_content: 'กิจกรรมตรวจสุขภาพฟรีสำหรับประชาชนทุกวันพุธแรกของเดือน ตรวจวัดความดันโลหิต น้ำตาลในเลือด และให้คำแนะนำด้านสุขภาพ เวลา 08:00-11:00 น.',
-                    news_date: '2024-10-15',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'อบรมการดูแลผู้ป่วยเบาหวานที่บ้าน',
-                    news_content: 'จัดอบรมให้ความรู้เรื่องการดูแลผู้ป่วยเบาหวานที่บ้าน สำหรับญาติผู้ป่วยและผู้สนใจ วันเสาร์ที่ 25 พฤศจิกายน 2567 เวลา 09:00-12:00 น. ลงทะเบียนล่วงหน้า',
-                    news_date: '2024-11-10',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'ประกาศปิดปรับปรุงระบบน้ำประปา',
-                    news_content: 'ขอแจ้งให้ทราบว่าจะมีการปิดน้ำประปาเพื่อปรับปรุงระบบ ในวันที่ 20 พฤศจิกายน 2567 เวลา 08:00-16:00 น. ขออภัยในความไม่สะดวก',
-                    news_date: '2024-11-18',
-                    news_type: 'ข่าวประชาสัมพันธ์'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'โครงการหมอครอบครัวเยี่ยมบ้าน',
-                    news_content: 'เริ่มโครงการหมอครอบครัวเยี่ยมบ้านสำหรับผู้ป่วยติดเตียงและผู้สูงอายุที่เดินทางมาโรงพยาบาลไม่ได้ ติดต่อนัดหมายล่วงหน้า 3 วัน',
-                    news_date: '2024-10-28',
-                    news_type: 'ข่าวประชาสัมพันธ์'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'กิจกรรมวันงดสูบบุหรี่โลก',
-                    news_content: 'ร่วมกิจกรรมรณรงค์งดสูบบุหรี่ในวันงดสูบบุหรี่โลก พร้อมให้คำปรึกษาการเลิกบุหรี่ฟรี และตรวจสุขภาพปอด วันที่ 31 พฤษภาคม 2567',
-                    news_date: '2024-05-25',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'เปิดบริการตรวจคัดกรองมะเร็งเต้านม',
-                    news_content: 'เปิดให้บริการตรวจคัดกรองมะเร็งเต้านมสำหรับสตรีอายุ 40-69 ปี ฟรี! ทุกวันจันทร์และพุธ เวลา 08:30-11:30 น. โทรนัดหมายล่วงหน้า',
-                    news_date: '2024-09-15',
-                    news_type: 'ข่าวประชาสัมพันธ์'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'อบรมการปฐมพยาบาลเบื้องต้น',
-                    news_content: 'จัดอบรมการปฐมพยาบาลเบื้องต้นสำหรับประชาชนทั่วไป สอนการช่วยเหลือผู้ป่วยฉุกเฉิน การทำ CPR วันเสาร์ที่ 7 ธันวาคม 2567 เวลา 08:00-16:00 น.',
-                    news_date: '2024-11-25',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'โครงการตรวจสุขภาพนักเรียน',
-                    news_content: 'ดำเนินโครงการตรวจสุขภาพนักเรียนประจำปีการศึกษา 2567 ในโรงเรียนต่างๆ ในพื้นที่รับผิดชอบ ตรวจสุขภาพทั่วไป วัดส่วนสูง น้ำหนัก และตรวจสายตา',
-                    news_date: '2024-08-20',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'ประกาศเปลี่ยนแปลงเวลาทำการ',
-                    news_content: 'ขอแจ้งเปลี่ยนแปลงเวลาทำการในช่วงเทศกาลปีใหม่ วันที่ 29-31 ธันวาคม 2567 เปิดบริการ 08:30-15:00 น. และวันที่ 1 มกราคม 2568 ปิดทำการ',
-                    news_date: '2024-12-20',
-                    news_type: 'ข่าวประชาสัมพันธ์'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'กิจกรรมวันสุขภาพจิตโลก',
-                    news_content: 'จัดกิจกรรมรณรงค์วันสุขภาพจิตโลก ให้คำปรึกษาด้านสุขภาพจิต การจัดการความเครียด และแจกเอกสารความรู้ วันที่ 10 ตุลาคม 2567',
-                    news_date: '2024-10-08',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'โครงการรณรงค์ป้องกันไข้เลือดออก',
-                    news_content: 'เริ่มโครงการรณรงค์ป้องกันไข้เลือดออกในชุมชน ออกหน่วยพ่นหมอกควันกำจัดยุงลาย และให้ความรู้การป้องกันแก่ประชาชน',
-                    news_date: '2024-07-10',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'เปิดบริการฉีดวัคซีนโควิด-19 เข็มเสริม',
-                    news_content: 'เปิดให้บริการฉีดวัคซีนโควิด-19 เข็มเสริมสำหรับกลุ่มเสี่ยงและผู้สูงอายุ ทุกวันอังคารและพฤหัสบดี เวลา 13:00-15:00 น. นำบัตรประชาชนมาด้วย',
-                    news_date: '2024-06-15',
-                    news_type: 'ข่าวประชาสัมพันธ์'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'กิจกรรมวันผู้สูงอายุแห่งชาติ',
-                    news_content: 'จัดกิจกรรมวันผู้สูงอายุแห่งชาติ ตรวจสุขภาพฟรี แจกของรางวัล และจัดกิจกรรมสันทนาการสำหรับผู้สูงอายุ วันที่ 13 เมษายน 2567',
-                    news_date: '2024-04-10',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'โครงการส่งเสริมการกินผักผลไม้',
-                    news_content: 'เปิดโครงการส่งเสริมการกินผักผลไม้ 5 หน่วยต่อวัน จัดนิทรรศการและแจกเมล็ดพันธุ์ผักฟรี เพื่อส่งเสริมสุขภาพที่ดีของประชาชน',
-                    news_date: '2024-03-22',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'โครงการตรวจคัดกรองโรคไต',
-                    news_content: 'เปิดให้บริการตรวจคัดกรองโรคไตฟรีสำหรับผู้ป่วยเบาหวานและความดันโลหิตสูง ตรวจปัสสาวะและเลือด วันที่ 15 มีนาคม 2567',
-                    news_date: '2024-03-10',
-                    news_type: 'ข่าวประชาสัมพันธ์'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'กิจกรรมวันสุขภาพแห่งชาติ',
-                    news_content: 'จัดกิจกรรมวันสุขภาพแห่งชาติ ตรวจสุขภาพฟรี วัดดัชนีมวลกาย ตรวจระดับน้ำตาลและคอเลสเตอรอล พร้อมให้คำแนะนำโภชนาการ',
-                    news_date: '2024-04-07',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'อบรมการดูแลสุขภาพช่องปาก',
-                    news_content: 'จัดอบรมการดูแลสุขภาพช่องปากและฟันสำหรับเด็กและผู้ปกครอง สอนเทคนิคการแปรงฟันที่ถูกต้อง วันเสาร์ที่ 20 เมษายน 2567',
-                    news_date: '2024-04-15',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'โครงการรณรงค์ลดเค็ม ลดหวาน ลดมัน',
-                    news_content: 'เริ่มโครงการรณรงค์ลดเค็ม ลดหวาน ลดมัน ในชุมชน จัดนิทรรศการและแจกเอกสารความรู้ด้านโภชนาการ เพื่อป้องกันโรคไม่ติดต่อเรื้อรัง',
-                    news_date: '2024-05-12',
-                    news_type: 'กิจกรรม'
-                },
-                {
-                    hospital_id: '1',
-                    news_title: 'เปิดบริการตรวจมะเร็งปากมดลูก',
-                    news_content: 'เปิดให้บริการตรวจคัดกรองมะเร็งปากมดลูกด้วยวิธี Pap smear สำหรับสตรีอายุ 30-60 ปี ฟรี! ทุกวันพฤหัสบดี เวลา 08:30-11:30 น.',
-                    news_date: '2024-02-28',
-                    news_type: 'ข่าวประชาสัมพันธ์'
-                }
-            ];
-
-            // เพิ่มข้อมูลตัวอย่าง
-            try {
-                for (const data of sampleHospitalData) {
-                    await window.dataSdk.create(data);
-                }
-                for (const news of sampleNewsData) {
-                    await window.dataSdk.create(news);
-                }
-            } catch (error) {
-                console.log('Sample data may already exist');
-            }
-        }
 
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9962cc99b52a2035',t:'MTc2MTc0MjIzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9962d95185fc6141',t:'MTc2MTc0Mjc1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
