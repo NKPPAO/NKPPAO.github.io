@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="th">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>โรงพยาบาลส่งเสริมสุขภาพตำบล อบจ.นครปฐม</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+        }
+        .hospital-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="bg-gradient-to-br from-blue-50 to-sky-100 min-h-full">
+  <div id="app" class="min-h-full"><!-- Main Page -->
+   <div id="mainPage" class="container mx-auto px-4 py-8"><!-- Header -->
+    <header class="text-center mb-8">
+     <h1 id="mainTitle" class="text-4xl font-bold text-blue-800 mb-2">โรงพยาบาลส่งเสริมสุขภาพตำบล อบจ.นครปฐม</h1>
+     <!--<p id="subtitle" class="text-lg text-blue-600">ระบบจัดการข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบล</p>-->
+    </header><!-- District Filter -->
+    <div class="mb-6">
+     <div class="flex flex-wrap gap-2 justify-center"><button onclick="filterByDistrict('all')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" id="filter-all">ทั้งหมด</button> <button onclick="filterByDistrict('เมืองนครปฐม')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">เมืองนครปฐม</button> <button onclick="filterByDistrict('สามพราน')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">สามพราน</button> <button onclick="filterByDistrict('กำแพงแสน')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">กำแพงแสน</button> <button onclick="filterByDistrict('นครชัยศรี')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">นครชัยศรี</button> <button onclick="filterByDistrict('บางเลน')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">บางเลน</button> <button onclick="filterByDistrict('พุทธมณฑล')" class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">พุทธมณฑล</button>
+     </div>
+    </div><!-- Hospital List -->
+    <div id="hospitalList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><!-- Hospital cards will be generated here -->
+    </div>
+   </div><!-- Hospital Detail Page -->
+   <div id="detailPage" class="hidden"><!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-sky-600 text-white p-6">
+     <div class="container mx-auto"><button onclick="goBack()" class="mb-4 px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors"> ← กลับ </button>
+      <h1 id="hospitalName" class="text-3xl font-bold mb-2"></h1>
+      <p id="hospitalDistrict" class="text-blue-100"></p>
+     </div>
+    </div><!-- Tabs -->
+    <div class="bg-white shadow-sm">
+     <div class="container mx-auto">
+      <div class="flex overflow-x-auto"><button onclick="showTab('about')" class="tab-btn px-6 py-4 font-medium whitespace-nowrap tab-active" data-tab="about">เกี่ยวกับ</button> <button onclick="showTab('staff')" class="tab-btn px-6 py-4 font-medium whitespace-nowrap text-gray-600 hover:text-blue-600" data-tab="staff">โครงสร้างบุคลากร</button> <button onclick="showTab('schedule')" class="tab-btn px-6 py-4 font-medium whitespace-nowrap text-gray-600 hover:text-blue-600" data-tab="schedule">ตารางปฏิบัติงาน</button> <button onclick="showTab('news')" class="tab-btn px-6 py-4 font-medium whitespace-nowrap text-gray-600 hover:text-blue-600" data-tab="news">ข่าวประชาสัมพันธ์</button>
+      </div>
+     </div>
+    </div><!-- Tab Content -->
+    <div class="container mx-auto px-4 py-8"><!-- About Tab -->
+     <div id="aboutTab" class="tab-content">
+      <div class="bg-white rounded-lg shadow-md p-6">
+       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div>
+         <div id="hospitalImage" class="w-full h-full bg-gray-200 rounded-lg mb-4 flex items-center justify-center"><span class="text-gray-500">รูปภาพโรงพยาบาล</span>
+         </div>
+        </div>
+        <div class="space-y-4">
+         <div>
+          <h3 class="font-semibold text-gray-800 mb-2">ประวัติความเป็นมา</h3>
+          <div id="hospitalHistory" class="text-gray-600 bg-gray-50 p-3 rounded">
+           ยังไม่มีข้อมูล
+          </div>
+         </div>
+         <div>
+          <h3 class="font-semibold text-gray-800 mb-2">เขตรับผิดชอบ</h3>
+          <div id="hospitalArea" class="text-gray-600 bg-gray-50 p-3 rounded">
+           ยังไม่มีข้อมูล
+          </div>
+         </div>
+         <div>
+          <h3 class="font-semibold text-gray-800 mb-2">ข้อมูลติดต่อ</h3>
+          <div class="space-y-2">
+           <div class="flex items-center gap-2"><span class="font-medium">โทรศัพท์:</span> <span id="hospitalPhone" class="text-gray-600">ยังไม่มีข้อมูล</span>
+           </div>
+           <div class="flex items-center gap-2"><span class="font-medium">Email:</span> <span id="hospitalEmail" class="text-gray-600">ยังไม่มีข้อมูล</span>
+           </div>
+           <div class="flex items-center gap-2"><span class="font-medium">ที่อยู่:</span> <span id="hospitalAddress" class="text-gray-600">ยังไม่มีข้อมูล</span>
+           </div>
+           <div class="flex items-center gap-2"><span class="font-medium">Facebook:</span> <span id="hospitalFacebook" class="text-gray-600">ยังไม่มีข้อมูล</span>
+           </div>
+           <div class="flex items-center gap-2"><span class="font-medium">Google Maps:</span> <span id="hospitalMaps" class="text-gray-600">ยังไม่มีข้อมูล</span>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Staff Tab -->
+     <div id="staffTab" class="tab-content hidden">
+      <div class="bg-white rounded-lg shadow-md p-6">
+       <h2 class="text-2xl font-bold text-center mb-8 text-blue-800">โครงสร้างบุคลากร</h2><!-- Director -->
+       <div class="text-center mb-12">
+        <div class="inline-block p-6">
+         <div id="directorImageContainer" class="w-32 h-40 bg-gray-300 mx-auto mb-4 overflow-hidden border border-gray-300">
+            <img id="directorImage" src="" alt="ผู้อำนวยการ" class="w-full h-full object-cover" 
+onerror="this.src='https://via.placeholder.com/150x200?text=No+Image';">
+          <div class="w-full h-full bg-blue-600 flex items-center justify-center text-white text-3xl" style="display: none;">
+           👨‍⚕️
+          </div>
+         </div>
+         <h3 id="directorName" class="font-bold text-blue-800 text-lg mb-2">ยังไม่มีข้อมูล</h3>
+         <div id="directorPosition" class="text-gray-600 text-sm">
+          ตำแหน่ง
+         </div>
+        </div>
+       </div><!-- Staff Groups -->
+       <div id="staffGroups" class="space-y-8"><!-- Groups will be rendered here -->
+       </div>
+      </div>
+     </div><!-- Schedule Tab -->
+     <div id="scheduleTab" class="tab-content hidden">
+      <div class="bg-white rounded-lg shadow-md p-6">
+       <div class="mb-6">
+        <h2 class="text-2xl font-bold text-blue-800">ตารางปฏิบัติงาน</h2>
+       </div>
+       <div id="scheduleContent" class="bg-gray-50 p-6 rounded-lg min-h-64 flex items-center justify-center text-gray-500">
+        ยังไม่มีตารางปฏิบัติงาน
+       </div>
+      </div>
+     </div><!-- News Tab -->
+     <div id="newsTab" class="tab-content hidden">
+      <div class="bg-white rounded-lg shadow-md p-6">
+       <div class="mb-6">
+        <h2 class="text-2xl font-bold text-blue-800">ข่าวประชาสัมพันธ์/กิจกรรม</h2>
+       </div>
+       <div id="newsList" class="space-y-4"><!-- News items will be loaded here -->
+       </div>
+      </div>
+     </div>
+
+    </div>
+   </div><!-- News Detail Modal -->
+   <div id="newsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+     <div class="p-6">
+      <div class="flex justify-between items-center mb-4">
+       <h3 id="newsModalTitle" class="text-xl font-bold text-blue-800"></h3><button onclick="closeNewsModal()" class="text-gray-500 hover:text-gray-700">✕</button>
+      </div>
+      <div id="newsModalDate" class="text-sm text-gray-500 mb-4"></div>
+      <div id="newsModalContent" class="text-gray-700"></div>
+     </div>
+    </div>
+   </div><!-- Edit Modal -->
+   <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-md w-full mx-4">
+     <div class="p-6">
+      <h3 id="editModalTitle" class="text-xl font-bold text-blue-800 mb-4"></h3>
+      <div id="editModalContent"></div>
+      <div class="flex gap-2 mt-6"><button onclick="saveEdit()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"> บันทึก </button> <button onclick="closeEditModal()" class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"> ยกเลิก </button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        // Hospital data
+        const hospitals = [
+            {id: 1, district: 'เมืองนครปฐม', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลพระประโทน'},
+            {id: 2, district: 'เมืองนครปฐม', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลทัพหลวง'},
+            {id: 3, district: 'เมืองนครปฐม', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านยาง'},
+            {id: 4, district: 'สามพราน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบางกระทึก'},
+            {id: 5, district: 'สามพราน', name: 'โรงพยาบaลส่งเสริมสุขภาพตำบลบ้านสวนผัก'},
+            {id: 6, district: 'สามพราน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านสามพราน'},
+            {id: 7, district: 'สามพราน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านคลองจินดา'},
+            {id: 8, district: 'สามพราน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลคลองจินดา'},
+            {id: 9, district: 'สามพราน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบางเตย'},
+            {id: 10, district: 'กำแพงแสน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านหนองเขมร'},
+            {id: 11, district: 'กำแพงแสน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลห้วยหมอนทอง'},
+            {id: 12, district: 'กำแพงแสน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลทุ่งขวาง'},
+            {id: 13, district: 'กำแพงแสน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านสระพัง'},
+            {id: 14, district: 'กำแพงแสน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านหนองพงกลาง'},
+            {id: 15, district: 'กำแพงแสน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านหนองกร่าง'},
+            {id: 16, district: 'กำแพงแสน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลวังน้ำเขียว'},
+            {id: 17, district: 'นครชัยศรี', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลท่าพระยา'},
+            {id: 18, district: 'นครชัยศรี', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านลานแหลม'},
+            {id: 19, district: 'นครชัยศรี', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบางแก้ว'},
+            {id: 20, district: 'นครชัยศรี', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลวัดไทยาวาส'},
+            {id: 21, district: 'นครชัยศรี', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลโคกพระเจดีย์'},
+            {id: 22, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลไผ่หูช้าง'},
+            {id: 23, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบางระกำ'},
+            {id: 24, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านนราภิรมย์'},
+            {id: 25, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านคลองห่อ'},
+            {id: 26, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลหัวทรายลาว'},
+            {id: 27, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านเกาะแรด'},
+            {id: 28, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบางภาษี'},
+            {id: 29, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบัวปากท่า'},
+            {id: 30, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลไทรงาม'},
+            {id: 31, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลลำพญา'},
+            {id: 32, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบางเลน'},
+            {id: 33, district: 'บางเลน', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบางหลวง'},
+            {id: 34, district: 'พุทธมณฑล', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลวัดสุวรรณ'},
+            {id: 35, district: 'พุทธมณฑล', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านศาลาวัน'},
+            {id: 36, district: 'พุทธมณฑล', name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลมหาสวัสดิ์'}
+        ];
+
+        // Global variables
+        let currentHospital = null;
+        let currentEditField = null;
+        let currentEditGroup = null;
+        let hospitalData = {};
+        let newsData = {};
+
+        // JSON Data Storage
+        const jsonData = {
+            hospitals: {
+                '1': {
+                    about_history: 'โรงพยาบาลส่งเสริมสุขภาพตำบลตำบลพระประโทน อำเภอเมือง  จังหวัดนครปฐม  ตั้งอยู่บ้านเลขที่ 179 หมู่ที่ 3 ตำบลพระประโทน เริ่มก่อสร้างเมื่อปี พ.ศ.2529 โดยแต่ก่อน พื้นที่โรงพยาบาลส่งเสริมสุขภาพตำบล เต็มไปด้วยต้นไม้  ถนนไปโรงพยาบาลชุมชนเป็นลูกรัง การคมนาคมไม่สะดวก   ผู้ใหญ่ หมูที่ 3 ตำบลพระประโทน ในสมัยนั้น นายมุ่ย จึงได้ให้พื้นที่ดิน จำนวน 1 ไร่ก่อสร้างเป็นสถานีอนามัยตำบลตำบลพระประโทน  จนถึงปัจจุบัน  และได้สร้างสถานีอนามัยพร้อมบ้านพัก จำนวน 2 หลัง ต่อมาใน พ.ศ. 2553  สถานีอนามัยได้รับการก่อสร้างอาคารหลังใหม่ แบบแปลนที่ 8170/36 จากกระทรวงสาธารณสุข และปัจจุบันสถานีอนามัยตำบลพระประโทน  ได้เปลี่ยนชื่อเป็นโรงพยาบาลส่งเสริมสุขภาพตำบลตำบลพระประโทน ในปี 2554',
+                    about_area: 'พื้นที่ตำบลพระประโทนนอกเขตเทศบาลเขตอบตพระประโทน หมู่ที่ 2บ้านหนองบอนงาม หมู่ที่ 3 บ้านสวนทวย หมู่ที่ 5 บ้านหนองอาเสี่ย หมู่ที่ 7บ้านบ่อโตนด หมู่ที่ 8 พระประโทน หมู่ที่ 9 ตรอกวัง',
+                    about_phone: '034-900262',
+                    about_email: 'prapathon3@gmail.com',
+                    about_address: '179 หมู่ที่ 3 ตำบลพระประโทน อำเภอเมือง จังหวัดนครปฐม',
+                    about_facebook: 'รพ.สต.พระประโทน',
+                    about_maps: 'https://maps.app.goo.gl/NYZZfRZnfHy1EZLp9',
+                    about_image: 'https://healthserv.net/imghosp/hsp1z204601e250328102950.webp',
+                    director: {
+                        name: "นางสาวสุพินยา ล้ำเลิศ",
+                        position: "พยาบาลวิชาชีพชำนาญการ (รักษาการในตำแหน่งผู้อำนวยการ)",
+                        image: "https://lh3.googleusercontent.com/d/1-EqxZF0CPGl3g9vA5sZPaLd1um0NccFf"
+                    },
+                    groups: [
+                        {
+                            name: "กลุ่มงานเวชปฏิบัติครอบครัว",
+                            staff: [
+                                {
+                                    name: "นางสาวสุพินยา ล้ำเลิศ",
+                                    position: "พยาบาลวิชาชีพชำนาญการ",
+                                    image: "https://lh3.googleusercontent.com/d/1-EqxZF0CPGl3g9vA5sZPaLd1um0NccFf"
+                                },
+                                {
+                                    name: "นายบรรเทา โตหริ่ม",
+                                    position: "เจ้าพนักงานสาธารณสุขอาวุโส",
+                                    image: "https://lh3.googleusercontent.com/d/1FLathZCbqwIC6wApjVAAJUO7WRASK5lJ"
+                                },
+                                {
+                                    name: "นางสาวปภัศรา อินทร์อุดม",
+                                    position: "พยาบาลวิชาชีพปฏิบัติการ",
+                                    image: "https://lh3.googleusercontent.com/d/1jTfXGfDugMGa_tzmBYNI1xI3C548aniv"
+                                },
+                                {
+                                    name: "นางสาวอณัญญา จันทร์แพง",
+                                    position: "พยาบาลวิชาชีพปฏิบัติการ",
+                                    image: "https://lh3.googleusercontent.com/d/1aAL7fpdjeqYBQzXBOGsScm9caUWVsBjQ"
+                                },
+                                {
+                                    name: "นางสาวอัยย์ญาดา วีรไตรกรสกุล",
+                                    position: "แพทย์แผนไทยปฏิบัติการ",
+                                    image: "https://lh3.googleusercontent.com/d/1WZKUhENpIzPTG5IidVgkQ_a1DuKzquei"
+                                }
+                            ]
+                        },
+                        {
+                            name: "กลุ่มงานส่งเสริมป้องกันควบคุมโรค",
+                            staff: [
+                                {
+                                    name: "นางสาวจริยา เกษรเงิน",
+                                    position: "เจ้าพนักงานสาธารณสุข",
+                                    image: "https://lh3.googleusercontent.com/d/1ZyCkYMM4a590P8gHEsRiTxAgtyY3Dxrz"
+                                },
+                                {
+                                    name: "นางสาวเสาวลักษณ์ ห้วยหงษ์ทอง",
+                                    position: "นักวิชาการสาธารณสุข",
+                                    image: "https://lh3.googleusercontent.com/d/1k36OEYZaEC_mPphBuuTT3fIM3n7WmEEh"
+                                }
+                            ]
+                        },
+                        {
+                            name: "กลุ่มงานบริหารสาธารณสุข",
+                            staff: [
+                                {
+                                    name: "นายอรุณ ลามู",
+                                    position: "นักวิชาการสาธารณสุขปฏิบัติการ",
+                                    image: "https://lh3.googleusercontent.com/d/15xA4KiQx8XLVUsfRH1bn5Sez6rb0r4Ln"
+                                },
+                                {
+                                    name: "นางสาวเรณู สุขกุมภาพันธ์",
+                                    position: "เจ้าพนักงานธุรการชำนาญงาน",
+                                    image: "https://lh3.googleusercontent.com/d/1iIHngKHow-ptDfNfEH3a5FpS9qUVMlmR"
+                                }
+                            ]
+                        }
+                    ],
+                    schedule_content: '<div class="bg-blue-50 p-4 rounded-lg"><h4 class="font-bold mb-2">เปิดบริการรักษาพยาบาลนอกเวลาราชการและวันหยุดนักขัตฤกษ์</h4><p>จันทร์-ศุกร์ ช่วงเช้า เวลา 07.30 น.- 08.30 น ช่วงเย็น เวลา 16.30 น. – 17.30 น.</p><p>เสาร์-อาทิตย์และวันหยุดนักขัตฤกษ์ เวลา 08.30 น – 16.30 น.</p><p>ทุกวันที่ 10 ของเดือน ฉีดวัคซีนสร้างเสริมภูมิคุ้มกันโรค</p></div>'
+                }
+            },
+            news: {
+                '1': [
+                    {
+                    id: 'news1',
+                    title: 'ร่วมพิธีบำเพ็ญกุศล สวดพระอภิธรรม ฯ ณ ศาลากองอำนวยการ วัดพระปฐมเจดีย์',
+                    content: 'ร่วมพิธีบำเพ็ญกุศล สวดพระอภิธรรม ฯ ณ ศาลากองอำนวยการ วัดพระปฐมเจดีย์',
+                    date: '2025-11-05',
+                    type: 'กิจกรรม',
+                    image: 'https://lh3.googleusercontent.com/d/1G8BPjXK8f0yUo8ziZxUWdAxpbNZus5XU'
+                    },
+                    {
+                    id: 'news2',
+                    title: 'สำรวจภาวะสุขภาพและระบบบริการสุขภาพผู้สูงอายุ',
+                    content: 'สำรวจภาวะสุขภาพและระบบบริการสุขภาพผู้สูงอายุ',
+                    date: '2025-11-06',
+                    type: 'กิจกรรม',
+                    image: 'https://lh3.googleusercontent.com/d/15gnOJbNFHrH_rw7UggUt_he7eQOY83jj'
+                    }
+                ]
+                }
+
+        };
+
+        // Initialize app
+        async function initApp() {
+            // Initialize data from JSON
+            hospitalData = jsonData.hospitals;
+            newsData = jsonData.news;
+
+            if (window.elementSdk) {
+                const defaultConfig = {
+                    main_title: 'โรงพยาบาลส่งเสริมสุขภาพตำบล อบจ.นครปฐม',
+                    subtitle: 'ระบบจัดการข้อมูลโรงพยาบาลส่งเสริมสุขภาพตำบล',
+                    background_color: '#f0f9ff',
+                    primary_color: '#2563eb',
+                    secondary_color: '#0ea5e9',
+                    text_color: '#1f2937',
+                    accent_color: '#3b82f6'
+                };
+
+                await window.elementSdk.init({
+                    defaultConfig,
+                    onConfigChange: async (config) => {
+                        document.getElementById('mainTitle').textContent = config.main_title || defaultConfig.main_title;
+                        document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
+                        
+                        document.body.style.background = `linear-gradient(135deg, ${config.background_color || defaultConfig.background_color}, #bfdbfe)`;
+                    },
+                    mapToCapabilities: (config) => ({
+                        recolorables: [
+                            {
+                                get: () => config.background_color || defaultConfig.background_color,
+                                set: (value) => {
+                                    config.background_color = value;
+                                    window.elementSdk.setConfig({ background_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.primary_color || defaultConfig.primary_color,
+                                set: (value) => {
+                                    config.primary_color = value;
+                                    window.elementSdk.setConfig({ primary_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.secondary_color || defaultConfig.secondary_color,
+                                set: (value) => {
+                                    config.secondary_color = value;
+                                    window.elementSdk.setConfig({ secondary_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.text_color || defaultConfig.text_color,
+                                set: (value) => {
+                                    config.text_color = value;
+                                    window.elementSdk.setConfig({ text_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.accent_color || defaultConfig.accent_color,
+                                set: (value) => {
+                                    config.accent_color = value;
+                                    window.elementSdk.setConfig({ accent_color: value });
+                                }
+                            }
+                        ],
+                        borderables: [],
+                        fontEditable: undefined,
+                        fontSizeable: undefined
+                    }),
+                    mapToEditPanelValues: (config) => new Map([
+                        ['main_title', config.main_title || defaultConfig.main_title],
+                        ['subtitle', config.subtitle || defaultConfig.subtitle]
+                    ])
+                });
+            }
+
+            renderHospitalList();
+        }
+
+        // Render hospital list
+        function renderHospitalList(filter = 'all') {
+            const hospitalList = document.getElementById('hospitalList');
+            const filteredHospitals = filter === 'all' ? hospitals : hospitals.filter(h => h.district === filter);
+            
+            hospitalList.innerHTML = filteredHospitals.map(hospital => `
+                <div class="hospital-card bg-white rounded-lg shadow-md p-6 cursor-pointer transition-all duration-300" onclick="showHospitalDetail(${hospital.id})">
+                    <div class="mb-4">
+                        <h3 class="font-semibold text-gray-800 text-lg mb-2">${hospital.name}</h3>
+                        <p class="text-blue-600">${hospital.district}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-blue-600 hover:text-blue-800">ดูรายละเอียด →</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Update filter buttons
+            document.querySelectorAll('button[onclick^="filterByDistrict"]').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-white', 'text-blue-600', 'border', 'border-blue-600');
+            });
+            
+            if (filter === 'all') {
+                document.getElementById('filter-all').classList.remove('bg-white', 'text-blue-600', 'border', 'border-blue-600');
+                document.getElementById('filter-all').classList.add('bg-blue-600', 'text-white');
+            } else {
+                event.target.classList.remove('bg-white', 'text-blue-600', 'border', 'border-blue-600');
+                event.target.classList.add('bg-blue-600', 'text-white');
+            }
+        }
+
+        // Filter hospitals by district
+        function filterByDistrict(district) {
+            renderHospitalList(district);
+        }
+
+        // Show hospital detail
+        function showHospitalDetail(hospitalId) {
+            currentHospital = hospitals.find(h => h.id === hospitalId);
+            if (!currentHospital) return;
+
+            document.getElementById('hospitalName').textContent = currentHospital.name;
+            document.getElementById('hospitalDistrict').textContent = `อำเภอ${currentHospital.district}`;
+            
+            document.getElementById('mainPage').classList.add('hidden');
+            document.getElementById('detailPage').classList.remove('hidden');
+            
+            showTab('about');
+            loadHospitalData(hospitalId);
+        }
+
+        // Load hospital data
+        function loadHospitalData(hospitalId) {
+            const data = hospitalData[hospitalId.toString()];
+            
+            
+            // Load about data
+            document.getElementById('hospitalHistory').textContent = data?.about_history || 'ยังไม่มีข้อมูล';
+            document.getElementById('hospitalArea').textContent = data?.about_area || 'ยังไม่มีข้อมูล';
+            document.getElementById('hospitalPhone').textContent = data?.about_phone || 'ยังไม่มีข้อมูล';
+            document.getElementById('hospitalEmail').textContent = data?.about_email || 'ยังไม่มีข้อมูล';
+            document.getElementById('hospitalAddress').textContent = data?.about_address || 'ยังไม่มีข้อมูล';
+            document.getElementById('hospitalFacebook').textContent = data?.about_facebook || 'ยังไม่มีข้อมูล';
+            document.getElementById('hospitalMaps').textContent = data?.about_maps || 'ยังไม่มีข้อมูล';
+            
+            // Load director data
+            if (data?.director) {
+                document.getElementById('directorName').textContent = data.director.name;
+                document.getElementById('directorPosition').textContent = data.director.position;
+                document.getElementById('directorImage').src = data.director.image;
+            } else {
+                document.getElementById('directorName').textContent = 'ยังไม่มีข้อมูล';
+                document.getElementById('directorPosition').textContent = 'ตำแหน่ง';
+                document.getElementById('directorImage').src = '';
+            }
+            
+            // Load staff groups
+            loadStaffGroups(data?.groups || []);
+            
+            // Load schedule data
+            const scheduleContent = document.getElementById('scheduleContent');
+            if (data?.schedule_content) {
+                scheduleContent.innerHTML = data.schedule_content;
+                scheduleContent.classList.remove('flex', 'items-center', 'justify-center', 'text-gray-500');
+            } else {
+                scheduleContent.innerHTML = 'ยังไม่มีตารางปฏิบัติงาน';
+                scheduleContent.classList.add('flex', 'items-center', 'justify-center', 'text-gray-500');
+            }
+
+            // Load hospital image
+            const imageContainer = document.getElementById('hospitalImage');
+            if (data?.about_image) {
+                imageContainer.innerHTML = `<img src="${data.about_image}" alt="รูปภาพโรงพยาบาล" class="w-full h-full object-cover rounded-lg">`;
+            } else {
+                imageContainer.innerHTML = '<span class="text-gray-500">รูปภาพโรงพยาบาล</span>';
+            }
+        }
+
+        // Load staff groups
+        function loadStaffGroups(groups) {
+            const staffGroupsContainer = document.getElementById('staffGroups');
+            
+            if (!groups || groups.length === 0) {
+                staffGroupsContainer.innerHTML = '<div class="text-center text-gray-500 py-8">ยังไม่มีข้อมูลโครงสร้างบุคลากร</div>';
+                return;
+            }
+
+            // Create column layout for groups
+            staffGroupsContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    ${groups.map(group => `
+                        <div class="text-center">
+                            <h3 class="text-lg font-bold mb-6 text-blue-800">${group.name}</h3>
+                            <div class="space-y-4">
+                                ${group.staff.map(staff => `
+                                    <div class="text-center">
+                                        <div class="w-24 h-32 bg-gray-300 mx-auto mb-2 overflow-hidden border border-gray-300">
+                                            <img src="${staff.image}" alt="${staff.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="w-full h-full bg-blue-500 flex items-center justify-center text-white text-xl" style="display: none;">👤</div>
+                                        </div>
+                                        <h4 class="font-medium text-gray-800 text-sm mb-1">${staff.name}</h4>
+                                        <p class="text-gray-600 text-xs leading-relaxed">${staff.position}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Show tab
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('text-gray-600', 'hover:text-blue-600');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('tab-active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.remove('text-gray-600', 'hover:text-blue-600');
+            
+            if (tabName === 'news') {
+                loadNews();
+            }
+        }
+
+        // Load news
+        /*function loadNews() {
+            if (!currentHospital) return;
+            
+            const hospitalNews = newsData[currentHospital.id.toString()] || [];
+            const newsList = document.getElementById('newsList');
+            
+            if (hospitalNews.length === 0) {
+                newsList.innerHTML = '<div class="text-center text-gray-500 py-8">ยังไม่มีข่าวประชาสัมพันธ์</div>';
+                return;
+            }
+            
+            newsList.innerHTML = hospitalNews.map(news => `
+                <div class="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors" onclick="showNewsDetail('${news.id}')">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800 mb-2">${news.title}</h4>
+                            <p class="text-gray-600 text-sm mb-2">${news.content.substring(0, 100)}${news.content.length > 100 ? '...' : ''}</p>
+                            <div class="flex items-center gap-4 text-xs text-gray-500">
+                                <span>📅 ${news.date}</span>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded">${news.type}</span>
+                            </div>
+                        </div>
+                        <span class="text-blue-600 ml-4">→</span>
+                    </div>
+                </div>
+            `).join('');
+        }*/
+
+        /*function loadNews() {
+    if (!currentHospital) return;
+
+    const hospitalNews = newsData[currentHospital.id.toString()] || [];
+    const newsList = document.getElementById('newsList');
+
+    if (hospitalNews.length === 0) {
+        newsList.innerHTML = '<div class="text-center text-gray-500 py-8">ยังไม่มีข่าวประชาสัมพันธ์</div>';
+        return;
+    }
+
+    // เรียงข่าวใหม่สุดอยู่บน
+    hospitalNews.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // แสดงข่าวแบบการ์ด
+    newsList.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            ${hospitalNews.map(news => `
+                <div class="bg-white rounded-xl shadow hover:shadow-lg transition p-4 flex flex-col">
+                    <div class="w-full h-40 mb-3 overflow-hidden rounded-lg bg-gray-100">
+                        ${news.image 
+                            ? `<img src="${news.image}" alt="${news.title}" class="w-full h-full object-cover">`
+                            : `<div class="w-full h-full flex items-center justify-center text-gray-400">ไม่มีรูปภาพ</div>`}
+                    </div>
+                    <h3 class="font-semibold text-lg text-blue-700 mb-2">${news.title}</h3>
+                    <div class="text-xs text-gray-500 mb-2 flex justify-between">
+                        <span>📅 ${news.date}</span>
+                        <span class="px-2 py-0.5 bg-blue-100 text-blue-600 rounded">${news.type}</span>
+                    </div>
+                    <p class="text-gray-700 text-sm leading-relaxed flex-1">${news.content}</p>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}*/
+
+function loadNews() {
+    if (!currentHospital) return;
+
+    const hospitalNews = newsData[currentHospital.id.toString()] || [];
+    const newsList = document.getElementById('newsList');
+
+    if (hospitalNews.length === 0) {
+        newsList.innerHTML = '<div class="text-center text-gray-500 py-8">ยังไม่มีข่าวประชาสัมพันธ์</div>';
+        return;
+    }
+
+    // เรียงข่าวใหม่สุดอยู่บน
+    hospitalNews.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // แสดงข่าวแบบ List
+    newsList.innerHTML = hospitalNews.map(news => `
+        <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer">
+            <div class="flex justify-between items-center">
+                <h3 class="font-semibold text-blue-700">${news.title}</h3>
+                <span class="text-xs text-gray-500">📅 ${news.date}</span>
+            </div>
+            <div class="mt-2 text-gray-700 text-sm hidden news-detail">
+                <p class="mb-2">${news.content}</p>
+                ${news.image ? `<img src="${news.image}" alt="${news.title}" class="w-full rounded-lg">` : ''}
+            </div>
+        </div>
+    `).join('');
+
+    // เพิ่ม event click เพื่อ toggle รายละเอียด
+    const items = newsList.querySelectorAll('.border');
+    items.forEach(item => {
+        const detail = item.querySelector('.news-detail');
+        item.addEventListener('click', () => {
+            // ซ่อนรายละเอียดของแถวอื่น
+            newsList.querySelectorAll('.news-detail').forEach(d => {
+                if (d !== detail) d.classList.add('hidden');
+            });
+            // toggle แถวที่คลิก
+            detail.classList.toggle('hidden');
+        });
+    });
+}
+
+
+
+        // Show news detail
+        function showNewsDetail(newsId) {
+            if (!currentHospital) return;
+            
+            const hospitalNews = newsData[currentHospital.id.toString()] || [];
+            const news = hospitalNews.find(item => item.id === newsId);
+            if (!news) return;
+            
+            document.getElementById('newsModalTitle').textContent = news.title;
+            document.getElementById('newsModalDate').textContent = `📅 ${news.date} | ${news.type}`;
+            document.getElementById('newsModalContent').innerHTML = news.content.replace(/\n/g, '<br>');
+            document.getElementById('newsModal').classList.remove('hidden');
+        }
+
+        // Close news modal
+        function closeNewsModal() {
+            document.getElementById('newsModal').classList.add('hidden');
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            currentEditField = null;
+            currentEditGroup = null;
+        }
+
+        // Go back to main page
+        function goBack() {
+            document.getElementById('detailPage').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
+            currentHospital = null;
+        }
+
+
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+ </html>
