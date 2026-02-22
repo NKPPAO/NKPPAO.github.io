@@ -3,11 +3,10 @@ const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let allProjects = []; // เก็บข้อมูลทั้งหมดไว้สำหรับ Filter
+let allProjects = [];
 
-async function fetchProjects() {
-    const tableBody = document.getElementById('project-table-body');
-    
+async function fetchData() {
+    const tableBody = document.getElementById('mainTable');
     try {
         const { data, error } = await _supabase
             .from('projects')
@@ -17,75 +16,90 @@ async function fetchProjects() {
         if (error) throw error;
         allProjects = data;
         
-        renderTable(allProjects);
-        setupFilters(allProjects);
-
-    } catch (error) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error: ${error.message}</td></tr>`;
+        setupDropdowns(data);
+        renderTable(data);
+        document.getElementById('nav-last-update').innerText = new Date().toLocaleDateString('th-TH');
+    } catch (err) {
+        console.error(err);
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">เกิดข้อผิดพลาดในการดึงข้อมูล</td></tr>`;
     }
 }
 
 function renderTable(data) {
-    const tableBody = document.getElementById('project-table-body');
+    const tableBody = document.getElementById('mainTable');
+    const pInfo = document.getElementById('pInfo');
     tableBody.innerHTML = '';
 
-    data.forEach(item => {
+    if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-400">ไม่พบข้อมูลที่ค้นหา</td></tr>`;
+        pInfo.innerText = "พบข้อมูล 0 รายการ";
+        return;
+    }
+
+    data.forEach((item, index) => {
         const row = document.createElement('tr');
+        row.className = "hover:bg-blue-50/50 transition-colors";
         row.innerHTML = `
-            <td><span class="badge badge-year rounded-pill">${item.fiscal_year || '-'}</span></td>
-            <td>
-                <span class="project-title">${item.project_name || '-'}</span>
-                <span class="location-sub text-muted">${item.remark || ''}</span>
+            <td class="p-4 text-center text-slate-400 font-medium">${index + 1}</td>
+            <td class="p-4">
+                <div class="font-bold text-slate-700">${item.amphoe || '-'}</div>
+                <div class="text-blue-600 font-medium text-[12px]">${item.tambon || ''}</div>
             </td>
-            <td>
-                <div>${item.amphoe || '-'}</div>
-                <div class="location-sub">${item.tambon || ''}</div>
+            <td class="p-4">
+                <div class="text-slate-800 font-semibold leading-relaxed mb-1">${item.project_name || '-'}</div>
+                <div class="text-slate-400 text-[12px] italic">${item.remark || ''}</div>
             </td>
-            <td class="text-end budget-amount">
-                ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
+            <td class="p-4 text-right">
+                <div class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-bold mb-1">ปี ${item.fiscal_year || '-'}</div>
+                <div class="text-emerald-600 font-bold text-[15px] tracking-tight">
+                    ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
+                </div>
             </td>
         `;
         tableBody.appendChild(row);
     });
+
+    pInfo.innerText = `พบข้อมูลทั้งหมด ${data.length.toLocaleString()} รายการ`;
 }
 
-// ระบบ Filter สดๆ บนหน้าจอ
-document.getElementById('searchInput').addEventListener('input', applyFilters);
-document.getElementById('filterAmphoe').addEventListener('change', applyFilters);
-document.getElementById('filterYear').addEventListener('change', applyFilters);
-
-function applyFilters() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const selectedAmphoe = document.getElementById('filterAmphoe').value;
-    const selectedYear = document.getElementById('filterYear').value;
+function applyFilter() {
+    const fAmphoe = document.getElementById('sAmphoe').value;
+    const fYear = document.getElementById('sYear').value;
+    const fOpt = document.getElementById('sOpt').value.toLowerCase();
+    const fProject = document.getElementById('sProject').value.toLowerCase();
+    const fNote = document.getElementById('sNote').value.toLowerCase();
 
     const filtered = allProjects.filter(item => {
-        const matchSearch = (item.project_name || '').toLowerCase().includes(searchTerm);
-        const matchAmphoe = selectedAmphoe === "" || item.amphoe === selectedAmphoe;
-        const matchYear = selectedYear === "" || String(item.fiscal_year) === selectedYear;
-        return matchSearch && matchAmphoe && matchYear;
+        const matchAmp = fAmphoe === "" || item.amphoe === fAmphoe;
+        const matchYear = fYear === "" || String(item.fiscal_year) === fYear;
+        const matchOpt = (item.tambon || '').toLowerCase().includes(fOpt);
+        const matchProj = (item.project_name || '').toLowerCase().includes(fProject);
+        const matchNote = (item.remark || '').toLowerCase().includes(fNote);
+
+        return matchAmp && matchYear && matchOpt && matchProj && matchNote;
     });
 
     renderTable(filtered);
 }
 
-// สร้างตัวเลือกใน Dropdown อัตโนมัติจากข้อมูลที่มี
-function setupFilters(data) {
-    const amphoeSelect = document.getElementById('filterAmphoe');
-    const yearSelect = document.getElementById('filterYear');
+function setupDropdowns(data) {
+    const ampSelect = document.getElementById('sAmphoe');
+    const yearSelect = document.getElementById('sYear');
     
-    const amphoes = [...new Set(data.map(item => item.amphoe))].filter(Boolean).sort();
-    const years = [...new Set(data.map(item => String(item.fiscal_year)))].filter(Boolean).sort().reverse();
+    const amphoes = [...new Set(data.map(i => i.amphoe))].filter(Boolean).sort();
+    const years = [...new Set(data.map(i => String(i.fiscal_year)))].filter(Boolean).sort().reverse();
 
-    amphoes.forEach(amp => {
-        const opt = new Option(amp, amp);
-        amphoeSelect.add(opt);
-    });
-
-    years.forEach(yr => {
-        const opt = new Option(yr, yr);
-        yearSelect.add(opt);
-    });
+    amphoes.forEach(a => ampSelect.add(new Option(a, a)));
+    years.forEach(y => yearSelect.add(new Option(y, y)));
 }
 
-document.addEventListener('DOMContentLoaded', fetchProjects);
+function clearSearch() {
+    document.getElementById('sAmphoe').value = "";
+    document.getElementById('sYear').value = "";
+    document.getElementById('sOpt').value = "";
+    document.getElementById('sProject').value = "";
+    document.getElementById('sNote').value = "";
+    renderTable(allProjects);
+}
+
+document.addEventListener('DOMContentLoaded', fetchData);
