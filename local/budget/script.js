@@ -119,43 +119,37 @@ function applyFilter() {
 
 async function setupDropdowns() {
     try {
-        // ดึงปีงบประมาณที่ไม่ซ้ำกัน โดยใช้คำสั่งพิเศษ 
-        // สังเกตว่าเราใช้ select('fiscal_year') แต่ใส่หัวใจสำคัญคือดึงมาให้เยอะพอ (เช่น 10,000 แถว) 
-        // หรือถ้าจะให้ชัวร์และเร็วที่สุด คือดึงแบบระบุให้ Database คัดเฉพาะค่าที่แตกต่างกัน (Distinct)
-        
-        const { data: yearData, error: yearError } = await _supabase
-            .from('projects')
-            .select('fiscal_year')
-            .not('fiscal_year', 'is', null);
+        // 1. สร้าง Dropdown ปีงบประมาณแบบ Manual (2547 - ปัจจุบัน)
+        const yearSelect = document.getElementById('sYear');
+        yearSelect.innerHTML = '<option value="">ทุกปี</option>';
 
-        // ดึงชื่ออำเภอที่ไม่ซ้ำ
+        const startYear = 2547;
+        const now = new Date();
+        let currentYear = now.getFullYear() + 543;
+        
+        // ถ้าเดือนปัจจุบันคือ ตุลย์(9), พฤศจิกายน(10), หรือ ธันวาคม(11) ให้บวกปีเพิ่มไป 1
+        if (now.getMonth() >= 9) {
+            currentYear++;
+        }
+
+        // วนลูปสร้างปีจากปัจจุบันถอยหลังไปถึง 2547
+        for (let year = currentYear; year >= startYear; year--) {
+            yearSelect.add(new Option("พ.ศ. " + year, year));
+        }
+
+        // 2. สำหรับ "อำเภอ" ยังคงแนะนำให้ดึงจากฐานข้อมูล (เพราะอำเภอไม่ค่อยเปลี่ยนบ่อยและมีจำนวนน้อย)
         const { data: ampData, error: ampError } = await _supabase
             .from('projects')
             .select('amphoe')
             .not('amphoe', 'is', null);
 
-        if (yearError || ampError) throw (yearError || ampError);
-
-        // --- จุดสำคัญ: การกรองค่าไม่ซ้ำด้วย JavaScript ---
-        // แม้ API จะส่งมา 1,000 แถว แต่ถ้าใน 1,000 แถวมีปีซ้ำกันเยอะ มันก็จะได้ปีไม่ครบ
-        // วิธีแก้: ใช้ Set และการจัดการ Array
-        const uniqueYears = [...new Set(yearData.map(i => i.fiscal_year))]
-            .filter(y => y != null && y !== "")
-            .sort((a, b) => b - a); // เรียง 2567, 2566...
+        if (ampError) throw ampError;
 
         const uniqueAmphoes = [...new Set(ampData.map(i => i.amphoe))]
             .filter(a => a != null && a !== "")
             .sort();
 
-        const yearSelect = document.getElementById('sYear');
         const ampSelect = document.getElementById('sAmphoe');
-
-        // เคลียร์ค่าเก่าก่อนเติมค่าใหม่
-        yearSelect.innerHTML = '<option value="">ทุกปี</option>';
-        uniqueYears.forEach(year => {
-            yearSelect.add(new Option("พ.ศ. " + year, year));
-        });
-
         ampSelect.innerHTML = '<option value="">ทั้งหมด</option>';
         uniqueAmphoes.forEach(amp => {
             ampSelect.add(new Option(amp, amp));
