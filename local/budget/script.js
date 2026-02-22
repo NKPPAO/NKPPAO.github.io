@@ -170,7 +170,41 @@ function clearSearch() {
     fetchData();
 }
 
+async function updateLastUpdateDisplay() {
+    try {
+        // ดึงวันที่ล่าสุดจากคอลัมน์ updated_at
+        const { data, error } = await _supabase
+            .from('projects')
+            .select('updated_at')
+            .order('updated_at', { ascending: false })
+            .limit(1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0 && data[0].updated_at) {
+            const lastUpdate = new Date(data[0].updated_at);
+            
+            // ปรับรูปแบบการแสดงผล: 22 กุมภาพันธ์ 2569 เวลา 14:30:05
+            const thaiDateTime = lastUpdate.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            document.getElementById('nav-last-update').innerText = thaiDateTime;
+        } else {
+            // หากไม่มีข้อมูลในตาราง ให้โชว์วันที่ปัจจุบันแทน
+            document.getElementById('nav-last-update').innerText = new Date().toLocaleDateString('th-TH');
+        }
+    } catch (err) {
+        console.error('Error fetching last update:', err);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchData();
-    document.getElementById('nav-last-update').innerText = new Date().toLocaleDateString('th-TH');
+    updateLastUpdateDisplay();
 });
