@@ -6,44 +6,49 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentPage = 1;
 const itemsPerPage = 15;
 let totalItems = 0;
+let sumBudget = 0;
 
 async function fetchData() {
     const tableBody = document.getElementById('mainTable');
-    
-    // คำนวณช่วงของข้อมูล (0-14, 15-29, ...)
     const from = (currentPage - 1) * itemsPerPage;
     const to = from + itemsPerPage - 1;
 
     try {
-        // ดึงข้อมูลพร้อมนับจำนวนทั้งหมดด้วย { count: 'exact' }
-        let query = _supabase
-            .from('projects')
-            .select('*', { count: 'exact' });
+        // สร้าง Base Query สำหรับทั้งข้อมูลและยอดรวม
+        let query = _supabase.from('projects').select('*', { count: 'exact' });
+        let sumQuery = _supabase.from('projects').select('budget');
 
-        // นำค่าจาก Filter มาใส่ใน Query (ถ้ามี)
-        const fAmphoe = document.getElementById('sAmphoe').value;
+        // รับค่า Filter
+        const fAmp = document.getElementById('sAmphoe').value;
         const fYear = document.getElementById('sYear').value;
         const fOpt = document.getElementById('sOpt').value;
-        const fProject = document.getElementById('sProject').value;
+        const fProj = document.getElementById('sProject').value;
         const fNote = document.getElementById('sNote').value;
 
-        if (fAmphoe) query = query.eq('amphoe', fAmphoe);
-        if (fYear) query = query.eq('fiscal_year', fYear);
-        if (fOpt) query = query.ilike('tambon', `%${fOpt}%`);
-        if (fProject) query = query.ilike('project_name', `%${fProject}%`);
-        if (fNote) query = query.ilike('remark', `%${fNote}%`);
+        // ใส่เงื่อนไข Filter (ต้องใส่เหมือนกันทั้งข้อมูลและยอดรวม)
+        [query, sumQuery].forEach(q => {
+            if (fAmp) q.eq('amphoe', fAmp);
+            if (fYear) q.eq('fiscal_year', fYear);
+            if (fOpt) q.ilike('tambon', `%${fOpt}%`);
+            if (fProj) q.ilike('project_name', `%${fProj}%`);
+            if (fNote) q.ilike('remark', `%${fNote}%`);
+        });
 
+        // ดึงข้อมูลรายหน้า
         const { data, error, count } = await query
             .order('fiscal_year', { ascending: false })
             .range(from, to);
 
         if (error) throw error;
 
+        // ดึงข้อมูลเพื่อมาหาผลรวม (คำนวณยอดรวมของ Filter นั้นๆ ทั้งหมด)
+        const { data: budgetData } = await sumQuery;
+        sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
+
         totalItems = count;
         renderTable(data, from);
-        updatePaginationControls();
+        updateUI();
         
-        // ถ้าเป็นการโหลดครั้งแรก ให้โหลด Dropdown ด้วย
         if (currentPage === 1 && document.getElementById('sAmphoe').options.length <= 1) {
             setupDropdowns();
         }
@@ -87,45 +92,91 @@ function renderTable(data, startNumber) {
     });
 }
 
-function updatePaginationControls() {
+function updateUI() {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     document.getElementById('pageDisplay').innerText = `หน้า ${currentPage} จาก ${totalPages || 1}`;
-    document.getElementById('pInfo').innerText = `พบข้อมูลทั้งหมด ${totalItems.toLocaleString()} รายการ`;
+    
+    // แสดงสรุปจำนวนรายการ
+    document.getElementById('pInfo').innerHTML = `พบข้อมูลทั้งหมด <span class="text-blue-600 font-bold">${totalItems.toLocaleString()}</span> รายการ`;
+    
+    // แสดงยอดงบประมาณรวม
+    document.getElementById('totalBudgetInfo').innerHTML = `งบประมาณรวมทั้งสิ้น <span class="underline">${sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท`;
     
     document.getElementById('btnPrev').disabled = currentPage === 1;
-    document.getElementById('btnNext').disabled = currentPage >= totalPages;
+    document.getElementById('btnNext').disabled = currentPage >= totalPages || totalPages === 0;
 }
 
 function changePage(step) {
     currentPage += step;
     fetchData();
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // เลื่อนขึ้นบนเมื่อเปลี่ยนหน้า
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function applyFilter() {
-    currentPage = 1; // รีเซ็ตไปหน้า 1 ทุกครั้งที่ค้นหาใหม่
-    fetchData();
-}
-
-async function setupDropdowns() {
-    // แยกโหลด dropdown ต่างหากเพื่อไม่ให้โดน Limit 15 แถว
-    const { data: ampData } = await _supabase.from('projects').select('amphoe');
-    const { data: yearData } = await _supabase.from('projects').select('fiscal_year');
-
-    const amphoes = [...new Set(ampData.map(i => i.amphoe))].filter(Boolean).sort();
-    const years = [...new Set(yearData.map(i => String(i.fiscal_year)))].filter(Boolean).sort().reverse();
-
-    const ampSelect = document.getElementById('sAmphoe');
-    const yearSelect = document.getElementById('sYear');
-    
-    amphoes.forEach(a => ampSelect.add(new Option(a, a)));
-    years.forEach(y => yearSelect.add(new Option(y, y)));
-}
-
-function clearSearch() {
-    document.querySelectorAll('input, select').forEach(el => el.value = "");
     currentPage = 1;
     fetchData();
 }
 
-document.addEventListener('DOMContentLoaded', fetchData);
+async function setupDropdowns() {
+    try {
+        // 1. ดึงปีงบประมาณที่ไม่ซ้ำ (Unique) และเรียงจากมากไปน้อย
+        // เราใช้ select แบบระบุคอลัมน์ และสั่งไม่ให้เอาค่าซ้ำ
+        const { data: yearData, error: yearError } = await _supabase
+            .from('projects')
+            .select('fiscal_year')
+            .not('fiscal_year', 'is', null); // ไม่เอาค่าว่าง
+
+        if (yearError) throw yearError;
+
+        // 2. ดึงชื่ออำเภอที่ไม่ซ้ำ
+        const { data: ampData, error: ampError } = await _supabase
+            .from('projects')
+            .select('amphoe')
+            .not('amphoe', 'is', null);
+
+        if (ampError) throw ampError;
+
+        // ใช้ Set เพื่อกรองค่าซ้ำอีกชั้นในกรณีที่ดึงมา (เผื่อ API return ค่าซ้ำ)
+        const uniqueYears = [...new Set(yearData.map(i => i.fiscal_year))]
+            .sort((a, b) => b - a); // เรียงจากปีล่าสุด (2567 -> 2566)
+
+        const uniqueAmphoes = [...new Set(ampData.map(i => i.amphoe))]
+            .sort(); // เรียงกขค
+
+        // 3. นำข้อมูลใส่ Dropdown
+        const yearSelect = document.getElementById('sYear');
+        const ampSelect = document.getElementById('sAmphoe');
+
+        // ล้างตัวเลือกเดิมก่อน (ยกเว้น "ทั้งหมด")
+        yearSelect.innerHTML = '<option value="">ทุกปี</option>';
+        ampSelect.innerHTML = '<option value="">ทั้งหมด</option>';
+
+        uniqueYears.forEach(year => {
+            const opt = new Option("พ.ศ. " + year, year); // แสดงผล "พ.ศ. 2567" แต่ส่งค่า "2567" ไปค้นหา
+            yearSelect.add(opt);
+        });
+
+        uniqueAmphoes.forEach(amp => {
+            const opt = new Option(amp, amp);
+            ampSelect.add(opt);
+        });
+
+    } catch (err) {
+        console.error('Error loading dropdowns:', err);
+    }
+}
+
+function clearSearch() {
+    document.getElementById('sAmphoe').value = "";
+    document.getElementById('sYear').value = "";
+    document.getElementById('sOpt').value = "";
+    document.getElementById('sProject').value = "";
+    document.getElementById('sNote').value = "";
+    currentPage = 1;
+    fetchData();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchData();
+    document.getElementById('nav-last-update').innerText = new Date().toLocaleDateString('th-TH');
+});
