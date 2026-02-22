@@ -30,7 +30,7 @@ async function fetchProjects() {
             row.innerHTML = `
                 <td>${item.id || '-'}</td>
                 <td>${item.project_name || '-'}</td>
-                <td>${item.amphoe '-'}</td>
+                <td>${item.amphoe || '-'}</td>
                 <td>${item.tambon || '-'}</td>
                 <td>${item.fiscal_year || '-'}</td>
                 <td class="text-end budget-cell">${Number(item.budget || 0).toLocaleString()}</td>
