@@ -5,83 +5,88 @@ const supabaseUrl = 'https://gqanipdzdpstzxrddpzo.supabase.co'
 const supabaseKey = 'sb_publishable_xS3RCe4T4oik28s0sO_jpg_hZb5H10O'
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Elements
-const projectForm = document.getElementById('projectForm');
-const projectTableBody = document.getElementById('projectTableBody');
-const submitBtn = document.getElementById('submitBtn');
+let currentUser = null;
 
-// 2. ฟังก์ชันดึงข้อมูล (Read)
-async function fetchProjects() {
-    const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Fetch error:', error);
-        return;
+// --- ระบบ Authentication ---
+async function checkUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUser = user;
+    const info = document.getElementById('userInfo');
+    const loginBtn = document.getElementById('loginBtn');
+    
+    if (user) {
+        info.classList.remove('hidden');
+        info.classList.add('flex');
+        loginBtn.classList.add('hidden');
+        document.getElementById('userEmail').innerText = user.email;
+    } else {
+        info.classList.add('hidden');
+        loginBtn.classList.remove('hidden');
     }
+    fetchProjects(); // โหลดตารางใหม่หลังจากรู้ตัวตน
+}
 
+document.getElementById('loginBtn').onclick = async () => {
+    const email = prompt("Email:");
+    const password = prompt("Password:");
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) alert(error.message);
+    else location.reload();
+};
+
+document.getElementById('logoutBtn').onclick = async () => {
+    await supabase.auth.signOut();
+    location.reload();
+};
+
+// --- ฟังก์ชันดึงข้อมูลและจัดการตาราง ---
+async function fetchProjects() {
+    const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
     renderTable(data);
 }
 
-// 3. ฟังก์ชันสร้างแถวตาราง (Render)
 function renderTable(projects) {
-    projectTableBody.innerHTML = '';
+    const tbody = document.getElementById('projectTableBody');
+    tbody.innerHTML = '';
+    
     projects.forEach(p => {
         const tr = document.createElement('tr');
-        tr.className = "border-b hover:bg-slate-50 transition";
+        tr.className = "border-b hover:bg-slate-50";
         
-        // กำหนดสีของมติตามสถานะ
-        let badgeClass = 'badge-reject';
-        if (p.meeting_decision === 'Approve') badgeClass = 'badge-approve';
-        if (p.meeting_decision === 'Revise') badgeClass = 'badge-revise';
+        // ส่วนของปุ่ม แก้ไข/ลบ (จะโชว์เฉพาะเมื่อ currentUser ไม่เป็น null)
+        const adminTools = currentUser ? `
+            <button onclick="editProject('${p.id}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button>
+            <button onclick="deleteProject('${p.id}')" class="text-red-600 hover:underline">ลบ</button>
+        ` : '';
 
         tr.innerHTML = `
-            <td class="p-3 text-center">
-                <span class="badge ${badgeClass}">${p.meeting_decision}</span>
-            </td>
-            <td class="p-3 font-semibold text-blue-900">${p.project_name}</td>
-            <td class="p-3 text-gray-600">${p.owner_agency || '-'}</td>
-            <td class="p-3 text-right font-mono">${Number(p.estimated_budget || 0).toLocaleString()}</td>
+            <td class="p-3 text-center">${p.meeting_decision}</td>
+            <td class="p-3 font-semibold">${p.project_name} <br> ${adminTools}</td>
+            <td class="p-3">${p.owner_agency}</td>
+            <td class="p-3 text-right">${Number(p.estimated_budget).toLocaleString()}</td>
         `;
-        projectTableBody.appendChild(tr);
+        tbody.appendChild(tr);
     });
 }
 
-// 4. ฟังก์ชันบันทึกข้อมูล (Create)
-projectForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    submitBtn.disabled = true;
-    submitBtn.innerText = 'กำลังบันทึก...';
-
-    const formData = {
-        project_name: document.getElementById('project_name').value,
-        owner_agency: document.getElementById('owner_agency').value,
-        location: document.getElementById('location').value,
-        estimated_budget: document.getElementById('estimated_budget').value,
-        strategic_fit: document.getElementById('strategic_fit').value,
-        redundancy_check: document.getElementById('redundancy_check').value,
-        legal_authority: document.getElementById('legal_authority').value,
-        impact: document.getElementById('impact').value,
-        meeting_decision: document.getElementById('meeting_decision').value,
-        budget_management_guideline: document.getElementById('budget_management_guideline').value
-    };
-
-    const { error } = await supabase.from('projects').insert([formData]);
-
-    if (error) {
-        alert('เกิดข้อผิดพลาด: ' + error.message);
-    } else {
-        alert('บันทึกข้อมูลโครงการสำเร็จ!');
-        projectForm.reset();
-        await fetchProjects(); // รีโหลดข้อมูลในตารางใหม่
+// --- ฟังก์ชันลบข้อมูล ---
+window.deleteProject = async (id) => {
+    if (confirm('ยืนยันการลบโครงการนี้?')) {
+        const { error } = await supabase.from('projects').delete().eq('id', id);
+        if (error) alert('ไม่มีสิทธิ์ลบ: ' + error.message);
+        else fetchProjects();
     }
+}
 
-    submitBtn.disabled = false;
-    submitBtn.innerText = 'บันทึกโครงการ';
-});
+// --- ฟังก์ชันแก้ไขข้อมูล (แบบง่าย) ---
+window.editProject = async (id) => {
+    const newName = prompt("แก้ไขชื่อโครงการ:");
+    if (newName) {
+        const { error } = await supabase.from('projects').update({ project_name: newName }).eq('id', id);
+        if (error) alert('ไม่มีสิทธิ์แก้ไข: ' + error.message);
+        else fetchProjects();
+    }
+}
 
-// เริ่มโหลดข้อมูลเมื่อเปิดหน้าเว็บ
-fetchProjects();
+// รันตอนเริ่มหน้าเว็บ
+checkUser();
