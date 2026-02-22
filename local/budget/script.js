@@ -3,36 +3,63 @@ const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let allProjects = [];
+let currentPage = 1;
+const itemsPerPage = 15;
+let totalItems = 0;
 
 async function fetchData() {
     const tableBody = document.getElementById('mainTable');
+    
+    // คำนวณช่วงของข้อมูล (0-14, 15-29, ...)
+    const from = (currentPage - 1) * itemsPerPage;
+    const to = from + itemsPerPage - 1;
+
     try {
-        const { data, error } = await _supabase
+        // ดึงข้อมูลพร้อมนับจำนวนทั้งหมดด้วย { count: 'exact' }
+        let query = _supabase
             .from('projects')
-            .select('*')
-            .order('fiscal_year', { ascending: false });
+            .select('*', { count: 'exact' });
+
+        // นำค่าจาก Filter มาใส่ใน Query (ถ้ามี)
+        const fAmphoe = document.getElementById('sAmphoe').value;
+        const fYear = document.getElementById('sYear').value;
+        const fOpt = document.getElementById('sOpt').value;
+        const fProject = document.getElementById('sProject').value;
+        const fNote = document.getElementById('sNote').value;
+
+        if (fAmphoe) query = query.eq('amphoe', fAmphoe);
+        if (fYear) query = query.eq('fiscal_year', fYear);
+        if (fOpt) query = query.ilike('tambon', `%${fOpt}%`);
+        if (fProject) query = query.ilike('project_name', `%${fProject}%`);
+        if (fNote) query = query.ilike('remark', `%${fNote}%`);
+
+        const { data, error, count } = await query
+            .order('fiscal_year', { ascending: false })
+            .range(from, to);
 
         if (error) throw error;
-        allProjects = data;
+
+        totalItems = count;
+        renderTable(data, from);
+        updatePaginationControls();
         
-        setupDropdowns(data);
-        renderTable(data);
-        document.getElementById('nav-last-update').innerText = new Date().toLocaleDateString('th-TH');
+        // ถ้าเป็นการโหลดครั้งแรก ให้โหลด Dropdown ด้วย
+        if (currentPage === 1 && document.getElementById('sAmphoe').options.length <= 1) {
+            setupDropdowns();
+        }
+
     } catch (err) {
         console.error(err);
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">เกิดข้อผิดพลาดในการดึงข้อมูล</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">Error: ${err.message}</td></tr>`;
     }
 }
 
-function renderTable(data) {
+function renderTable(data, startNumber) {
     const tableBody = document.getElementById('mainTable');
-    const pInfo = document.getElementById('pInfo');
     tableBody.innerHTML = '';
 
-    if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-400">ไม่พบข้อมูลที่ค้นหา</td></tr>`;
-        pInfo.innerText = "พบข้อมูล 0 รายการ";
+    if (!data || data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-400">ไม่พบข้อมูล</td></tr>`;
         return;
     }
 
@@ -40,7 +67,7 @@ function renderTable(data) {
         const row = document.createElement('tr');
         row.className = "hover:bg-blue-50/50 transition-colors";
         row.innerHTML = `
-            <td class="p-4 text-center text-slate-400 font-medium">${index + 1}</td>
+            <td class="p-4 text-center text-slate-400 font-medium">${startNumber + index + 1}</td>
             <td class="p-4">
                 <div class="font-bold text-slate-700">${item.amphoe || '-'}</div>
                 <div class="text-blue-600 font-medium text-[12px]">${item.tambon || ''}</div>
@@ -58,48 +85,47 @@ function renderTable(data) {
         `;
         tableBody.appendChild(row);
     });
+}
 
-    pInfo.innerText = `พบข้อมูลทั้งหมด ${data.length.toLocaleString()} รายการ`;
+function updatePaginationControls() {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    document.getElementById('pageDisplay').innerText = `หน้า ${currentPage} จาก ${totalPages || 1}`;
+    document.getElementById('pInfo').innerText = `พบข้อมูลทั้งหมด ${totalItems.toLocaleString()} รายการ`;
+    
+    document.getElementById('btnPrev').disabled = currentPage === 1;
+    document.getElementById('btnNext').disabled = currentPage >= totalPages;
+}
+
+function changePage(step) {
+    currentPage += step;
+    fetchData();
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // เลื่อนขึ้นบนเมื่อเปลี่ยนหน้า
 }
 
 function applyFilter() {
-    const fAmphoe = document.getElementById('sAmphoe').value;
-    const fYear = document.getElementById('sYear').value;
-    const fOpt = document.getElementById('sOpt').value.toLowerCase();
-    const fProject = document.getElementById('sProject').value.toLowerCase();
-    const fNote = document.getElementById('sNote').value.toLowerCase();
-
-    const filtered = allProjects.filter(item => {
-        const matchAmp = fAmphoe === "" || item.amphoe === fAmphoe;
-        const matchYear = fYear === "" || String(item.fiscal_year) === fYear;
-        const matchOpt = (item.tambon || '').toLowerCase().includes(fOpt);
-        const matchProj = (item.project_name || '').toLowerCase().includes(fProject);
-        const matchNote = (item.remark || '').toLowerCase().includes(fNote);
-
-        return matchAmp && matchYear && matchOpt && matchProj && matchNote;
-    });
-
-    renderTable(filtered);
+    currentPage = 1; // รีเซ็ตไปหน้า 1 ทุกครั้งที่ค้นหาใหม่
+    fetchData();
 }
 
-function setupDropdowns(data) {
+async function setupDropdowns() {
+    // แยกโหลด dropdown ต่างหากเพื่อไม่ให้โดน Limit 15 แถว
+    const { data: ampData } = await _supabase.from('projects').select('amphoe');
+    const { data: yearData } = await _supabase.from('projects').select('fiscal_year');
+
+    const amphoes = [...new Set(ampData.map(i => i.amphoe))].filter(Boolean).sort();
+    const years = [...new Set(yearData.map(i => String(i.fiscal_year)))].filter(Boolean).sort().reverse();
+
     const ampSelect = document.getElementById('sAmphoe');
     const yearSelect = document.getElementById('sYear');
     
-    const amphoes = [...new Set(data.map(i => i.amphoe))].filter(Boolean).sort();
-    const years = [...new Set(data.map(i => String(i.fiscal_year)))].filter(Boolean).sort().reverse();
-
     amphoes.forEach(a => ampSelect.add(new Option(a, a)));
     years.forEach(y => yearSelect.add(new Option(y, y)));
 }
 
 function clearSearch() {
-    document.getElementById('sAmphoe').value = "";
-    document.getElementById('sYear').value = "";
-    document.getElementById('sOpt').value = "";
-    document.getElementById('sProject').value = "";
-    document.getElementById('sNote').value = "";
-    renderTable(allProjects);
+    document.querySelectorAll('input, select').forEach(el => el.value = "");
+    currentPage = 1;
+    fetchData();
 }
 
 document.addEventListener('DOMContentLoaded', fetchData);
