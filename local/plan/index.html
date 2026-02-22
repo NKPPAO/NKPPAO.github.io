@@ -4,83 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบบัญชีโครงการประสานแผนพัฒนาท้องถิ่น</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-50 p-4 md:p-10">
 
-    <div id="authSection" class="max-w-5xl mx-auto flex justify-end mb-4 text-sm">
-        <div id="userInfo" class="hidden items-center gap-2">
-            <span id="userEmail" class="text-gray-600 italic"></span>
-            <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">ออกจากระบบ</button>
+    <div class="max-w-5xl mx-auto flex justify-end mb-4 text-sm">
+        <div id="userInfo" class="hidden items-center gap-3 bg-white p-2 px-4 rounded-full shadow-sm border border-blue-100">
+            <span id="userEmail" class="text-blue-700 font-medium"></span>
+            <button id="logoutBtn" class="text-red-500 hover:text-red-700 font-bold border-l pl-3">ออกจากระบบ</button>
         </div>
-        <button id="loginBtn" class="bg-blue-800 text-white px-3 py-1 rounded hover:bg-blue-900 transition">เจ้าหน้าที่เข้าสู่ระบบ</button>
+        <button id="loginBtn" class="bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-900 transition shadow-md font-bold">
+            เจ้าหน้าที่เข้าสู่ระบบ
+        </button>
     </div>
 
     <div class="max-w-5xl mx-auto">
         <h1 class="text-3xl font-bold text-center text-blue-800 mb-8">ระบบบัญชีโครงการประสานแผนพัฒนาท้องถิ่น</h1>
 
-        <section id="inputSection" class="hidden">
-            <div class="bg-white shadow-xl rounded-2xl p-6 mb-10 border border-blue-100">
-                <h2 class="text-xl font-bold text-blue-700 mb-6 border-b pb-2">เพิ่ม/แก้ไขโครงการ</h2>
+        <section id="inputSection" class="hidden mb-10 transition-all duration-500">
+            <div class="bg-white shadow-xl rounded-2xl p-6 border-t-4 border-blue-600">
+                <h2 id="formTitle" class="text-xl font-bold text-blue-700 mb-6 flex items-center">
+                    <span class="bg-blue-100 p-2 rounded-lg mr-2">📝</span> เพิ่มโครงการใหม่
+                </h2>
                 <form id="projectForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" id="project_id">
+                    
                     <div class="md:col-span-2">
-                        <label class="form-label">ชื่อโครงการ</label>
-                        <input type="text" id="project_name" class="form-input" required>
+                        <label class="form-label font-bold">ชื่อโครงการ</label>
+                        <input type="text" id="project_name" class="form-input w-full border p-2 rounded" required>
                     </div>
                     <div>
-                        <label class="form-label">หน่วยงานเจ้าของเรื่อง</label>
-                        <input type="text" id="owner_agency" class="form-input" placeholder="เช่น สนง.จังหวัด, อบจ.">
+                        <label class="form-label font-bold">หน่วยงานเจ้าของเรื่อง</label>
+                        <input type="text" id="owner_agency" class="form-input w-full border p-2 rounded" placeholder="เช่น สนง.จังหวัด, อบจ.">
                     </div>
                     <div>
-                        <label class="form-label">พื้นที่ดำเนินการ</label>
-                        <input type="text" id="location" class="form-input">
+                        <label class="form-label font-bold">พื้นที่ดำเนินการ</label>
+                        <input type="text" id="location" class="form-input w-full border p-2 rounded">
                     </div>
                     <div>
-                        <label class="form-label">งบประมาณโดยประมาณ (บาท)</label>
-                        <input type="number" id="estimated_budget" class="form-input">
+                        <label class="form-label font-bold">งบประมาณโดยประมาณ (บาท)</label>
+                        <input type="number" id="estimated_budget" class="form-input w-full border p-2 rounded">
                     </div>
                     <div>
-                        <label class="form-label">ความสอดคล้องกับยุทธศาสตร์</label>
-                        <select id="strategic_fit" class="form-input">
+                        <label class="form-label font-bold">ความสอดคล้องกับยุทธศาสตร์</label>
+                        <select id="strategic_fit" class="form-input w-full border p-2 rounded">
                             <option value="สูง">สูง</option>
                             <option value="กลาง">กลาง</option>
                             <option value="ต่ำ">ต่ำ</option>
                         </select>
                     </div>
                     <div>
-                        <label class="form-label">การแก้ไขความซ้ำซ้อน</label>
-                        <select id="redundancy_check" class="form-input">
-                            <option value="โครงการใหม่">โครงการใหม่ที่ยังไม่มีใครทำ</option>
-                            <option value="ขยายผล">ขยายผลจากโครงการเดิม</option>
-                            <option value="คล้ายคลึงกัน">มีโครงการที่คล้ายคลึงกัน</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">อำนาจหน้าที่ตามกฎหมาย</label>
-                        <input type="text" id="legal_authority" class="form-input">
-                    </div>
-                    <div>
-                        <label class="form-label">ผู้ได้รับประโยชน์ (จำนวนคน)</label>
-                        <input type="number" id="impact" class="form-input">
-                    </div>
-                    <div>
-                        <label class="form-label">มติที่ประชุม</label>
-                        <select id="meeting_decision" class="form-input font-bold">
+                        <label class="form-label font-bold">มติที่ประชุม</label>
+                        <select id="meeting_decision" class="form-input w-full border p-2 rounded font-bold">
                             <option value="Approve" class="text-green-600">อนุมัติ (Approve)</option>
                             <option value="Revise" class="text-yellow-600">ปรับปรุงรายละเอียด (Revise)</option>
                             <option value="Reject" class="text-red-600">ตัดออก (Reject)</option>
                         </select>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="form-label">แนวทางการบริหารงบประมาณ/หน่วยงานสนับสนุน</label>
-                        <textarea id="budget_management_guideline" class="form-input" rows="2"></textarea>
+                        <label class="form-label font-bold">แนวทางการบริหารงบประมาณ/หน่วยงานสนับสนุน</label>
+                        <textarea id="budget_management_guideline" class="form-input w-full border p-2 rounded" rows="2"></textarea>
                     </div>
-                    <div class="md:col-span-2 text-right">
-                        <button type="button" id="cancelEditBtn" class="hidden mr-2 text-gray-500 hover:underline">ยกเลิกแก้ไข</button>
-                        <button type="submit" id="submitBtn" class="btn-submit">บันทึกโครงการ</button>
+                    <div class="md:col-span-2 text-right pt-4 flex justify-end gap-2">
+                        <button type="button" id="cancelEditBtn" class="hidden px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-bold">ยกเลิกแก้ไข</button>
+                        <button type="submit" id="submitBtn" class="bg-blue-600 text-white px-8 py-2 rounded-lg hover:bg-blue-700 transition font-bold shadow-md">บันทึกข้อมูล</button>
                     </div>
                 </form>
             </div>
@@ -88,50 +77,47 @@
 
         <section class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
             <div class="bg-blue-800 text-white p-4 font-bold flex justify-between items-center">
-                <span>รายการโครงการทั้งหมด</span>
-                <span id="loadingStatus" class="text-xs font-normal hidden">กำลังอัปเดต...</span>
+                <span>📋 รายการโครงการประสานแผน</span>
+                <span id="loadingMsg" class="text-xs font-normal opacity-75">กำลังโหลดข้อมูล...</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-100 border-b">
+                    <thead class="bg-slate-100 border-b text-blue-900">
                         <tr>
-                            <th class="p-3 text-center">มติ</th>
-                            <th class="p-3">ชื่อโครงการ / การจัดการ</th>
-                            <th class="p-3">หน่วยงาน</th>
-                            <th class="p-3 text-right">งบประมาณ</th>
+                            <th class="p-4 text-center">มติ</th>
+                            <th class="p-4">ชื่อโครงการ</th>
+                            <th class="p-4">หน่วยงาน</th>
+                            <th class="p-4 text-right">งบประมาณ</th>
+                            <th id="adminHeader" class="p-4 text-center hidden">การจัดการ</th>
                         </tr>
                     </thead>
-                    <tbody id="projectTableBody">
-                        </tbody>
+                    <tbody id="projectTableBody"></tbody>
                 </table>
             </div>
         </section>
     </div>
 
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-blue-800">เจ้าหน้าที่เข้าสู่ระบบ</h2>
-            <button id="closeLogin" class="text-gray-400 hover:text-gray-600">&times;</button>
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-blue-800">เจ้าหน้าที่เข้าสู่ระบบ</h2>
+                <button id="closeLogin" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <form id="authForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold mb-1">อีเมล</label>
+                    <input type="email" id="loginEmail" class="w-full border rounded-lg p-3 outline-none focus:ring-2 ring-blue-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1">รหัสผ่าน</label>
+                    <input type="password" id="loginPassword" class="w-full border rounded-lg p-3 outline-none focus:ring-2 ring-blue-500" required>
+                </div>
+                <button type="submit" id="authSubmitBtn" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition">เข้าสู่ระบบ</button>
+            </form>
+            <p id="authError" class="text-red-500 text-sm mt-4 hidden text-center"></p>
         </div>
-        
-        <form id="authForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-semibold mb-1">อีเมล</label>
-                <input type="email" id="loginEmail" class="w-full border rounded-lg p-3 focus:ring-2 ring-blue-500 outline-none" placeholder="example@email.com" required>
-            </div>
-            <div>
-                <label class="block text-sm font-semibold mb-1">รหัสผ่าน</label>
-                <input type="password" id="loginPassword" class="w-full border rounded-lg p-3 focus:ring-2 ring-blue-500 outline-none" placeholder="••••••••" required>
-            </div>
-            <button type="submit" id="authSubmitBtn" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-lg">
-                เข้าสู่ระบบ
-            </button>
-        </form>
-        <p id="authError" class="text-red-500 text-sm mt-4 hidden text-center"></p>
     </div>
-</div>
-    
+
     <script type="module" src="main.js"></script>
 </body>
 </html>
