@@ -8,22 +8,34 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 let currentUser = null;
 
 // --- ระบบ Authentication ---
+// เพิ่มตัวแปรอ้างอิงถึง Section ของฟอร์ม
+const inputSection = document.getElementById('inputSection');
+
 async function checkUser() {
     const { data: { user } } = await supabase.auth.getUser();
     currentUser = user;
+    
     const info = document.getElementById('userInfo');
     const loginBtn = document.getElementById('loginBtn');
     
     if (user) {
+        // เมื่อ Login แล้ว
         info.classList.remove('hidden');
         info.classList.add('flex');
         loginBtn.classList.add('hidden');
         document.getElementById('userEmail').innerText = user.email;
+        
+        // --- ส่วนที่เพิ่มใหม่: แสดงฟอร์ม ---
+        inputSection.classList.remove('hidden'); 
     } else {
+        // เมื่อยังไม่ได้ Login หรือ Logout แล้ว
         info.classList.add('hidden');
         loginBtn.classList.remove('hidden');
+        
+        // --- ส่วนที่เพิ่มใหม่: ซ่อนฟอร์ม ---
+        inputSection.classList.add('hidden');
     }
-    fetchProjects(); // โหลดตารางใหม่หลังจากรู้ตัวตน
+    fetchProjects();
 }
 
 document.getElementById('loginBtn').onclick = async () => {
