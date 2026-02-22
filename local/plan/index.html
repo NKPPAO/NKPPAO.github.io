@@ -108,6 +108,30 @@
         </section>
     </div>
 
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-blue-800">เจ้าหน้าที่เข้าสู่ระบบ</h2>
+            <button id="closeLogin" class="text-gray-400 hover:text-gray-600">&times;</button>
+        </div>
+        
+        <form id="authForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">อีเมล</label>
+                <input type="email" id="loginEmail" class="w-full border rounded-lg p-3 focus:ring-2 ring-blue-500 outline-none" placeholder="example@email.com" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">รหัสผ่าน</label>
+                <input type="password" id="loginPassword" class="w-full border rounded-lg p-3 focus:ring-2 ring-blue-500 outline-none" placeholder="••••••••" required>
+            </div>
+            <button type="submit" id="authSubmitBtn" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-lg">
+                เข้าสู่ระบบ
+            </button>
+        </form>
+        <p id="authError" class="text-red-500 text-sm mt-4 hidden text-center"></p>
+    </div>
+</div>
+    
     <script type="module" src="main.js"></script>
 </body>
 </html>
