@@ -3,53 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Fast Web App</title>
-    <script src="https://cdn.tailwindcss.com"></script> </head>
-<body class="bg-gray-100 p-8">
+    <title>ระบบบัญชีโครงการประสานแผนพัฒนาท้องถิ่น</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 p-4 md:p-10">
 
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
-        <h1 class="text-2xl font-bold mb-4 text-blue-600">ข้อมูลจาก Supabase</h1>
-        <div id="loading" class="text-gray-500 italic">กำลังโหลดข้อมูล...</div>
-        <ul id="data-list" class="space-y-3"></ul>
+    <div class="max-w-5xl mx-auto">
+        <h1 class="text-3xl font-bold text-center text-blue-800 mb-8">แบบฟอร์มคัดกรองโครงการประสานแผนพัฒนา</h1>
+
+        <section class="bg-white shadow-xl rounded-2xl p-6 mb-10 border border-blue-100">
+            <form id="projectForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="form-label">ชื่อโครงการ</label>
+                    <input type="text" id="project_name" class="form-input" required>
+                </div>
+                <div>
+                    <label class="form-label">หน่วยงานเจ้าของเรื่อง</label>
+                    <input type="text" id="owner_agency" class="form-input" placeholder="เช่น สนง.จังหวัด, อบจ.">
+                </div>
+                <div>
+                    <label class="form-label">พื้นที่ดำเนินการ</label>
+                    <input type="text" id="location" class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">งบประมาณโดยประมาณ (บาท)</label>
+                    <input type="number" id="estimated_budget" class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">ความสอดคล้องกับยุทธศาสตร์</label>
+                    <select id="strategic_fit" class="form-input">
+                        <option value="สูง">สูง</option>
+                        <option value="กลาง">กลาง</option>
+                        <option value="ต่ำ">ต่ำ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">การแก้ไขความซ้ำซ้อน</label>
+                    <select id="redundancy_check" class="form-input">
+                        <option value="โครงการใหม่">โครงการใหม่ที่ยังไม่มีใครทำ</option>
+                        <option value="ขยายผล">ขยายผลจากโครงการเดิม</option>
+                        <option value="คล้ายคลึงกัน">มีโครงการที่คล้ายคลึงกัน</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">อำนาจหน้าที่ตามกฎหมาย</label>
+                    <input type="text" id="legal_authority" class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">ผู้ได้รับประโยชน์ (จำนวนคน)</label>
+                    <input type="number" id="impact" class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">มติที่ประชุม</label>
+                    <select id="meeting_decision" class="form-input font-bold">
+                        <option value="Approve" class="text-green-600">อนุมัติ (Approve)</option>
+                        <option value="Revise" class="text-yellow-600">ปรับปรุงรายละเอียด (Revise)</option>
+                        <option value="Reject" class="text-red-600">ตัดออก (Reject)</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="form-label">แนวทางการบริหารงบประมาณ/หน่วยงานสนับสนุน</label>
+                    <textarea id="budget_management_guideline" class="form-input" rows="2"></textarea>
+                </div>
+                <div class="md:col-span-2 text-right">
+                    <button type="submit" id="submitBtn" class="btn-submit">บันทึกโครงการ</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
+            <div class="bg-blue-800 text-white p-4 font-bold">รายการโครงการทั้งหมด</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-100 border-b">
+                        <tr>
+                            <th class="p-3 text-center">มติ</th>
+                            <th class="p-3">ชื่อโครงการ</th>
+                            <th class="p-3">หน่วยงาน</th>
+                            <th class="p-3 text-right">งบประมาณ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </section>
     </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-        // 1. ใส่ข้อมูลจากหน้า Settings > API ของ Supabase
-        const supabaseUrl = 'https://gqanipdzdpstzxrddpzo.supabase.co'
-        const supabaseKey = 'sb_publishable_xS3RCe4T4oik28s0sO_jpg_hZb5H10O'
-        const supabase = createClient(supabaseUrl, supabaseKey)
-
-        async function fetchData() {
-            const listElement = document.getElementById('data-list');
-            const loadingElement = document.getElementById('loading');
-
-            // 2. ดึงข้อมูลจากตาราง 'items'
-            const { data, error } = await supabase
-                .from('items')
-                .select('*')
-
-            if (error) {
-                console.error('Error:', error);
-                loadingElement.innerText = 'เกิดข้อผิดพลาดในการดึงข้อมูล';
-                return;
-            }
-
-            // 3. แสดงผลข้อมูลลงใน HTML
-            loadingElement.style.display = 'none';
-            data.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'p-4 border-b border-gray-100 last:border-0 hover:bg-blue-50 transition';
-                li.innerHTML = `
-                    <div class="font-semibold text-lg text-gray-800">${item.name}</div>
-                    <div class="text-gray-600 text-sm">${item.description || ''}</div>
-                `;
-                listElement.appendChild(li);
-            });
-        }
-
-        fetchData();
-    </script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
