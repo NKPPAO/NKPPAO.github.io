@@ -1,0 +1,24 @@
+body {
+    font-family: 'Sarabun', sans-serif;
+}
+
+/* สร้าง Custom Utility Classes เพื่อลดการเขียน Tailwind ซ้ำๆ */
+.form-label {
+    @apply block text-sm font-bold mb-1 text-gray-700;
+}
+
+.form-input {
+    @apply w-full border border-gray-300 rounded p-2 focus:ring-2 ring-blue-500 focus:outline-none transition;
+}
+
+.btn-submit {
+    @apply bg-blue-600 text-white px-8 py-2 rounded-lg hover:bg-blue-700 transition font-bold shadow-md disabled:bg-gray-400;
+}
+
+/* ตกแต่งสถานะมติในตาราง */
+.badge {
+    @apply px-2 py-1 rounded-full text-xs font-bold shadow-sm;
+}
+.badge-approve { @apply bg-green-100 text-green-700; }
+.badge-revise { @apply bg-yellow-100 text-yellow-700; }
+.badge-reject { @apply bg-red-100 text-red-700; }
