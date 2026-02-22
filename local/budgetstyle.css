@@ -1,0 +1,27 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Sarabun', sans-serif; /* แนะนำให้ต่อ Font ไทย */
+}
+
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+h2 {
+    color: #333;
+    font-weight: bold;
+}
+
+.table th {
+    font-weight: 500;
+}
+
+/* ตกแต่งตัวเลขงบประมาณ */
+.budget-cell {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: #2c3e50;
+}
