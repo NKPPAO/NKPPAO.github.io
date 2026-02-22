@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Fast Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script> </head>
+<body class="bg-gray-100 p-8">
+
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
+        <h1 class="text-2xl font-bold mb-4 text-blue-600">ข้อมูลจาก Supabase</h1>
+        <div id="loading" class="text-gray-500 italic">กำลังโหลดข้อมูล...</div>
+        <ul id="data-list" class="space-y-3"></ul>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+        // 1. ใส่ข้อมูลจากหน้า Settings > API ของ Supabase
+        const supabaseUrl = 'https://gqanipdzdpstzxrddpzo.supabase.co'
+        const supabaseKey = 'sb_publishable_xS3RCe4T4oik28s0sO_jpg_hZb5H10O'
+        const supabase = createClient(supabaseUrl, supabaseKey)
+
+        async function fetchData() {
+            const listElement = document.getElementById('data-list');
+            const loadingElement = document.getElementById('loading');
+
+            // 2. ดึงข้อมูลจากตาราง 'items'
+            const { data, error } = await supabase
+                .from('items')
+                .select('*')
+
+            if (error) {
+                console.error('Error:', error);
+                loadingElement.innerText = 'เกิดข้อผิดพลาดในการดึงข้อมูล';
+                return;
+            }
+
+            // 3. แสดงผลข้อมูลลงใน HTML
+            loadingElement.style.display = 'none';
+            data.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'p-4 border-b border-gray-100 last:border-0 hover:bg-blue-50 transition';
+                li.innerHTML = `
+                    <div class="font-semibold text-lg text-gray-800">${item.name}</div>
+                    <div class="text-gray-600 text-sm">${item.description || ''}</div>
+                `;
+                listElement.appendChild(li);
+            });
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
