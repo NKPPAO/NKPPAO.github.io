@@ -354,9 +354,11 @@ window.onclick = function(event) {
 async function checkUserStatus() {
     const { data: { user } } = await _supabase.auth.getUser();
     const actionArea = document.getElementById('adminActions');
+    const btnLoginMain = document.getElementById('btnLoginMain');
 
     if (user) {
         // กรณี Login แล้ว: แสดงปุ่มเพิ่มข้อมูล (สีน้ำเงิน) และปุ่ม Logout (สีแดงอ่อน)
+        if (btnLoginMain) btnLoginMain.classList.add('hidden');
         actionArea.innerHTML = `
             <div class="flex gap-2 w-full">
                 <button onclick="openAddProjectModal()" class="flex-[2] bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition shadow-lg shadow-blue-100 text-sm flex items-center justify-center gap-2 h-[42px]">
@@ -372,6 +374,7 @@ async function checkUserStatus() {
         `;
     } else {
         // กรณีไม่ได้ Login: ไม่ต้องแสดงอะไรในพื้นที่นี้ หรือแสดง Admin Login เล็กๆ
+        if (btnLoginMain) btnLoginMain.classList.remove('hidden');
         actionArea.innerHTML = ''; 
     }
 }
