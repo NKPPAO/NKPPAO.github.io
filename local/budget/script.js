@@ -94,57 +94,68 @@ async function fetchData() {
 
 function renderTable(data, startNumber) {
     const tableBody = document.getElementById('mainTable');
+    const mobileContainer = document.getElementById('mobileTable');
+    
+    // เคลียร์ข้อมูลเก่า
     tableBody.innerHTML = '';
+    mobileContainer.innerHTML = '';
 
     if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-400">ไม่พบข้อมูล</td></tr>`;
+        const emptyMsg = `<div class="p-10 text-center text-slate-400">ไม่พบข้อมูล</div>`;
+        tableBody.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
+        mobileContainer.innerHTML = emptyMsg;
         return;
     }
 
     data.forEach((item, index) => {
-        const row = document.createElement('tr');
-        // เพิ่มคลาสสำหรับการจัดการการแสดงผล
-        // ในจอเล็ก (mobile) เราจะทำให้ <tr> แสดงผลแบบ block และซ่อนเส้นแบ่งตารางแบบปกติ
-        row.className = "group hover:bg-blue-50/50 transition-colors flex flex-col mb-4 p-4 border border-slate-200 rounded-2xl md:table-row md:mb-0 md:p-0 md:border-none md:rounded-none bg-white shadow-sm md:shadow-none";
+        const num = startNumber + index + 1;
         
+        // 1. สร้างแถวสำหรับตาราง (Desktop)
+        const row = document.createElement('tr');
+        row.className = "hover:bg-blue-50/50 transition-colors";
         row.innerHTML = `
-            <td class="hidden md:table-cell p-4 text-center text-slate-400 font-medium border-b border-slate-100">
-                ${startNumber + index + 1}
+            <td class="p-4 text-center text-slate-400 font-medium">${num}</td>
+            <td class="p-4">
+                <div class="font-bold text-slate-700">${item.amphoe || '-'}</div>
+                <div class="text-blue-600 font-medium text-[12px]">${item.tambon || ''}</div>
             </td>
-
-            <td class="p-0 md:p-4 border-b border-slate-100 md:border-b-slate-100">
-                <div class="flex justify-between items-start md:block">
-                    <div>
-                        <span class="md:hidden text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-1">พื้นที่</span>
-                        <div class="font-bold text-slate-700 text-base md:text-sm">${item.amphoe || '-'}</div>
-                        <div class="text-blue-600 font-medium text-[13px] md:text-[12px] flex items-center gap-1">
-                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                             ${item.tambon || ''}
-                        </div>
-                    </div>
-                    <div class="md:hidden text-right">
-                        <div class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-[10px] font-bold mb-1 italic">ปี ${item.fiscal_year || '-'}</div>
-                        <div class="text-emerald-600 font-bold text-lg">${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 0})}</div>
-                    </div>
-                </div>
+            <td class="p-4">
+                <div class="text-slate-800 font-semibold leading-relaxed mb-1">${item.project_name || '-'}</div>
+                <div class="text-slate-400 text-[12px] italic">${item.remark || ''}</div>
             </td>
-
-            <td class="py-3 md:p-4 border-b border-slate-100 md:border-b-slate-100">
-                <span class="md:hidden text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-1">โครงการ</span>
-                <div class="text-slate-800 font-semibold leading-relaxed text-[14px] md:text-[13px]">${item.project_name || '-'}</div>
-                ${item.remark ? `<div class="mt-1 text-slate-400 text-[12px] italic flex items-start gap-1">
-                    <span class="text-slate-300">Note:</span> ${item.remark}
-                </div>` : ''}
-            </td>
-
-            <td class="hidden md:table-cell p-4 text-right border-b border-slate-100">
+            <td class="p-4 text-right">
                 <div class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-bold mb-1">ปี ${item.fiscal_year || '-'}</div>
-                <div class="text-emerald-600 font-bold text-[16px] tracking-tight">
+                <div class="text-emerald-600 font-bold text-[15px] tracking-tight">
                     ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
                 </div>
             </td>
         `;
         tableBody.appendChild(row);
+
+        // 2. สร้างการ์ดสำหรับมือถือ (Mobile)
+        const card = document.createElement('div');
+        card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-blue-500";
+        card.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+                <span class="text-slate-400 font-bold">#${num}</span>
+                <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[11px] font-bold">ปี ${item.fiscal_year || '-'}</span>
+            </div>
+            <div class="mb-2">
+                <div class="font-bold text-slate-800">${item.amphoe || '-'}</div>
+                <div class="text-blue-600 text-[13px]">${item.tambon || ''}</div>
+            </div>
+            <div class="mb-3">
+                <div class="text-slate-700 font-medium leading-snug">${item.project_name || '-'}</div>
+                <div class="text-slate-400 text-[11px] italic mt-1">${item.remark || ''}</div>
+            </div>
+            <div class="border-t border-slate-100 pt-3 text-right">
+                <div class="text-[11px] text-slate-400">งบประมาณ</div>
+                <div class="text-emerald-600 font-bold text-[16px]">
+                    ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})} บาท
+                </div>
+            </div>
+        `;
+        mobileContainer.appendChild(card);
     });
 }
 
