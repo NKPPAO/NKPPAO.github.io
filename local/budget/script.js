@@ -273,21 +273,29 @@ async function updateLastUpdateDisplay() {
 
 async function fetchSystemInfo() {
     try {
-        // เปลี่ยนจาก .single() เป็น .select().limit(1)
+        // ดึงข้อมูลทั้งหมดจากตาราง info
         const { data, error } = await _supabase
             .from('info')
-            .select('*')
-            .limit(1); 
+            .select('item, data');
 
         if (error) throw error;
 
-        // ตรวจสอบว่ามีข้อมูลใน array หรือไม่
-        if (data && data.length > 0) {
-            const info = data[0]; // ดึงแถวแรกออกมา
-            document.getElementById('main-header').innerText = info.header || '';
-            document.getElementById('sub-header').innerText = info.sub_header || '';
-        } else {
-            console.warn('ไม่พบข้อมูลในตาราง info');
+        if (data) {
+            // แปลง array ของข้อมูลให้เป็น object เพื่อให้เรียกใช้ง่ายๆ
+            // เช่น { header: "...", sub_header: "...", last_update: "..." }
+            const infoMap = {};
+            data.forEach(row => {
+                infoMap[row.item] = row.data;
+            });
+
+            // นำไปแสดงผลโดยเรียกจากชื่อ item
+            if (infoMap['header']) {
+                document.getElementById('main-header').innerText = infoMap['header'];
+            }
+            
+            if (infoMap['sub_header']) {
+                document.getElementById('sub-header').innerText = infoMap['sub_header'];
+            }
         }
     } catch (error) {
         console.error('Error fetching info:', error.message);
