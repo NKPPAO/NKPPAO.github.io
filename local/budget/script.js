@@ -545,8 +545,8 @@ async function processUpload() {
 
             // 1. ดึง Prefix และ ID ล่าสุด (Query ครั้งเดียว)
             const [{ data: amphoeList }, { data: allIds }] = await Promise.all([
-                supabase.from('amphoe').select('amp, amp_id'),
-                supabase.from('projects').select('id')
+                _supabase.from('amphoe').select('amp, amp_id'),
+                _supabase.from('projects').select('id')
             ]);
 
             const ampMap = Object.fromEntries(amphoeList.map(i => [i.amp, i.amp_id]));
@@ -588,7 +588,7 @@ async function processUpload() {
 
             // 3. Bulk Insert
             btn.innerText = "กำลังบันทึก...";
-            const { error } = await supabase.from('projects').insert(finalData);
+            const { error } = await _supabase.from('projects').insert(finalData);
             if (error) throw error;
 
             alert(`สำเร็จ! นำเข้าข้อมูล ${finalData.length} รายการ`);
