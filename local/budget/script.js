@@ -353,30 +353,26 @@ window.onclick = function(event) {
 // ฟังก์ชันเช็คสถานะ User (เรียกใช้ตอนโหลดหน้าเว็บ)
 async function checkUserStatus() {
     const { data: { user } } = await _supabase.auth.getUser();
-    const actionArea = document.getElementById('adminActions'); // พื้นที่สำหรับปุ่ม Admin
+    const actionArea = document.getElementById('adminActions');
 
     if (user) {
-        // --- กรณี Login แล้ว: แสดงปุ่มเพิ่มข้อมูล และปุ่ม Logout ---
+        // กรณี Login แล้ว: แสดงปุ่มเพิ่มข้อมูล (สีน้ำเงิน) และปุ่ม Logout (สีแดงอ่อน)
         actionArea.innerHTML = `
-            <div class="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-4">
-                <button onclick="openAddProjectModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl transition shadow-lg shadow-emerald-200 text-sm flex items-center gap-2">
+            <div class="flex gap-2 w-full">
+                <button onclick="openAddProjectModal()" class="flex-[2] bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition shadow-lg shadow-blue-100 text-sm flex items-center justify-center gap-2 h-[42px]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    เพิ่มโครงการใหม่
+                    เพิ่มข้อมูล
                 </button>
-                <button onclick="handleLogout()" class="bg-white hover:bg-red-50 text-red-600 font-bold py-2.5 px-4 rounded-xl transition border border-red-100 text-sm">
-                    ออกจากระบบ
+                <button onclick="handleLogout()" class="flex-1 bg-white hover:bg-red-50 text-red-500 font-bold py-2.5 rounded-xl transition border border-red-100 text-[11px] h-[42px]" title="ออกจากระบบ">
+                    Log out
                 </button>
             </div>
         `;
     } else {
-        // --- กรณีไม่ได้ Login: แสดงปุ่ม Login ปกติ (หรือปล่อยว่าง) ---
-        actionArea.innerHTML = `
-            <button onclick="toggleLoginModal()" class="text-slate-400 hover:text-blue-600 text-xs font-bold uppercase tracking-wider">
-                Admin Login
-            </button>
-        `;
+        // กรณีไม่ได้ Login: ไม่ต้องแสดงอะไรในพื้นที่นี้ หรือแสดง Admin Login เล็กๆ
+        actionArea.innerHTML = ''; 
     }
 }
 
