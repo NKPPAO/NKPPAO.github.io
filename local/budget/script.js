@@ -303,6 +303,53 @@ async function fetchSystemInfo() {
     }
 }
 
+// ฟังก์ชัน เปิด/ปิด Modal
+function toggleLoginModal() {
+    const modal = document.getElementById('loginModal');
+    modal.classList.toggle('hidden');
+}
+
+// จัดการการส่งฟอร์ม Login
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById('adminEmail').value;
+    const password = document.getElementById('adminPassword').value;
+    const btnSubmit = document.getElementById('btnLoginSubmit');
+    
+    // เปลี่ยนสถานะปุ่มขณะกำลังโหลด
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = 'กำลังตรวจสอบ...';
+
+    try {
+        const { data, error } = await _supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        if (error) throw error;
+
+        // ถ้าสำเร็จ
+        alert('ยินดีต้อนรับ! เข้าสู่ระบบสำเร็จ');
+        // รีโหลดหน้า หรือแสดงปุ่มเพิ่มข้อมูล (Add Project)
+        location.reload(); 
+
+    } catch (error) {
+        alert('เกิดข้อผิดพลาด: ' + error.message);
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = 'เข้าสู่ระบบ';
+    }
+});
+
+// ปิด modal เมื่อคลิกพื้นหลังข้างนอก
+window.onclick = function(event) {
+    const modal = document.getElementById('loginModal');
+    if (event.target == modal) {
+        modal.classList.add('hidden');
+    }
+}
+
 // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
 document.addEventListener('DOMContentLoaded', () => {
     fetchSystemInfo();
