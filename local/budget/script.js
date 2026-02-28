@@ -330,12 +330,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         if (error) throw error;
 
         // ถ้าสำเร็จ
-        alert('ยินดีต้อนรับ! เข้าสู่ระบบสำเร็จ');
+        showAlert('success', 'ยินดีต้อนรับ!', 'เข้าสู่ระบบสำเร็จแล้ว', true);
+        //alert('ยินดีต้อนรับ! เข้าสู่ระบบสำเร็จ');
         // รีโหลดหน้า หรือแสดงปุ่มเพิ่มข้อมูล (Add Project)
         location.reload(); 
 
     } catch (error) {
-        alert('เกิดข้อผิดพลาด: ' + error.message);
+        showAlert('error', 'เกิดข้อผิดพลาด', error.message);
+        //alert('เกิดข้อผิดพลาด: ' + error.message);
     } finally {
         btnSubmit.disabled = false;
         btnSubmit.innerText = 'เข้าสู่ระบบ';
@@ -406,7 +408,8 @@ function downloadTemplate() {
         XLSX.writeFile(wb, "Project_Template_NKP.xlsx");
     } catch (error) {
         console.error("Download Error:", error);
-        alert("ไม่สามารถสร้างไฟล์ได้ในขณะนี้");
+        showAlert('error', 'ไม่สามารถสร้างไฟล์ได้ในขณะนี้', error.message);
+        //alert("ไม่สามารถสร้างไฟล์ได้ในขณะนี้");
     }
 }
 
@@ -468,11 +471,13 @@ async function handleExcelUpload(e) {
             const { error } = await _supabase.from('projects').insert(finalData);
             if (error) throw error;
 
-            alert(`สำเร็จ! เพิ่มข้อมูลโครงการใหม่ ${finalData.length} รายการ`);
+            showAlert('success', 'นำเข้าข้อมูลสำเร็จ', \เพิ่มโครงการใหม่ ${finalData.length} รายการแล้ว`, true);`
+            //alert(`สำเร็จ! เพิ่มข้อมูลโครงการใหม่ ${finalData.length} รายการ`);
             location.reload();
 
         } catch (err) {
-            alert("Error: " + err.message);
+            showAlert('error', 'เกิดข้อผิดพลาด', error.message);
+            //alert("Error: " + err.message);
         }
     };
     reader.readAsArrayBuffer(file);
@@ -516,6 +521,7 @@ function handleFileSelect(file) {
         fileInfo.classList.remove('hidden');
         dropZone.classList.add('opacity-50', 'pointer-events-none');
     } else {
+        showAlert('info', 'กรุณาเลือกไฟล์ Excel เท่านั้น', true);
         alert("กรุณาเลือกไฟล์ Excel เท่านั้น");
     }
 }
@@ -568,7 +574,8 @@ async function processUpload() {
             location.reload();
 
         } catch (err) {
-            alert("เกิดข้อผิดพลาด: " + err.message);
+            showAlert('error', 'เกิดข้อผิดพลาด', error.message);
+            //alert("เกิดข้อผิดพลาด: " + err.message);
             btn.disabled = false;
             btn.innerText = "เริ่มอัปโหลด";
         }
