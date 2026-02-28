@@ -532,7 +532,7 @@ async function processUpload() {
     if (!selectedFile) return;
     const btn = document.getElementById('btnStartUpload');
     btn.disabled = true;
-    btn.innerText = "กำลังรัน ID...";
+    btn.innerText = "กำลังอัปโหลด...";
 
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -543,59 +543,32 @@ async function processUpload() {
 
             if (rows.length === 0) throw new Error("ไม่พบข้อมูลในไฟล์");
 
-            // 1. ดึง Prefix และ ID ล่าสุด (Query ครั้งเดียว)
-            const [{ data: amphoeList }, { data: allIds }] = await Promise.all([
-                _supabase.from('amphoe').select('amp, amp_id'),
-                _supabase.from('projects').select('id')
-            ]);
-
-            const ampMap = Object.fromEntries(amphoeList.map(i => [i.amp, i.amp_id]));
-            const lastNumMap = {};
-            
-            // สร้างแผนที่เลขล่าสุดในระบบ
-            allIds.forEach(item => {
-                const prefixYear = item.id.substring(0, 3);
-                const num = parseInt(item.id.substring(3));
-                if (!lastNumMap[prefixYear] || num > lastNumMap[prefixYear]) {
-                    lastNumMap[prefixYear] = num;
-                }
-            });
-
-            // 2. รัน ID ใน Memory
-            const finalData = rows.map(row => {
-                const yearFull = row['ปีงบประมาณ'];
-                const yearShort = String(yearFull).slice(-2);
-                const prefix = ampMap[row['อำเภอ']];
-                
-                if (!prefix) throw new Error(`ไม่พบอำเภอ "${row['อำเภอ']}" ในฐานข้อมูล`);
-
-                const key = prefix + yearShort;
-                lastNumMap[key] = (lastNumMap[key] || 0) + 1;
-                
-                const seq = String(lastNumMap[key]).padStart(4, '0');
-                const newId = key + seq;
+            // เตรียมข้อมูลโดย "ไม่ต้องใส่ฟิลด์ id"
+            const finalData = rows.map((row, index) => {
+                // ทำความสะอาดค่างบประมาณ (เผื่อมีเครื่องหมายคอมมา)
+                const cleanBudget = String(row['งบประมาณ'] || 0).replace(/,/g, '');
 
                 return {
-                    id: newId,
-                    fiscal_year: yearFull,
+                    // id ไม่ต้องใส่ เพราะ DB จะสร้างให้เองอัตโนมัติ
+                    fiscal_year: row['ปีงบประมาณ'],
                     amphoe: row['อำเภอ'],
-                    tambon: row['ตำบล'],
-                    project_name: row['ชื่อโครงการ'],
-                    budget: parseFloat(row['งบประมาณ'] || 0),
+                    tambon: row['ตำบล'] || '',
+                    project_name: row['ชื่อโครงการ'] || '',
+                    budget: parseFloat(cleanBudget),
                     remark: row['หมายเหตุ'] || ''
                 };
             });
 
-            // 3. Bulk Insert
-            btn.innerText = "กำลังบันทึก...";
+            // บันทึกข้อมูลแบบ Bulk Insert
             const { error } = await _supabase.from('projects').insert(finalData);
+            
             if (error) throw error;
 
-            alert(`สำเร็จ! นำเข้าข้อมูล ${finalData.length} รายการ`);
+            alert(`สำเร็จ! นำเข้าข้อมูล ${finalData.length} รายการเรียบร้อยแล้ว`);
             location.reload();
 
         } catch (err) {
-            alert(err.message);
+            alert("เกิดข้อผิดพลาด: " + err.message);
             btn.disabled = false;
             btn.innerText = "เริ่มอัปโหลด";
         }
