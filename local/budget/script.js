@@ -350,9 +350,49 @@ window.onclick = function(event) {
     }
 }
 
+// ฟังก์ชันเช็คสถานะ User (เรียกใช้ตอนโหลดหน้าเว็บ)
+async function checkUserStatus() {
+    const { data: { user } } = await _supabase.auth.getUser();
+    const actionArea = document.getElementById('adminActions'); // พื้นที่สำหรับปุ่ม Admin
+
+    if (user) {
+        // --- กรณี Login แล้ว: แสดงปุ่มเพิ่มข้อมูล และปุ่ม Logout ---
+        actionArea.innerHTML = `
+            <div class="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-4">
+                <button onclick="openAddProjectModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl transition shadow-lg shadow-emerald-200 text-sm flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    เพิ่มโครงการใหม่
+                </button>
+                <button onclick="handleLogout()" class="bg-white hover:bg-red-50 text-red-600 font-bold py-2.5 px-4 rounded-xl transition border border-red-100 text-sm">
+                    ออกจากระบบ
+                </button>
+            </div>
+        `;
+    } else {
+        // --- กรณีไม่ได้ Login: แสดงปุ่ม Login ปกติ (หรือปล่อยว่าง) ---
+        actionArea.innerHTML = `
+            <button onclick="toggleLoginModal()" class="text-slate-400 hover:text-blue-600 text-xs font-bold uppercase tracking-wider">
+                Admin Login
+            </button>
+        `;
+    }
+}
+
+// ฟังก์ชัน Logout
+async function handleLogout() {
+    await _supabase.auth.signOut();
+    location.reload();
+}
+
+// เรียกใช้ checkUserStatus() ในจุดที่เหมาะสม (เช่น ท้ายไฟล์ script.js)
+checkUserStatus();
+
 // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
 document.addEventListener('DOMContentLoaded', () => {
     fetchSystemInfo();
     fetchData();
     updateLastUpdateDisplay();
+    checkUserStatus();
 });
