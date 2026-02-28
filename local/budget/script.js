@@ -273,23 +273,24 @@ async function updateLastUpdateDisplay() {
 
 async function fetchSystemInfo() {
     try {
-        // ดึงข้อมูลจากตาราง 'info' (เลือกแถวแรกหรือแถวที่ต้องการ)
+        // เปลี่ยนจาก .single() เป็น .select().limit(1)
         const { data, error } = await _supabase
             .from('info')
             .select('*')
-            .single(); // ใช้ .single() ถ้ามีข้อมูลแค่แถวเดียว
+            .limit(1); 
 
         if (error) throw error;
 
-        if (data) {
-            // นำข้อมูลไปแสดงผลในจุดต่างๆ
-            document.getElementById('main-header').innerText = data.header;
-            document.getElementById('sub-header').innerText = data.sub_header;
+        // ตรวจสอบว่ามีข้อมูลใน array หรือไม่
+        if (data && data.length > 0) {
+            const info = data[0]; // ดึงแถวแรกออกมา
+            document.getElementById('main-header').innerText = info.header || '';
+            document.getElementById('sub-header').innerText = info.sub_header || '';
+        } else {
+            console.warn('ไม่พบข้อมูลในตาราง info');
         }
     } catch (error) {
         console.error('Error fetching info:', error.message);
-        // กำหนดค่าเริ่มต้นกรณีดึงข้อมูลไม่สำเร็จ
-        document.getElementById('main-header').innerText = "ระบบสินค้นโครงการขอรับการสนับสนุนงบประมาณ อบจ.นฐ";
     }
 }
 
