@@ -521,8 +521,8 @@ function handleFileSelect(file) {
         fileInfo.classList.remove('hidden');
         dropZone.classList.add('opacity-50', 'pointer-events-none');
     } else {
-        showAlert('info', 'กรุณาเลือกไฟล์ Excel เท่านั้น', true);
-        alert("กรุณาเลือกไฟล์ Excel เท่านั้น");
+        showAlert('info', 'กรุณาเลือกไฟล์ Excel เท่านั้น', '',true);
+        //alert("กรุณาเลือกไฟล์ Excel เท่านั้น");
     }
 }
 
