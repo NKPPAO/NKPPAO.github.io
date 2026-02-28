@@ -64,10 +64,13 @@
                 <label class="text-[13px] font-bold text-slate-500 mb-1.5 block">หมายเหตุ</label>
                 <input type="text" id="sNote" onkeyup="applyFilter()" placeholder="ค้นหาหมายเหตุ..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
             </div>
-            <div class="col-span-2 flex gap-2">
-                <button onclick="clearSearch()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl transition border border-slate-200 text-sm">ล้างการค้นหา</button>
+            <div class="col-span-2 flex flex-col sm:flex-row gap-2">
+                <button onclick="clearSearch()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl transition border border-slate-200 text-sm h-[42px]">
+                    ล้างการค้นหา
+                </button>
+                
+                <div id="adminActions" class="flex-1"></div>
             </div>
-            <div id="adminActions"></div>
         </div>
     </div>
 
