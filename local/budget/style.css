@@ -47,20 +47,3 @@ body {
     font-weight: 600;
     color: #059669; /* สีเขียวสำหรับตัวเลขงบประมาณ */
 }
-
-@media (max-width: 767px) {
-        /* ซ่อนหัวตารางในมือถือ */
-        thead {
-            display: none;
-        }
-        /* ปรับพื้นหลังตารางให้โปร่งแสงเพื่อให้เห็น Card ชัดเจน */
-        #mainTable {
-            display: block;
-            background: transparent;
-            padding: 10px;
-        }
-        /* เอาเส้นแบ่งตารางเดิมออก */
-        .divide-y > :not([hidden]) ~ :not([hidden]) {
-            border-top-width: 0px;
-        }
-    }
