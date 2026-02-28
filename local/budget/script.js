@@ -271,7 +271,31 @@ async function updateLastUpdateDisplay() {
     }
 }
 
+async function fetchSystemInfo() {
+    try {
+        // ดึงข้อมูลจากตาราง 'info' (เลือกแถวแรกหรือแถวที่ต้องการ)
+        const { data, error } = await supabase
+            .from('info')
+            .select('*')
+            .single(); // ใช้ .single() ถ้ามีข้อมูลแค่แถวเดียว
+
+        if (error) throw error;
+
+        if (data) {
+            // นำข้อมูลไปแสดงผลในจุดต่างๆ
+            document.getElementById('main-header').innerText = data.header;
+            document.getElementById('sub-header').innerText = data.sub_header;
+        }
+    } catch (error) {
+        console.error('Error fetching info:', error.message);
+        // กำหนดค่าเริ่มต้นกรณีดึงข้อมูลไม่สำเร็จ
+        document.getElementById('main-header').innerText = "ระบบสินค้นโครงการขอรับการสนับสนุนงบประมาณ อบจ.นฐ";
+    }
+}
+
+// เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
 document.addEventListener('DOMContentLoaded', () => {
+    fetchSystemInfo();
     fetchData();
     updateLastUpdateDisplay();
 });
