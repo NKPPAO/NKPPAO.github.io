@@ -471,7 +471,7 @@ async function handleExcelUpload(e) {
             const { error } = await _supabase.from('projects').insert(finalData);
             if (error) throw error;
 
-            showAlert('success', 'นำเข้าข้อมูลสำเร็จ', `เพิ่มโครงการใหม่` ${finalData.length} `รายการแล้ว`, true);
+            showAlert('success', 'นำเข้าข้อมูลสำเร็จ', `เพิ่มโครงการใหม่ ${finalData.length} รายการแล้ว`, true);
             //alert(`สำเร็จ! เพิ่มข้อมูลโครงการใหม่ ${finalData.length} รายการ`);
             location.reload();
 
