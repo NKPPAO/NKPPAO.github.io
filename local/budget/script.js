@@ -388,15 +388,26 @@ async function handleLogout() {
 
 // ฟังก์ชันสร้างและดาวน์โหลด Template
 function downloadTemplate() {
+    // เช็คว่า Library XLSX พร้อมใช้งานไหม
+    if (typeof XLSX === 'undefined') {
+        alert("ระบบกำลังโหลดเครื่องมือจัดการ Excel กรุณารอครู่เดียวแล้วลองใหม่ครับ");
+        return;
+    }
+
     const ws_data = [
         ["ปีงบประมาณ", "อำเภอ", "ตำบล", "ชื่อโครงการ", "งบประมาณ", "หมายเหตุ"],
-        [2569, "เมืองนครปฐม", "พระปฐมเจดีย์", "โครงการก่อสร้างถนน...", 500000, "งบเร่งด่วน"],
-        [2569, "กำแพงแสน", "ทุ่งขวาง", "โครงการขุดลอกคลอง...", 1200000, ""]
+        [2569, "เมืองนครปฐม", "พระปฐมเจดีย์", "ตัวอย่าง: ก่อสร้างถนนลาดยาง", 500000, "งบเร่งด่วน"],
     ];
-    const ws = XLSX.utils.aoa_to_sheet(ws_data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Template");
-    XLSX.writeFile(wb, "Project_Template_NKP.xlsx");
+    
+    try {
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Template");
+        XLSX.writeFile(wb, "Project_Template_NKP.xlsx");
+    } catch (error) {
+        console.error("Download Error:", error);
+        alert("ไม่สามารถสร้างไฟล์ได้ในขณะนี้");
+    }
 }
 
 // ฟังก์ชันจัดการ Excel ความเร็วสูง
