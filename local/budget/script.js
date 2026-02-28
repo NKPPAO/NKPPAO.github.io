@@ -296,6 +296,7 @@ async function fetchSystemInfo() {
             if (infoMap['sub_header']) {
                 document.getElementById('sub-header').innerText = infoMap['sub_header'];
             }
+            
         }
     } catch (error) {
         console.error('Error fetching info:', error.message);
