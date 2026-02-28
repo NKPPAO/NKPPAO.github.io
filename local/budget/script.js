@@ -359,13 +359,14 @@ async function checkUserStatus() {
     if (user) {
         // กรณี Login แล้ว: แสดงปุ่มเพิ่มข้อมูล (สีน้ำเงิน) และปุ่ม Logout (สีแดงอ่อน)
         if (btnLoginMain) btnLoginMain.classList.add('hidden');
+        // แสดงปุ่ม "อัปโหลด Excel" แทน "เพิ่มโครงการ"
         actionArea.innerHTML = `
-            <div class="flex gap-2 w-full">
-                <button onclick="openAddProjectModal()" class="flex-[2] bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition shadow-lg shadow-blue-100 text-sm flex items-center justify-center gap-2 h-[42px]">
+            <div class="flex gap-2 w-full animate-in fade-in duration-300">
+                <button onclick="openUploadModal()" class="flex-[2] bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition shadow-lg shadow-blue-100 text-sm flex items-center justify-center gap-2 h-[42px]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    เพิ่มข้อมูล
+                    อัปโหลด Excel
                 </button>
                 <button onclick="handleLogout()" class="flex-1 bg-white hover:bg-red-50 text-red-500 font-bold py-2.5 rounded-xl transition border border-red-100 text-[11px] h-[42px]" title="ออกจากระบบ">
                     Log out
@@ -464,6 +465,131 @@ async function handleExcelUpload(e) {
         }
     };
     reader.readAsArrayBuffer(file);
+}
+
+const dropZone = document.getElementById('dropZone');
+const excelInput = document.getElementById('excelInput');
+const fileInfo = document.getElementById('fileInfo');
+const fileNameDisplay = document.getElementById('fileName');
+let selectedFile = null;
+
+// ฟังก์ชันเปิด/ปิด Modal
+function openUploadModal() {
+    document.getElementById('uploadExcelModal').classList.remove('hidden');
+}
+function closeUploadModal() {
+    document.getElementById('uploadExcelModal').classList.add('hidden');
+    resetUploadState();
+}
+
+// ระบบ Drag & Drop
+dropZone.addEventListener('click', () => excelInput.click());
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-blue-500', 'bg-blue-50');
+});
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+});
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+    handleFileSelect(e.dataTransfer.files[0]);
+});
+excelInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+
+function handleFileSelect(file) {
+    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+        selectedFile = file;
+        fileNameDisplay.innerText = file.name;
+        fileInfo.classList.remove('hidden');
+        dropZone.classList.add('opacity-50', 'pointer-events-none');
+    } else {
+        alert("กรุณาเลือกไฟล์ Excel เท่านั้น");
+    }
+}
+
+function resetUploadState() {
+    selectedFile = null;
+    fileInfo.classList.add('hidden');
+    dropZone.classList.remove('opacity-50', 'pointer-events-none');
+    excelInput.value = '';
+}
+
+// ประมวลผลและอัปโหลดความเร็วสูง
+async function processUpload() {
+    if (!selectedFile) return;
+    const btn = document.getElementById('btnStartUpload');
+    btn.disabled = true;
+    btn.innerText = "กำลังรัน ID...";
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+            if (rows.length === 0) throw new Error("ไม่พบข้อมูลในไฟล์");
+
+            // 1. ดึง Prefix และ ID ล่าสุด (Query ครั้งเดียว)
+            const [{ data: amphoeList }, { data: allIds }] = await Promise.all([
+                supabase.from('amphoe').select('amp, amp_id'),
+                supabase.from('projects').select('id')
+            ]);
+
+            const ampMap = Object.fromEntries(amphoeList.map(i => [i.amp, i.amp_id]));
+            const lastNumMap = {};
+            
+            // สร้างแผนที่เลขล่าสุดในระบบ
+            allIds.forEach(item => {
+                const prefixYear = item.id.substring(0, 3);
+                const num = parseInt(item.id.substring(3));
+                if (!lastNumMap[prefixYear] || num > lastNumMap[prefixYear]) {
+                    lastNumMap[prefixYear] = num;
+                }
+            });
+
+            // 2. รัน ID ใน Memory
+            const finalData = rows.map(row => {
+                const yearFull = row['ปีงบประมาณ'];
+                const yearShort = String(yearFull).slice(-2);
+                const prefix = ampMap[row['อำเภอ']];
+                
+                if (!prefix) throw new Error(`ไม่พบอำเภอ "${row['อำเภอ']}" ในฐานข้อมูล`);
+
+                const key = prefix + yearShort;
+                lastNumMap[key] = (lastNumMap[key] || 0) + 1;
+                
+                const seq = String(lastNumMap[key]).padStart(4, '0');
+                const newId = key + seq;
+
+                return {
+                    id: newId,
+                    fiscal_year: yearFull,
+                    amphoe: row['อำเภอ'],
+                    tambon: row['ตำบล'],
+                    project_name: row['ชื่อโครงการ'],
+                    budget: parseFloat(row['งบประมาณ'] || 0),
+                    remark: row['หมายเหตุ'] || ''
+                };
+            });
+
+            // 3. Bulk Insert
+            btn.innerText = "กำลังบันทึก...";
+            const { error } = await supabase.from('projects').insert(finalData);
+            if (error) throw error;
+
+            alert(`สำเร็จ! นำเข้าข้อมูล ${finalData.length} รายการ`);
+            location.reload();
+
+        } catch (err) {
+            alert(err.message);
+            btn.disabled = false;
+            btn.innerText = "เริ่มอัปโหลด";
+        }
+    };
+    reader.readAsArrayBuffer(selectedFile);
 }
 
 // เรียกใช้ checkUserStatus() ในจุดที่เหมาะสม (เช่น ท้ายไฟล์ script.js)
