@@ -569,8 +569,8 @@ async function processUpload() {
             const { error } = await _supabase.from('projects').insert(finalData);
             
             if (error) throw error;
-
-            alert(`สำเร็จ! นำเข้าข้อมูล ${finalData.length} รายการเรียบร้อยแล้ว`);
+            showAlert('success', 'นำเข้าข้อมูลสำเร็จ', `เพิ่มโครงการใหม่ ${finalData.length} รายการแล้ว`, true);
+            //alert(`สำเร็จ! นำเข้าข้อมูล ${finalData.length} รายการเรียบร้อยแล้ว`);
             location.reload();
 
         } catch (err) {
