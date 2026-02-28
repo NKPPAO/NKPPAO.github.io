@@ -385,6 +385,87 @@ async function handleLogout() {
     location.reload();
 }
 
+// ฟังก์ชันสร้างและดาวน์โหลด Template
+function downloadTemplate() {
+    const ws_data = [
+        ["ปีงบประมาณ", "อำเภอ", "ตำบล", "ชื่อโครงการ", "งบประมาณ", "หมายเหตุ"],
+        [2569, "เมืองนครปฐม", "พระปฐมเจดีย์", "โครงการก่อสร้างถนน...", 500000, "งบเร่งด่วน"],
+        [2569, "กำแพงแสน", "ทุ่งขวาง", "โครงการขุดลอกคลอง...", 1200000, ""]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "Project_Template_NKP.xlsx");
+}
+
+// ฟังก์ชันจัดการ Excel ความเร็วสูง
+async function handleExcelUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        
+        if (rows.length === 0) return alert("ไฟล์ว่างเปล่า");
+
+        try {
+            // 1. ดึง Prefix อำเภอทั้งหมด (ดึงครั้งเดียว)
+            const { data: amphoeList } = await _supabase.from('amphoe').select('amp, amp_id');
+            const ampMap = Object.fromEntries(amphoeList.map(i => [i.amp, i.amp_id]));
+
+            // 2. ดึงข้อมูล ID ล่าสุดจาก DB เพื่อหาจุดเริ่มต้น (ดึงครั้งเดียว)
+            const { data: allIds } = await _supabase.from('projects').select('id');
+            
+            // สร้าง Map เก็บเลขลำดับสูงสุดของแต่ละ Prefix+Year ที่มีอยู่แล้วในระบบ
+            const lastNumMap = {};
+            allIds.forEach(item => {
+                const prefixYear = item.id.substring(0, 3); // เช่น M69
+                const num = parseInt(item.id.substring(3));
+                if (!lastNumMap[prefixYear] || num > lastNumMap[prefixYear]) {
+                    lastNumMap[prefixYear] = num;
+                }
+            });
+
+            // 3. ประมวลผลข้อมูลใน Memory (เร็วมาก)
+            const finalData = rows.map(row => {
+                const year = String(row['ปีงบประมาณ']).slice(-2);
+                const prefix = ampMap[row['อำเภอ']];
+                if (!prefix) throw new Error(`ไม่พบอำเภอ: ${row['อำเภอ']} ในระบบ`);
+
+                const key = prefix + year;
+                // ถ้ายังไม่มีในระบบให้เริ่มที่ 0 ถ้ามีแล้วให้เอาค่าล่าสุดมาใช้และบวกเพิ่ม
+                lastNumMap[key] = (lastNumMap[key] || 0) + 1;
+                
+                const newId = key + String(lastNumMap[key]).padStart(4, '0');
+
+                return {
+                    id: newId,
+                    fiscal_year: row['ปีงบประมาณ'],
+                    amphoe: row['อำเภอ'],
+                    tambon: row['ตำบล'],
+                    project_name: row['ชื่อโครงการ'],
+                    budget: parseFloat(row['งบประมาณ'] || 0),
+                    remark: row['หมายเหตุ'] || ''
+                };
+            });
+
+            // 4. บันทึกข้อมูลแบบก้อนเดียว (Bulk Insert)
+            const { error } = await _supabase.from('projects').insert(finalData);
+            if (error) throw error;
+
+            alert(`สำเร็จ! เพิ่มข้อมูลโครงการใหม่ ${finalData.length} รายการ`);
+            location.reload();
+
+        } catch (err) {
+            alert("Error: " + err.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
 // เรียกใช้ checkUserStatus() ในจุดที่เหมาะสม (เช่น ท้ายไฟล์ script.js)
 checkUserStatus();
 
