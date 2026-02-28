@@ -274,7 +274,7 @@ async function updateLastUpdateDisplay() {
 async function fetchSystemInfo() {
     try {
         // ดึงข้อมูลจากตาราง 'info' (เลือกแถวแรกหรือแถวที่ต้องการ)
-        const { data, error } = await supabase
+        const { data, error } = await _supabase
             .from('info')
             .select('*')
             .single(); // ใช้ .single() ถ้ามีข้อมูลแค่แถวเดียว
