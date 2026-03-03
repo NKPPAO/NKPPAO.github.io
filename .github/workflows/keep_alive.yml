@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Send Request to Supabase API
         run: |
-          curl -i -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/projects?select=count" \
+          # เปลี่ยน 'amphoe' เป็นชื่อตารางที่มีอยู่ในฐานข้อมูลของคุณ
+          curl -i -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/projects?select=*" \
           -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
