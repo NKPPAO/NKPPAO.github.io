@@ -597,7 +597,7 @@ function showAlert(type, title, message, reload = false, showCancel = false) {
     const icon = document.getElementById('modalIcon');
     const titleEl = document.getElementById('modalTitle');
     const msgEl = document.getElementById('modalMessage');
-    const btn = document.getElementById('modalBtn');
+    //const btn = document.getElementById('modalBtn');
     const closeBtn = document.getElementById('modalCloseBtn');
     
     // ดึงตัวครอบปุ่ม (Action Area) มาจัดการ Layout
