@@ -40,6 +40,7 @@ async function fetchData() {
 
         // คำนวณเฉพาะยอดงบประมาณรวม
         const { data: budgetData } = await sumQuery;
+        window.currentBudgetData = budgetData;
         sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
         
         // อัปเดตตัวเลขบน Card (เฉพาะยอดหลัก)
@@ -738,6 +739,41 @@ async function handleUpdateProject(e) {
         btn.disabled = false;
         btn.innerText = "บันทึกการแก้ไข";
     }
+}
+
+function exportToExcel() {
+    // ตรวจสอบว่ามีข้อมูลให้ Export ไหม
+    // เราใช้ข้อมูลจาก budgetData ที่เราเก็บไว้ตอน fetchData
+    if (!window.currentBudgetData || window.currentBudgetData.length === 0) {
+        alert('ไม่พบข้อมูลที่จะส่งออก');
+        return;
+    }
+
+    // เตรียมข้อมูลสำหรับ Excel (เลือกเฉพาะคอลัมน์ที่ต้องการ)
+    const excelData = window.currentBudgetData.map((item, index) => ({
+        'ลำดับ': index + 1,
+        'ปีงบประมาณ': item.fiscal_year,
+        'อำเภอ': item.amphoe,
+        'อปท./ตำบล': item.tambon,
+        'ชื่อโครงการ': item.project_name,
+        'งบประมาณ (บาท)': item.budget,
+        'หมายเหตุ': item.remark || ''
+    }));
+
+    // สร้าง Workbook
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "รายชื่อโครงการ");
+
+    // ปรับความกว้างคอลัมน์เบื้องต้น
+    const wscols = [
+        {wch: 6},  {wch: 12}, {wch: 15}, {wch: 25}, {wch: 50}, {wch: 15}, {wch: 20}
+    ];
+    worksheet['!cols'] = wscols;
+
+    // ดาวน์โหลดไฟล์
+    const fileName = `โครงการ_อบจ_นครปฐม_${new Date().toLocaleDateString('th-TH')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
 }
 
 // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
