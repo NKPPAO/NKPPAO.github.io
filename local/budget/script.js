@@ -16,7 +16,7 @@ async function fetchData() {
 
     try {
         let query = _supabase.from('projects').select('*', { count: 'exact' });
-        let sumQuery = _supabase.from('projects').select('budget').range(0, 9999);
+        let sumQuery = _supabase.from('projects').select('*').range(0, 9999);
 
         const fAmp = document.getElementById('sAmphoe').value;
         const fYear = document.getElementById('sYear').value;
@@ -742,38 +742,48 @@ async function handleUpdateProject(e) {
 }
 
 function exportToExcel() {
-    // ตรวจสอบว่ามีข้อมูลให้ Export ไหม
-    // เราใช้ข้อมูลจาก budgetData ที่เราเก็บไว้ตอน fetchData
+    // 1. ตรวจสอบข้อมูลจากตัวแปร Global
     if (!window.currentBudgetData || window.currentBudgetData.length === 0) {
-        alert('ไม่พบข้อมูลที่จะส่งออก');
+        showAlert('info', 'ไม่พบข้อมูล', 'กรุณารอสักครู่หรือลองค้นหาข้อมูลก่อนส่งออก');
         return;
     }
 
-    // เตรียมข้อมูลสำหรับ Excel (เลือกเฉพาะคอลัมน์ที่ต้องการ)
+    // 2. Mapping ข้อมูล (ต้องตรงกับชื่อ Column ใน Database)
     const excelData = window.currentBudgetData.map((item, index) => ({
         'ลำดับ': index + 1,
-        'ปีงบประมาณ': item.fiscal_year,
-        'อำเภอ': item.amphoe,
-        'อปท./ตำบล': item.tambon,
-        'ชื่อโครงการ': item.project_name,
-        'งบประมาณ (บาท)': item.budget,
+        'ปีงบประมาณ': item.fiscal_year || '',
+        'อำเภอ': item.amphoe || '',
+        'อปท./ตำบล': item.tambon || '',
+        'ชื่อโครงการ': item.project_name || '',
+        'งบประมาณ (บาท)': item.budget ? Number(item.budget) : 0,
         'หมายเหตุ': item.remark || ''
     }));
 
-    // สร้าง Workbook
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "รายชื่อโครงการ");
+    try {
+        // 3. สร้าง Workbook
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "รายชื่อโครงการ");
 
-    // ปรับความกว้างคอลัมน์เบื้องต้น
-    const wscols = [
-        {wch: 6},  {wch: 12}, {wch: 15}, {wch: 25}, {wch: 50}, {wch: 15}, {wch: 20}
-    ];
-    worksheet['!cols'] = wscols;
+        // 4. ปรับความกว้างคอลัมน์ให้พอดีกับเนื้อหาภาษาไทย
+        worksheet['!cols'] = [
+            { wch: 8 },  // ลำดับ
+            { wch: 12 }, // ปีงบประมาณ
+            { wch: 20 }, // อำเภอ
+            { wch: 25 }, // อปท./ตำบล
+            { wch: 60 }, // ชื่อโครงการ
+            { wch: 18 }, // งบประมาณ
+            { wch: 25 }  // หมายเหตุ
+        ];
 
-    // ดาวน์โหลดไฟล์
-    const fileName = `โครงการ_อบจ_นครปฐม_${new Date().toLocaleDateString('th-TH')}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
+        // 5. ดาวน์โหลดไฟล์
+        const dateNow = new Date().toLocaleDateString('th-TH').replace(/\//g, '-');
+        XLSX.writeFile(workbook, `โครงการ_อบจ_นครปฐม_${dateNow}.xlsx`);
+        
+    } catch (error) {
+        console.error("Export Error:", error);
+        showAlert('error', 'ส่งออกไม่สำเร็จ', error.message);
+    }
 }
 
 // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
