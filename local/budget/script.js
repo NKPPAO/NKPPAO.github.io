@@ -46,6 +46,46 @@ async function fetchData() {
         const { data: budgetData } = await sumQuery;
         sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
 
+        const stats = {};
+        budgetData.forEach(item => {
+            const amp = item.amphoe || 'ไม่ระบุ';
+            const budget = Number(item.budget) || 0;
+            
+            if (!stats[amp]) {
+                stats[amp] = { count: 0, budget: 0 };
+            }
+            stats[amp].count += 1;
+            stats[amp].budget += budget;
+        });
+        
+        // แสดงผลบนการ์ดสรุป
+        document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' บาท';
+        document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString() + ' รายการ';
+        
+        // แสดงรายละเอียดแยกรายอำเภอ
+        const budgetList = document.getElementById('budgetByAmphoe');
+        const countList = document.getElementById('countByAmphoe');
+        
+        budgetList.innerHTML = '';
+        countList.innerHTML = '';
+        
+        // วนลูปสร้าง HTML รายอำเภอ (เรียงตามงบประมาณจากมากไปน้อย)
+        Object.entries(stats)
+            .sort((a, b) => b[1].budget - a[1].budget)
+            .forEach(([name, data]) => {
+                budgetList.innerHTML += `
+                    <div class="flex justify-between items-center text-slate-600">
+                        <span>อ. ${name}</span>
+                        <span class="font-bold text-emerald-600">${data.budget.toLocaleString()}</span>
+                    </div>`;
+                
+                countList.innerHTML += `
+                    <div class="flex justify-between items-center text-slate-600">
+                        <span>อ. ${name}</span>
+                        <span class="font-bold text-blue-600">${data.count.toLocaleString()} โครงการ</span>
+                    </div>`;
+            });
+
         totalItems = count;
         renderTable(data, from);
         updateUI();
