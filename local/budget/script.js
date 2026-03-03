@@ -4,9 +4,10 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentPage = 1;
-const itemsPerPage = 15;
+const itemsPerPage = 10;
 let totalItems = 0;
 let sumBudget = 0;
+let currentUser = null;
 
 async function fetchData() {
     const tableBody = document.getElementById('mainTable');
@@ -80,7 +81,9 @@ function renderTable(data, startNumber) {
     data.forEach((item, index) => {
         const num = startNumber + index + 1;
         // ส่วนของ Admin Buttons (ถ้า login จะโชว์)
-        const adminActionsHTML = user ? `
+        const adminActionsHTML = '';
+        if (currentUser) {
+        adminActionsHTML = `
             <div class="flex gap-2 mt-2 justify-end">
                 <button onclick='openEditModal(${JSON.stringify(item)})' class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -94,6 +97,7 @@ function renderTable(data, startNumber) {
                 </button>
             </div>
         ` : '';
+        }
         
         // 1. สร้างแถวสำหรับตาราง (Desktop)
         const row = document.createElement('tr');
@@ -318,6 +322,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         if (error) throw error;
 
         // ถ้าสำเร็จ
+        currentUser = user;
         showAlert('success', 'ยินดีต้อนรับ!', 'เข้าสู่ระบบสำเร็จแล้ว', true);
         //alert('ยินดีต้อนรับ! เข้าสู่ระบบสำเร็จ');
         // รีโหลดหน้า หรือแสดงปุ่มเพิ่มข้อมูล (Add Project)
@@ -387,6 +392,7 @@ async function checkUserStatus() {
 // ฟังก์ชัน Logout
 async function handleLogout() {
     await _supabase.auth.signOut();
+    currentUser = null;
     location.reload();
 }
 
