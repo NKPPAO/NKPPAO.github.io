@@ -15,18 +15,15 @@ async function fetchData() {
     const to = from + itemsPerPage - 1;
 
     try {
-        // สร้าง Base Query สำหรับทั้งข้อมูลและยอดรวม
         let query = _supabase.from('projects').select('*', { count: 'exact' });
-        let sumQuery = _supabase.from('projects').select('budget, amphoe');
+        let sumQuery = _supabase.from('projects').select('budget').range(0, 9999);
 
-        // รับค่า Filter
         const fAmp = document.getElementById('sAmphoe').value;
         const fYear = document.getElementById('sYear').value;
         const fOpt = document.getElementById('sOpt').value;
         const fProj = document.getElementById('sProject').value;
         const fNote = document.getElementById('sNote').value;
 
-        // ใส่เงื่อนไข Filter (ต้องใส่เหมือนกันทั้งข้อมูลและยอดรวม)
         [query, sumQuery].forEach(q => {
             if (fAmp) q.eq('amphoe', fAmp);
             if (fYear) q.eq('fiscal_year', fYear);
@@ -35,57 +32,19 @@ async function fetchData() {
             if (fNote) q.ilike('remark', `%${fNote}%`);
         });
 
-        // ดึงข้อมูลรายหน้า
         const { data, error, count } = await query
             .order('fiscal_year', { ascending: false })
             .range(from, to);
 
         if (error) throw error;
 
-        // ดึงข้อมูลเพื่อมาหาผลรวม (คำนวณยอดรวมของ Filter นั้นๆ ทั้งหมด)
+        // คำนวณเฉพาะยอดงบประมาณรวม
         const { data: budgetData } = await sumQuery;
         sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
-
-        const stats = {};
-        budgetData.forEach(item => {
-            // ตรวจสอบว่ามีชื่ออำเภอไหม ถ้าไม่มีให้ใส่ "ไม่ระบุ"
-            const amp = item.amphoe && item.amphoe.trim() !== "" ? item.amphoe : 'ไม่ระบุ';
-            const budget = Number(item.budget) || 0;
-            
-            if (!stats[amp]) {
-                stats[amp] = { count: 0, budget: 0 };
-            }
-            stats[amp].count += 1;
-            stats[amp].budget += budget;
-        });
         
-        // แสดงผลบนการ์ดสรุป
+        // อัปเดตตัวเลขบน Card (เฉพาะยอดหลัก)
         document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' บาท';
         document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString() + ' รายการ';
-        
-        // แสดงรายละเอียดแยกรายอำเภอ
-        const budgetList = document.getElementById('budgetByAmphoe');
-        const countList = document.getElementById('countByAmphoe');
-        
-        budgetList.innerHTML = '';
-        countList.innerHTML = '';
-        
-        // วนลูปสร้าง HTML รายอำเภอ (เรียงตามงบประมาณจากมากไปน้อย)
-        Object.entries(stats)
-            .sort((a, b) => b[1].budget - a[1].budget)
-            .forEach(([name, data]) => {
-                budgetList.innerHTML += `
-                    <div class="flex justify-between items-center text-slate-600">
-                        <span>อ. ${name}</span>
-                        <span class="font-bold text-emerald-600">${data.budget.toLocaleString()}</span>
-                    </div>`;
-                
-                countList.innerHTML += `
-                    <div class="flex justify-between items-center text-slate-600">
-                        <span>อ. ${name}</span>
-                        <span class="font-bold text-blue-600">${data.count.toLocaleString()} โครงการ</span>
-                    </div>`;
-            });
 
         totalItems = count;
         renderTable(data, from);
