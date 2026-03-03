@@ -17,7 +17,7 @@ async function fetchData() {
     try {
         // สร้าง Base Query สำหรับทั้งข้อมูลและยอดรวม
         let query = _supabase.from('projects').select('*', { count: 'exact' });
-        let sumQuery = _supabase.from('projects').select('budget');
+        let sumQuery = _supabase.from('projects').select('budget, amphoe');
 
         // รับค่า Filter
         const fAmp = document.getElementById('sAmphoe').value;
@@ -48,7 +48,8 @@ async function fetchData() {
 
         const stats = {};
         budgetData.forEach(item => {
-            const amp = item.amphoe || 'ไม่ระบุ';
+            // ตรวจสอบว่ามีชื่ออำเภอไหม ถ้าไม่มีให้ใส่ "ไม่ระบุ"
+            const amp = item.amphoe && item.amphoe.trim() !== "" ? item.amphoe : 'ไม่ระบุ';
             const budget = Number(item.budget) || 0;
             
             if (!stats[amp]) {
