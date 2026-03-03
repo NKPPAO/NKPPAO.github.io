@@ -595,7 +595,10 @@ function showAlert(type, title, message, reload = false, showCancel = false) {
     const titleEl = document.getElementById('modalTitle');
     const msgEl = document.getElementById('modalMessage');
     const btn = document.getElementById('modalBtn');
-    const closeBtn = document.getElementById('modalCloseBtn'); // ดึงปุ่มยกเลิกมา
+    const closeBtn = document.getElementById('modalCloseBtn');
+    
+    // ดึงตัวครอบปุ่ม (Action Area) มาจัดการ Layout
+    const actionArea = document.getElementById('modalActionArea');
 
     // ล้าง Class เดิมออกก่อน
     container.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ";
@@ -618,29 +621,25 @@ function showAlert(type, title, message, reload = false, showCancel = false) {
     titleEl.innerText = title;
     msgEl.innerText = message;
     
-    // ✅ จัดการปุ่มยกเลิก
+    // ✅ จุดสำคัญ: จัดการปุ่มให้สมดุล
     if (showCancel && closeBtn) {
         closeBtn.classList.remove('hidden');
+        // ใช้ Grid 2 คอลัมน์เพื่อให้ปุ่มกว้างเท่ากัน (50/50)
+        actionArea.className = "grid grid-cols-2 gap-3 mt-8 w-full"; 
+        
+        // เซ็ตปุ่มกดยกเลิกให้ปิด Modal
+        closeBtn.onclick = () => modal.classList.add('hidden');
     } else if (closeBtn) {
         closeBtn.classList.add('hidden');
+        // ถ้ามีปุ่มเดียว ให้แสดงแบบเต็มความกว้าง (Full Width)
+        actionArea.className = "block mt-8 w-full"; 
     }
 
+    // ตั้งค่าปุ่มหลัก (ตกลง/ยืนยัน)
     btn.onclick = () => {
         modal.classList.add('hidden');
         if (reload) location.reload();
     };
-
-    const actionArea = document.getElementById('modalActionArea');
-
-    if (showCancel) {
-        // กรณีมี 2 ปุ่ม: ใช้ Grid 2 คอลัมน์
-        closeBtn.classList.remove('hidden');
-        actionArea.className = "grid grid-cols-2 gap-3 mt-6 w-full"; 
-    } else {
-        // กรณีมีปุ่มเดียว: ให้ปุ่ม "ตกลง" เต็มความกว้าง
-        closeBtn.classList.add('hidden');
-        actionArea.className = "block mt-6 w-full"; 
-    }
 
     modal.classList.remove('hidden');
 }
