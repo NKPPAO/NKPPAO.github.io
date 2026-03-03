@@ -63,9 +63,6 @@ async function fetchData() {
 function renderTable(data, startNumber) {
     const tableBody = document.getElementById('mainTable');
     const mobileContainer = document.getElementById('mobileTable');
-
-    // ตรวจสอบสถานะ User ก่อนเรนเดอร์ปุ่ม
-    const { data: { user } } = await _supabase.auth.getUser();
     
     // เคลียร์ข้อมูลเก่า
     tableBody.innerHTML = '';
