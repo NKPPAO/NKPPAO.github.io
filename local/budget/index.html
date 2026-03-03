@@ -34,41 +34,51 @@
 </header>
 
 <main class="max-w-7xl mx-auto px-4 -mt-16 relative z-10 pb-20">
-    <div class="bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.07)] p-6 sm:p-10 border border-white mb-10">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-            <div class="space-y-1.5">
-                <label class="text-[13px] font-bold text-slate-600 ml-1">เลือกอำเภอ</label>
-                <select id="sAmphoe" onchange="applyFilter()" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-medium">
+    <div class="bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.07)] p-5 border border-white mb-10">
+    <div class="flex flex-col xl:flex-row items-end gap-4">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 flex-grow w-full">
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">อำเภอ</label>
+                <select id="sAmphoe" onchange="applyFilter()" class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] font-medium appearance-none shadow-sm">
                     <option value="">ทั้งหมด</option>
                 </select>
             </div>
-            <div class="space-y-1.5">
-                <label class="text-[13px] font-bold text-slate-600 ml-1">ปีงบประมาณ</label>
-                <select id="sYear" onchange="applyFilter()" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-medium">
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">ปีงบฯ</label>
+                <select id="sYear" onchange="applyFilter()" class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] font-medium appearance-none shadow-sm">
                     <option value="">ทุกปี</option>
                 </select>
             </div>
-            <div class="space-y-1.5">
-                <label class="text-[13px] font-bold text-slate-600 ml-1">ชื่อ อปท. (ตำบล)</label>
-                <input type="text" id="sOpt" onkeyup="applyFilter()" placeholder="ค้นหา อปท..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm placeholder:text-slate-300">
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">อปท. (ตำบล)</label>
+                <input type="text" id="sOpt" onkeyup="applyFilter()" placeholder="..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
             </div>
-            <div class="space-y-1.5">
-                <label class="text-[13px] font-bold text-slate-600 ml-1">ชื่อโครงการ</label>
-                <input type="text" id="sProject" onkeyup="applyFilter()" placeholder="พิมพ์ชื่อโครงการ..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm placeholder:text-slate-300">
+            <div class="space-y-1 lg:col-span-1">
+                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">ชื่อโครงการ</label>
+                <input type="text" id="sProject" onkeyup="applyFilter()" placeholder="ระบุชื่อโครงการ..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
             </div>
-            <div class="space-y-1.5">
-                <label class="text-[13px] font-bold text-slate-600 ml-1">หมายเหตุ</label>
-                <input type="text" id="sNote" onkeyup="applyFilter()" placeholder="ระบุหมายเหตุ..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm placeholder:text-slate-300">
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">หมายเหตุ</label>
+                <input type="text" id="sNote" onkeyup="applyFilter()" placeholder="..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
             </div>
         </div>
         
-        <div class="mt-8 pt-6 border-t border-slate-50 flex flex-col sm:flex-row gap-3">
-            <button onclick="clearSearch()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-2xl transition-all text-sm">
-                ล้างการค้นหา
-            </button>
-            <div id="adminActions" class="flex-[2] flex gap-2"></div>
+        <div class="flex items-center gap-2 pb-0.5 w-full xl:w-auto justify-end border-t xl:border-t-0 pt-4 xl:pt-0">
+            <div class="relative group">
+                <button onclick="clearSearch()" class="w-11 h-11 flex items-center justify-center bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-all border border-slate-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">ล้างการค้นหา</span>
+            </div>
+
+            <div id="adminActions" class="flex items-center gap-2"></div>
         </div>
+
     </div>
+</div>
 
     <div class="space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-end gap-4 px-2">
