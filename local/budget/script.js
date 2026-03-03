@@ -588,13 +588,14 @@ async function processUpload() {
     reader.readAsArrayBuffer(selectedFile);
 }
 
-function showAlert(type, title, message, reload = false) {
+function showAlert(type, title, message, reload = false, showCancel = false) {
     const modal = document.getElementById('universalModal');
     const container = document.getElementById('modalIconContainer');
     const icon = document.getElementById('modalIcon');
     const titleEl = document.getElementById('modalTitle');
     const msgEl = document.getElementById('modalMessage');
     const btn = document.getElementById('modalBtn');
+    const closeBtn = document.getElementById('modalCloseBtn'); // ดึงปุ่มยกเลิกมา
 
     // ล้าง Class เดิมออกก่อน
     container.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ";
@@ -617,7 +618,13 @@ function showAlert(type, title, message, reload = false) {
     titleEl.innerText = title;
     msgEl.innerText = message;
     
-    // ถ้าต้องการให้กดตกลงแล้ว Reload หน้า
+    // ✅ จัดการปุ่มยกเลิก
+    if (showCancel && closeBtn) {
+        closeBtn.classList.remove('hidden');
+    } else if (closeBtn) {
+        closeBtn.classList.add('hidden');
+    }
+
     btn.onclick = () => {
         modal.classList.add('hidden');
         if (reload) location.reload();
@@ -632,22 +639,30 @@ function closeUniversalModal() {
 
 // --- ส่วนของการลบโครงการ ---
 async function confirmDelete(id, name) {
-    // ใช้ showAlert แบบยืนยัน (ปรับแต่งปุ่ม)
-    const modal = document.getElementById('universalModal');
-    showAlert('error', 'ยืนยันการลบ', `คุณต้องการลบโครงการ "${name}" ใช่หรือไม่?`);
+    // ✅ ส่ง true เข้าไปในพารามิเตอร์สุดท้ายเพื่อโชว์ปุ่มยกเลิก
+    showAlert('error', 'ยืนยันการลบ', `คุณต้องการลบโครงการ "${name}" ใช่หรือไม่?`, false, true);
     
-    // ปรับแต่งปุ่มใน Modal ให้กลายเป็นปุ่ม "ยืนยันการลบ" เฉพาะกิจ
     const btn = document.getElementById('modalBtn');
-    btn.innerText = "ยืนยันการลบโครงการ";
+    btn.innerText = "ยืนยันการลบ";
+    
+    // เมื่อกดยืนยัน
     btn.onclick = async () => {
         try {
+            // เปลี่ยนสถานะปุ่มชั่วคราว
+            btn.disabled = true;
+            btn.innerText = "กำลังลบ...";
+
             const { error } = await _supabase.from('projects').delete().eq('id', id);
             if (error) throw error;
             
-            modal.classList.add('hidden');
+            // ปิด Modal เดิมก่อน แล้วค่อยแจ้งเตือนว่าสำเร็จ
+            document.getElementById('universalModal').classList.add('hidden');
             showAlert('success', 'ลบสำเร็จ', 'ลบข้อมูลโครงการเรียบร้อยแล้ว', true);
+            
         } catch (err) {
             showAlert('error', 'เกิดข้อผิดพลาด', err.message);
+        } finally {
+            btn.disabled = false;
         }
     };
 }
