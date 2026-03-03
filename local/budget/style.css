@@ -1,3 +1,20 @@
+html, body {
+    max-width: 100%;
+    overflow-x: hidden; /* ห้ามเลื่อนซ้ายขวาในระดับโครงสร้าง */
+    position: relative;
+}
+
+/* ป้องกันตารางดันขอบหน้าจอ */
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch; /* ให้ไถตารางบนมือถือได้ลื่นๆ */
+}
+
+/* ป้องกันข้อความยาวๆ ดันขอบ (เช่น ชื่อโครงการยาวเกินไป) */
+table, div, p, h1, h2 {
+    word-break: break-word; 
+    overflow-wrap: break-word;
+}
+
 body { 
     font-family: 'Sarabun', sans-serif; 
     color: #444;
