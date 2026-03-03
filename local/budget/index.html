@@ -155,19 +155,19 @@
             </div>
         </div>
 
-        <div class="hidden md:block overflow-x-auto rounded-2xl border border-slate-100">
-    <table class="w-full min-w-[800px]">
-                <thead>
-                    <tr class="bg-slate-50/50 text-[13px] uppercase tracking-wider text-slate-600 border-b border-slate-100">
-                        <th class="p-6 font-bold text-center w-20">#</th>
-                        <th class="p-6 font-bold">ข้อมูลพื้นที่</th>
-                        <th class="p-6 font-bold w-full">รายละเอียดโครงการ</th>
-                        <th class="p-6 font-bold text-right">งบประมาณ</th>
-                    </tr>
-                </thead>
-                <tbody id="mainTable" class="text-[14px] divide-y divide-slate-50"></tbody>
-            </table>
-        </div>
+        <div class="hidden md:block table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-index">#</th>
+                    <th class="col-area text-left">พื้นที่ / ปีงบฯ</th>
+                    <th class="col-project text-left">รายละเอียดโครงการ</th>
+                    <th class="col-budget text-right">งบประมาณ (บาท)</th>
+                </tr>
+            </thead>
+            <tbody id="mainTable" class="divide-y divide-slate-50"></tbody>
+        </table>
+    </div>
 
         <div id="mobileTable" class="md:hidden space-y-4"></div>
     </div>
