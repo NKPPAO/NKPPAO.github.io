@@ -2,17 +2,26 @@ name: Keep Supabase Project Alive
 
 on:
   schedule:
-    # รันทุกๆ วัน เวลา 00:00 UTC (ประมาณ 07:00 น. เวลาไทย)
     - cron: '0 0 * * *'
-  workflow_dispatch: # ปุ่มสำหรับกดรันเองเพื่อทดสอบ
+  workflow_dispatch:
 
 jobs:
   ping_supabase:
     runs-on: ubuntu-latest
     steps:
+      - name: Check Secrets Existence
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+            echo "Error: SUPABASE_URL is missing!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+            echo "Error: SUPABASE_ANON_KEY is missing!"
+            exit 1
+          fi
+
       - name: Send Request to Supabase API
         run: |
-          # เปลี่ยน 'amphoe' เป็นชื่อตารางที่มีอยู่ในฐานข้อมูลของคุณ
           curl -i -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/projects?select=*" \
           -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
