@@ -120,12 +120,12 @@ function renderTable(data, startNumber) {
                 <div class="text-blue-600 font-medium text-[12px]">${item.tambon || ''}</div>
             </td>
             <td class="p-4">
-                <div class="text-slate-800 font-semibold leading-relaxed mb-1">${item.project_name || '-'}</div>
-                <div class="text-slate-400 text-[12px] italic">${item.remark || ''}</div>
+                <div class="text-slate-800 font-semibold leading-relaxed">${item.project_name || '-'}</div>
+                <div class="text-red-400 text-[12px]">${item.remark || ''}</div>
             </td>
             <td class="p-4 text-right">
-                <div class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-bold mb-1">ปี ${item.fiscal_year || '-'}</div>
-                <div class="text-emerald-600 font-bold text-[15px] tracking-tight">
+                <div class="inline-block px-2 py-0.5 bg-blue-100 text-blue-600 rounded text-[11px] font-bold mb-1">ปี ${item.fiscal_year || '-'}</div>
+                <div class="rounded inline-block px-2 py-0.5 bg-emerald-100  text-emerald-600 font-bold text-[15px] tracking-tight">
                     ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
                 </div>
             </td>
@@ -167,7 +167,7 @@ function updateUI() {
     document.getElementById('pInfo').innerHTML = `พบข้อมูลทั้งหมด <span class="text-blue-600 font-bold">${totalItems.toLocaleString()}</span> รายการ`;
     
     // แสดงยอดงบประมาณรวม
-    document.getElementById('totalBudgetInfo').innerHTML = `งบประมาณรวมทั้งสิ้น <span class="underline">${sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท`;
+    document.getElementById('totalBudgetInfo').innerHTML = `งบประมาณรวมทั้งสิ้น <span class="rounded inline-block px-2 py-0.5 bg-emerald-100  text-emerald-600 font-bold text-[15px] tracking-tight">${sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท`;
     
     document.getElementById('btnPrev').disabled = currentPage === 1;
     document.getElementById('btnNext').disabled = currentPage >= totalPages || totalPages === 0;
