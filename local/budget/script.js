@@ -363,24 +363,30 @@ async function checkUserStatus() {
         if (btnLoginMain) btnLoginMain.classList.add('hidden');
         // แสดงปุ่ม "อัปโหลด Excel" แทน "เพิ่มโครงการ"
         actionArea.innerHTML = `
-            <div class="relative group border-l border-slate-100 pl-2 ml-1 flex gap-2">
+            <div class="flex items-center gap-2 border-l border-slate-100 pl-2 ml-1">
+            
             <div class="relative group">
-                <button onclick="openUploadModal()" class="w-11 h-11 flex items-center justify-center bg-[#0056b3] text-white rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
+                <button onclick="openUploadModal()" class="w-11 h-11 flex items-center justify-center bg-[#0056b3] text-white rounded-xl hover:bg-blue-700 transition-all shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                 </button>
-                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">นำเข้า Excel</span>
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60]">
+                    นำเข้า Excel
+                </span>
             </div>
 
             <div class="relative group">
-                <button onclick="handleLogout()" class="w-11 h-11 flex items-center justify-center bg-white border border-slate-200 text-slate-400 rounded-xl hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all">
+                <button onclick="handleLogout()" class="w-11 h-11 flex items-center justify-center bg-white border border-slate-200 text-slate-400 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                 </button>
-                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">ออกจากระบบ</span>
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60]">
+                    ออกจากระบบ
+                </span>
             </div>
+
         </div>
         `;
     } else {
