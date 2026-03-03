@@ -630,6 +630,18 @@ function showAlert(type, title, message, reload = false, showCancel = false) {
         if (reload) location.reload();
     };
 
+    const actionArea = document.getElementById('modalActionArea');
+
+    if (showCancel) {
+        // กรณีมี 2 ปุ่ม: ใช้ Grid 2 คอลัมน์
+        closeBtn.classList.remove('hidden');
+        actionArea.className = "grid grid-cols-2 gap-3 mt-6 w-full"; 
+    } else {
+        // กรณีมีปุ่มเดียว: ให้ปุ่ม "ตกลง" เต็มความกว้าง
+        closeBtn.classList.add('hidden');
+        actionArea.className = "block mt-6 w-full"; 
+    }
+
     modal.classList.remove('hidden');
 }
 
