@@ -363,17 +363,25 @@ async function checkUserStatus() {
         if (btnLoginMain) btnLoginMain.classList.add('hidden');
         // แสดงปุ่ม "อัปโหลด Excel" แทน "เพิ่มโครงการ"
         actionArea.innerHTML = `
-            <div class="flex gap-2 w-full animate-in fade-in duration-300">
-                <button onclick="openUploadModal()" class="flex-[2] bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition shadow-lg shadow-blue-100 text-sm flex items-center justify-center gap-2 h-[42px]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <div class="relative group border-l border-slate-100 pl-2 ml-1 flex gap-2">
+            <div class="relative group">
+                <button onclick="openUploadModal()" class="w-11 h-11 flex items-center justify-center bg-[#0056b3] text-white rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
-                    อัปโหลด Excel
                 </button>
-                <button onclick="handleLogout()" class="flex-1 bg-white hover:bg-red-50 text-red-500 font-bold py-2.5 rounded-xl transition border border-red-100 text-[11px] h-[42px]" title="ออกจากระบบ">
-                    Log out
-                </button>
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">นำเข้า Excel</span>
             </div>
+
+            <div class="relative group">
+                <button onclick="handleLogout()" class="w-11 h-11 flex items-center justify-center bg-white border border-slate-200 text-slate-400 rounded-xl hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">ออกจากระบบ</span>
+            </div>
+        </div>
         `;
     } else {
         // กรณีไม่ได้ Login: ไม่ต้องแสดงอะไรในพื้นที่นี้ หรือแสดง Admin Login เล็กๆ
