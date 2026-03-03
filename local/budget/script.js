@@ -93,7 +93,7 @@ function renderTable(data, startNumber) {
                     </svg>
                 </button>
             </div>
-        ` : '';
+        ` ;
         }
         
         // 1. สร้างแถวสำหรับตาราง (Desktop)
@@ -114,6 +114,7 @@ function renderTable(data, startNumber) {
                 <div class="rounded inline-block px-2 py-0.5 bg-emerald-100  text-emerald-600 font-bold text-[15px] tracking-tight">
                     ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
                 </div>
+                ${adminActionsHTML}
             </td>
         `;
         tableBody.appendChild(row);
