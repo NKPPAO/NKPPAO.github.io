@@ -1,18 +1,61 @@
+/* --- ส่วนโครงสร้างป้องกันหน้าจอไถซ้ายขวา --- */
 html, body {
     max-width: 100%;
-    overflow-x: hidden; /* ห้ามเลื่อนซ้ายขวาในระดับโครงสร้าง */
+    overflow-x: hidden;
     position: relative;
+    background-color: #f8fafc;
+}
+
+/* --- ตาราง Desktop --- */
+.table-container {
+    background: white;
+    border-radius: 1.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    overflow-x: auto; /* ยอมให้ไถในตัวตารางเองถ้าจอบีบมาก */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto; /* ให้เบราว์เซอร์คำนวณความกว้างตามเนื้อหา */
+}
+
+th {
+    background-color: #f8fafc;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+td {
+    padding: 1.25rem 1rem;
+    vertical-align: top; /* สำคัญ: ให้เนื้อหาชิดด้านบนเสมอ */
+}
+
+/* กำหนดความกว้างคอลัมน์แบบเจาะจง */
+.col-index { width: 50px; text-align: center; color: #94a3b8; }
+.col-area { width: 180px; white-space: nowrap; }
+.col-project { min-width: 350px; white-space: normal; word-break: break-word; }
+.col-budget { width: 160px; text-align: right; white-space: nowrap; }
+
+/* --- Mobile Card (สำหรับจอมือถือ) --- */
+.mobile-card {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 1.25rem;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 /* ป้องกันตารางดันขอบหน้าจอ */
 .overflow-x-auto {
     -webkit-overflow-scrolling: touch; /* ให้ไถตารางบนมือถือได้ลื่นๆ */
-}
-
-/* ป้องกันข้อความยาวๆ ดันขอบ (เช่น ชื่อโครงการยาวเกินไป) */
-table, div, p, h1, h2 {
-    word-break: break-word; 
-    overflow-wrap: break-word;
 }
 
 body { 
