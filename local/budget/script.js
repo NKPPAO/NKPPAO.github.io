@@ -59,42 +59,12 @@ async function fetchData() {
     }
 }
 
-/*function renderTable(data, startNumber) {
-    const tableBody = document.getElementById('mainTable');
-    tableBody.innerHTML = '';
-
-    if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-400">ไม่พบข้อมูล</td></tr>`;
-        return;
-    }
-
-    data.forEach((item, index) => {
-        const row = document.createElement('tr');
-        row.className = "hover:bg-blue-50/50 transition-colors";
-        row.innerHTML = `
-            <td class="p-4 text-center text-slate-400 font-medium">${startNumber + index + 1}</td>
-            <td class="p-4">
-                <div class="font-bold text-slate-700">${item.amphoe || '-'}</div>
-                <div class="text-blue-600 font-medium text-[12px]">${item.tambon || ''}</div>
-            </td>
-            <td class="p-4">
-                <div class="text-slate-800 font-semibold leading-relaxed mb-1">${item.project_name || '-'}</div>
-                <div class="text-slate-400 text-[12px] italic">${item.remark || ''}</div>
-            </td>
-            <td class="p-4 text-right">
-                <div class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-bold mb-1">ปี ${item.fiscal_year || '-'}</div>
-                <div class="text-emerald-600 font-bold text-[15px] tracking-tight">
-                    ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
-                </div>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-}*/
-
 function renderTable(data, startNumber) {
     const tableBody = document.getElementById('mainTable');
     const mobileContainer = document.getElementById('mobileTable');
+
+    // ตรวจสอบสถานะ User ก่อนเรนเดอร์ปุ่ม
+    const { data: { user } } = await _supabase.auth.getUser();
     
     // เคลียร์ข้อมูลเก่า
     tableBody.innerHTML = '';
@@ -109,6 +79,21 @@ function renderTable(data, startNumber) {
 
     data.forEach((item, index) => {
         const num = startNumber + index + 1;
+        // ส่วนของ Admin Buttons (ถ้า login จะโชว์)
+        const adminActionsHTML = user ? `
+            <div class="flex gap-2 mt-2 justify-end">
+                <button onclick='openEditModal(${JSON.stringify(item)})' class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                </button>
+                <button onclick="confirmDelete('${item.id}', '${item.project_name}')" class="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        ` : '';
         
         // 1. สร้างแถวสำหรับตาราง (Desktop)
         const row = document.createElement('tr');
@@ -148,11 +133,14 @@ function renderTable(data, startNumber) {
                 <div class="text-slate-700 font-medium leading-snug">${item.project_name || '-'}</div>
                 <div class="text-slate-400 text-[11px] italic mt-1">${item.remark || ''}</div>
             </div>
-            <div class="border-t border-slate-100 pt-3 text-right">
-                <div class="text-[11px] text-slate-400">งบประมาณ</div>
-                <div class="text-emerald-600 font-bold text-[16px]">
-                    ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})} บาท
+            <div class="border-t border-slate-100 pt-3 flex justify-between items-end">
+                <div class="text-right flex-grow">
+                    <div class="text-[11px] text-slate-400">งบประมาณ</div>
+                    <div class="text-emerald-600 font-bold text-[16px]">
+                        ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})} บาท
+                    </div>
                 </div>
+                <div class="ml-4">${adminActionsHTML}</div>
             </div>
         `;
         mobileContainer.appendChild(card);
@@ -637,6 +625,75 @@ function showAlert(type, title, message, reload = false) {
 
 function closeUniversalModal() {
     document.getElementById('universalModal').classList.add('hidden');
+}
+
+// --- ส่วนของการลบโครงการ ---
+async function confirmDelete(id, name) {
+    // ใช้ showAlert แบบยืนยัน (ปรับแต่งปุ่ม)
+    const modal = document.getElementById('universalModal');
+    showAlert('error', 'ยืนยันการลบ', `คุณต้องการลบโครงการ "${name}" ใช่หรือไม่?`);
+    
+    // ปรับแต่งปุ่มใน Modal ให้กลายเป็นปุ่ม "ยืนยันการลบ" เฉพาะกิจ
+    const btn = document.getElementById('modalBtn');
+    btn.innerText = "ยืนยันการลบโครงการ";
+    btn.onclick = async () => {
+        try {
+            const { error } = await _supabase.from('projects').delete().eq('id', id);
+            if (error) throw error;
+            
+            modal.classList.add('hidden');
+            showAlert('success', 'ลบสำเร็จ', 'ลบข้อมูลโครงการเรียบร้อยแล้ว', true);
+        } catch (err) {
+            showAlert('error', 'เกิดข้อผิดพลาด', err.message);
+        }
+    };
+}
+
+// --- ส่วนของการแก้ไขโครงการ ---
+function openEditModal(item) {
+    // สร้าง/เปิด Modal สำหรับแก้ไข (แนะนำให้ใช้โครงสร้าง Modal เดิมที่มีอยู่ หรือเพิ่มฟิลด์ใน Modal ใหม่)
+    // ตัวอย่างการใช้ showAlert แบบกรอกข้อมูล (หรือสร้าง Modal แยกจะดีกว่า)
+    // ในที่นี้ผมจะแนะนำให้คุณสร้าง Modal HTML รอกไว้ที่มี ID: 'editProjectModal'
+    
+    document.getElementById('editId').value = item.id;
+    document.getElementById('editYear').value = item.fiscal_year;
+    document.getElementById('editAmphoe').value = item.amphoe;
+    document.getElementById('editTambon').value = item.tambon;
+    document.getElementById('editProjectName').value = item.project_name;
+    document.getElementById('editBudget').value = item.budget;
+    document.getElementById('editRemark').value = item.remark;
+    
+    document.getElementById('editProjectModal').classList.remove('hidden');
+}
+
+async function handleUpdateProject(e) {
+    e.preventDefault();
+    const id = document.getElementById('editId').value;
+    const btn = e.submitter;
+    btn.disabled = true;
+    btn.innerText = "กำลังบันทึก...";
+
+    const updateData = {
+        fiscal_year: document.getElementById('editYear').value,
+        amphoe: document.getElementById('editAmphoe').value,
+        tambon: document.getElementById('editTambon').value,
+        project_name: document.getElementById('editProjectName').value,
+        budget: parseFloat(document.getElementById('editBudget').value),
+        remark: document.getElementById('editRemark').value,
+        updated_at: new Date()
+    };
+
+    try {
+        const { error } = await _supabase.from('projects').update(updateData).eq('id', id);
+        if (error) throw error;
+
+        document.getElementById('editProjectModal').classList.add('hidden');
+        showAlert('success', 'แก้ไขสำเร็จ', 'อัปเดตข้อมูลโครงการเรียบร้อยแล้ว', true);
+    } catch (err) {
+        showAlert('error', 'เกิดข้อผิดพลาด', err.message);
+        btn.disabled = false;
+        btn.innerText = "บันทึกการแก้ไข";
+    }
 }
 
 // เรียกใช้ checkUserStatus() ในจุดที่เหมาะสม (เช่น ท้ายไฟล์ script.js)
