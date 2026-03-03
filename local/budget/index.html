@@ -12,122 +12,107 @@
 </head>
 <body>
 
-<nav class="relative bg-blue-900 border-b border-blue-800 shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-3 sm:h-24"> 
-            <div class="flex items-center gap-3 sm:gap-4 flex-1">
-                <div class="bg-white p-1 rounded-full shadow-inner flex-shrink-0">
-                    <img src="https://www.nkppao.go.th/customers/webpages/images/master_001.png" alt="Logo" class="w-10 h-10 sm:w-14 sm:h-14 object-contain">
-                </div>
-                <div class="flex flex-col min-w-0">
-                    <h1 id="main-header" class="text-[15px] sm:text-xl font-bold text-white leading-tight">โครงการขอรับการสนับสนุนงบประมาณ อบจ.นฐ</h1>
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3 mt-1">
-                        <p id="sub-header" class="text-[13px] sm:text-[15px] text-blue-200 font-bold">ข้อมูลตั้งแต่ปี พ.ศ. 2547 เป็นต้นไป</p>
-                        <span class="hidden sm:block text-blue-700">|</span>
-                        <p class="text-[11px] sm:text-[13px] text-blue-100/80 font-medium">
-                            อัปเดตล่าสุด: <span id="nav-last-update" class="text-white font-semibold">...</span>
-                        </p>
-                    </div>
-                </div>
-            </div>
+<header class="bg-white pt-12 pb-24">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <div class="inline-block p-4 bg-white rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-slate-50 mb-6">
+            <img src="https://www.nkppao.go.th/customers/webpages/images/master_001.png" alt="Logo" class="w-20 h-20 sm:w-24 sm:h-24 object-contain">
+        </div>
+        <h1 id="main-header" class="text-2xl sm:text-4xl font-[800] text-slate-800 tracking-tight mb-2">
+            ระบบสืบค้นข้อมูล
+        </h1>
+        <p class="text-lg sm:text-xl font-bold text-slate-400">องค์การบริหารส่วนจังหวัดนครปฐม</p>
+        
+        <div class="mt-6 flex flex-wrap justify-center items-center gap-4 text-sm font-medium text-slate-400">
+            <span id="sub-header" class="flex items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-full text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                ตั้งแต่ปี พ.ศ. 2547
+            </span>
+            <span id="nav-last-update" class="italic text-slate-300 font-normal">อัปเดตล่าสุด: ...</span>
         </div>
     </div>
-</nav>
+</header>
 
-<div class="header-bg"></div>
-
-<main class="max-w-7xl mx-auto px-4 pt-6 pb-2 mt-4">
-    <div class="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-slate-100 relative z-10">
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 items-end">
-            <div class="col-span-1">
-                <label class="text-[13px] font-bold text-slate-500 mb-1.5 block">เลือกอำเภอ</label>
-                <select id="sAmphoe" onchange="applyFilter()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+<main class="max-w-7xl mx-auto px-4 -mt-16 relative z-10 pb-20">
+    <div class="bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.07)] p-6 sm:p-10 border border-white mb-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+            <div class="space-y-1.5">
+                <label class="text-[13px] font-bold text-slate-400 ml-1">เลือกอำเภอ</label>
+                <select id="sAmphoe" onchange="applyFilter()" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-medium">
                     <option value="">ทั้งหมด</option>
                 </select>
             </div>
-            <div class="col-span-1">
-                <label class="text-[13px] font-bold text-slate-500 mb-1.5 block">ปีงบประมาณ</label>
-                <select id="sYear" onchange="applyFilter()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            <div class="space-y-1.5">
+                <label class="text-[13px] font-bold text-slate-400 ml-1">ปีงบประมาณ</label>
+                <select id="sYear" onchange="applyFilter()" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-medium">
                     <option value="">ทุกปี</option>
                 </select>
             </div>
-            <div class="col-span-2 md:col-span-1">
-                <label class="text-[13px] font-bold text-slate-500 mb-1.5 block">ชื่อ อปท. (ตำบล)</label>
-                <input type="text" id="sOpt" onkeyup="applyFilter()" placeholder="ค้นหา อปท..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            <div class="space-y-1.5">
+                <label class="text-[13px] font-bold text-slate-400 ml-1">ชื่อ อปท. (ตำบล)</label>
+                <input type="text" id="sOpt" onkeyup="applyFilter()" placeholder="ค้นหา อปท..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm placeholder:text-slate-300">
             </div>
-            <div class="col-span-2 md:col-span-1">
-                <label class="text-[13px] font-bold text-slate-500 mb-1.5 block">ชื่อโครงการ</label>
-                <input type="text" id="sProject" onkeyup="applyFilter()" placeholder="ค้นหาชื่อโครงการ..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            <div class="space-y-1.5">
+                <label class="text-[13px] font-bold text-slate-400 ml-1">ชื่อโครงการ</label>
+                <input type="text" id="sProject" onkeyup="applyFilter()" placeholder="พิมพ์ชื่อโครงการ..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm placeholder:text-slate-300">
             </div>
-            <div class="col-span-2 md:col-span-1">
-                <label class="text-[13px] font-bold text-slate-500 mb-1.5 block">หมายเหตุ</label>
-                <input type="text" id="sNote" onkeyup="applyFilter()" placeholder="ค้นหาหมายเหตุ..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            <div class="space-y-1.5">
+                <label class="text-[13px] font-bold text-slate-400 ml-1">หมายเหตุ</label>
+                <input type="text" id="sNote" onkeyup="applyFilter()" placeholder="ระบุหมายเหตุ..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 text-sm placeholder:text-slate-300">
             </div>
-            <div class="col-span-2 md:col-span-2 flex flex-col sm:flex-row gap-2">
-                <button onclick="clearSearch()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl transition border border-slate-200 text-sm h-[42px] whitespace-nowrap">
-                    ล้างการค้นหา
-                </button>
-                
-                <div id="adminActions" class="flex-[1.5]"></div>
-            </div>
+        </div>
+        
+        <div class="mt-8 pt-6 border-t border-slate-50 flex flex-col sm:flex-row gap-3">
+            <button onclick="clearSearch()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-2xl transition-all text-sm">
+                ล้างการค้นหา
+            </button>
+            <div id="adminActions" class="flex-[2] flex gap-2"></div>
         </div>
     </div>
 
-    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-4">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+    <div class="space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-end gap-4 px-2">
+            <div class="space-y-1">
+                <div id="pInfo" class="text-sm font-bold text-slate-400 uppercase tracking-wider">กำลังโหลดข้อมูล...</div>
+                <div id="totalBudgetInfo" class="text-2xl font-black text-[#0056b3]"></div>
+            </div>
+            <div id="pagination-controls" class="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+                <button onclick="changePage(-1)" id="btnPrev" class="w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-blue-50 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                </button>
+                <span id="pageDisplay" class="text-sm font-bold px-4 text-slate-700">หน้า 1</span>
+                <button onclick="changePage(1)" id="btnNext" class="w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-blue-50 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="hidden md:block bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+            <table class="w-full text-left">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200 text-[14px]">
-                        <th class="p-4 w-12 text-center font-bold text-slate-600">#</th>
-                        <th class="p-4 font-bold text-slate-600 min-w-[150px]">อำเภอ / อปท.</th>
-                        <th class="p-4 font-bold text-slate-600 w-full">ชื่อโครงการ / หมายเหตุ</th>
-                        <th class="p-4 font-bold text-slate-600 text-right whitespace-nowrap">ปีงบฯ / งบประมาณ</th>
+                    <tr class="bg-slate-50/50 text-[13px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                        <th class="p-6 font-bold text-center w-20">#</th>
+                        <th class="p-6 font-bold">ข้อมูลพื้นที่</th>
+                        <th class="p-6 font-bold w-full">รายละเอียดโครงการ</th>
+                        <th class="p-6 font-bold text-right">งบประมาณ</th>
                     </tr>
                 </thead>
-                <tbody id="mainTable" class="text-[13px] divide-y divide-slate-100"></tbody>
+                <tbody id="mainTable" class="text-[14px] divide-y divide-slate-50"></tbody>
             </table>
         </div>
-    </div>
 
-    <div id="mobileTable" class="md:hidden space-y-3 mb-8">
-        </div>
-
-    <div class="bg-white md:bg-slate-50 rounded-2xl md:rounded-none border border-slate-200 md:border-none p-4 md:px-6 md:py-4 mb-12 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex flex-col gap-1 text-center md:text-left">
-            <div id="pInfo" class="text-[14px] font-medium text-slate-500">กำลังโหลด...</div>
-            <div id="totalBudgetInfo" class="text-[14px] font-bold text-emerald-600"></div>
-        </div>
-        <div id="pagination-controls" class="flex items-center gap-2">
-            <button onclick="changePage(-1)" id="btnPrev" class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-30">ก่อนหน้า</button>
-            <span id="pageDisplay" class="text-sm font-bold text-slate-700">หน้า 1</span>
-            <button onclick="changePage(1)" id="btnNext" class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-30">ถัดไป</button>
-        </div>
+        <div id="mobileTable" class="md:hidden space-y-4"></div>
     </div>
 </main>
-    
-    <footer class="bg-slate-50 border-t border-slate-200 py-6 mt-4">
-  <div class="max-w-7xl mx-auto px-4">
-    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-      <p class="text-xs sm:text-sm text-slate-500 font-medium text-center md:text-left">
-        © 2026 <span class="text-slate-700">องค์การบริหารส่วนจังหวัดนครปฐม</span>
-      </p>
-      
-      <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-[11px] sm:text-[13px] text-slate-600 text-center">
-        <span>ฝ่ายนโยบายและแผนงาน กองยุทธศาสตร์และงบประมาณ</span>
-        <div class="flex items-center gap-2">
-          <span class="hidden sm:inline text-slate-300">|</span>
-          <span class="font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-100">v 0.5</span>
-            <button id="btnLoginMain" onclick="toggleLoginModal()" class="flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-colors px-3 py-1 rounded-lg hover:bg-blue-50">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-                <span class="text-xs font-bold uppercase tracking-wider">Admin Login</span>
-            </button>
-        </div>
-          
-      </div>
+
+<footer class="bg-white border-t border-slate-100 py-12">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <p class="text-sm font-bold text-slate-800 mb-2">© 2026 องค์การบริหารส่วนจังหวัดนครปฐม</p>
+        <p class="text-xs text-slate-400 mb-6">ฝ่ายนโยบายและแผนงาน กองยุทธศาสตร์และงบประมาณ</p>
+        <button id="btnLoginMain" onclick="toggleLoginModal()" class="inline-flex items-center gap-2 text-slate-300 hover:text-blue-600 transition-all font-bold text-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+            ADMIN LOGIN
+        </button>
     </div>
-  </div>
 </footer>
 
     <div id="loginModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
