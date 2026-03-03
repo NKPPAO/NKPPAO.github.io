@@ -39,39 +39,42 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 flex-grow w-full">
             <div class="space-y-1">
-                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">อำเภอ</label>
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">อำเภอ</label>
                 <select id="sAmphoe" onchange="applyFilter()" class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] font-medium appearance-none shadow-sm">
                     <option value="">ทั้งหมด</option>
                 </select>
             </div>
             <div class="space-y-1">
-                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">ปีงบฯ</label>
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">ปีงบฯ</label>
                 <select id="sYear" onchange="applyFilter()" class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] font-medium appearance-none shadow-sm">
                     <option value="">ทุกปี</option>
                 </select>
             </div>
             <div class="space-y-1">
-                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">อปท. (ตำบล)</label>
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">อปท. (ตำบล)</label>
                 <input type="text" id="sOpt" onkeyup="applyFilter()" placeholder="..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
             </div>
             <div class="space-y-1 lg:col-span-1">
-                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">ชื่อโครงการ</label>
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">ชื่อโครงการ</label>
                 <input type="text" id="sProject" onkeyup="applyFilter()" placeholder="ระบุชื่อโครงการ..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
             </div>
             <div class="space-y-1">
-                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase tracking-wider">หมายเหตุ</label>
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">หมายเหตุ</label>
                 <input type="text" id="sNote" onkeyup="applyFilter()" placeholder="..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
             </div>
         </div>
         
         <div class="flex items-center gap-2 pb-0.5 w-full xl:w-auto justify-end border-t xl:border-t-0 pt-4 xl:pt-0">
-            <div class="relative group">
-                <button onclick="clearSearch()" class="w-11 h-11 flex items-center justify-center bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-all border border-slate-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <div class="relative group inline-block">
+                <button onclick="clearSearch()" 
+                        class="w-11 h-11 flex items-center justify-center bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-xl transition-all duration-300 border border-slate-100 active:scale-90 group-hover:rotate-180">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                 </button>
-                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">ล้างการค้นหา</span>
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60] shadow-xl">
+                    รีเซ็ตการค้นหา
+                </span>
             </div>
 
             <div id="adminActions" class="flex items-center gap-2"></div>
