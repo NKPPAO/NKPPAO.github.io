@@ -104,15 +104,15 @@ function renderTable(data, startNumber) {
             <td class="p-4 text-center text-slate-400 font-medium">${num}</td>
             <td class="p-4">
                 <div class="font-bold text-slate-700">${item.amphoe || '-'}</div>
-                <div class="text-blue-600 font-medium text-[12px]">${item.tambon || ''}</div>
+                <div class="text-blue-600 font-medium text-[13px]">${item.tambon || ''}</div>
             </td>
             <td class="p-4">
-                <div class="text-slate-800 font-semibold leading-relaxed">${item.project_name || '-'}</div>
-                <div class="text-red-400 text-[12px]">${item.remark || ''}</div>
+                <div class="text-slate-800 leading-relaxed">${item.project_name || '-'}</div>
+                <div class="text-red-400 text-[13px]">${item.remark || ''}</div>
             </td>
             <td class="p-4 text-right">
-                <div class="inline-block px-2 py-0.5 bg-blue-100 text-blue-600 rounded text-[11px] font-bold mb-1">ปี ${item.fiscal_year || '-'}</div>
-                <div class="rounded inline-block px-2 py-0.5 bg-emerald-100  text-emerald-600 font-bold text-[15px] tracking-tight">
+                <div class="inline-block px-2 py-0.5 bg-blue-100 text-blue-600 rounded text-[13px] font-bold mb-1">ปี ${item.fiscal_year || '-'}</div>
+                <div class="rounded inline-block px-2 py-0.5 bg-emerald-100  text-emerald-600 font-bold tracking-tight">
                     ${Number(item.budget || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
                 </div>
                 ${adminActionsHTML}
