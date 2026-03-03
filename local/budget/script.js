@@ -77,23 +77,23 @@ function renderTable(data, startNumber) {
 
     data.forEach((item, index) => {
         const num = startNumber + index + 1;
-        // ส่วนของ Admin Buttons (ถ้า login จะโชว์)
-        const adminActionsHTML = '';
+        // ✅ แก้ไข: ใช้ let แทน const และสร้าง String เปล่ารอไว้
+        let adminActionsHTML = '';
         if (currentUser) {
         adminActionsHTML = `
-            <div class="flex gap-2 mt-2 justify-end">
-                <button onclick='openEditModal(${JSON.stringify(item)})' class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                </button>
-                <button onclick="confirmDelete('${item.id}', '${item.project_name}')" class="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
-            </div>
-        ` ;
+                <div class="flex gap-2 mt-2 justify-end">
+                    <button onclick='openEditModal(${JSON.stringify(item)})' class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                    </button>
+                    <button onclick="confirmDelete('${item.id}', '${item.project_name}')" class="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            `;
         }
         
         // 1. สร้างแถวสำหรับตาราง (Desktop)
@@ -319,8 +319,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
         if (error) throw error;
 
-        // ถ้าสำเร็จ
-        currentUser = user;
         showAlert('success', 'ยินดีต้อนรับ!', 'เข้าสู่ระบบสำเร็จแล้ว', true);
         //alert('ยินดีต้อนรับ! เข้าสู่ระบบสำเร็จ');
         // รีโหลดหน้า หรือแสดงปุ่มเพิ่มข้อมูล (Add Project)
@@ -346,6 +344,8 @@ window.onclick = function(event) {
 // ฟังก์ชันเช็คสถานะ User (เรียกใช้ตอนโหลดหน้าเว็บ)
 async function checkUserStatus() {
     const { data: { user } } = await _supabase.auth.getUser();
+    // ✅ เพิ่มบรรทัดนี้เพื่ออัปเดต Global Variable
+    currentUser = user;
     const actionArea = document.getElementById('adminActions');
     const btnLoginMain = document.getElementById('btnLoginMain');
 
@@ -390,7 +390,6 @@ async function checkUserStatus() {
 // ฟังก์ชัน Logout
 async function handleLogout() {
     await _supabase.auth.signOut();
-    currentUser = null;
     location.reload();
 }
 
@@ -700,13 +699,12 @@ async function handleUpdateProject(e) {
     }
 }
 
-// เรียกใช้ checkUserStatus() ในจุดที่เหมาะสม (เช่น ท้ายไฟล์ script.js)
-checkUserStatus();
-
 // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. เช็คสถานะ Login ก่อน เพื่อให้ได้ค่า currentUser
+    await checkUserStatus(); 
+    // 2. ค่อยดึงข้อมูลมาแสดง (ซึ่งตอนนี้ renderTable จะเห็น currentUser แล้ว)
     fetchSystemInfo();
     fetchData();
     updateLastUpdateDisplay();
-    checkUserStatus();
 });
