@@ -589,6 +589,9 @@ async function processUpload() {
 }
 
 function showAlert(type, title, message, reload = false, showCancel = false) {
+    const btn = document.getElementById('modalBtn');
+    btn.disabled = false; // รีเซ็ตสถานะปุ่มทุกครั้งที่เปิดแจ้งเตือนใหม่
+    btn.innerText = "ตกลง";   // ค่าพื้นฐาน
     const modal = document.getElementById('universalModal');
     const container = document.getElementById('modalIconContainer');
     const icon = document.getElementById('modalIcon');
@@ -648,32 +651,36 @@ function closeUniversalModal() {
     document.getElementById('universalModal').classList.add('hidden');
 }
 
-// --- ส่วนของการลบโครงการ ---
 async function confirmDelete(id, name) {
-    // ✅ ส่ง true เข้าไปในพารามิเตอร์สุดท้ายเพื่อโชว์ปุ่มยกเลิก
     showAlert('error', 'ยืนยันการลบ', `คุณต้องการลบโครงการ "${name}" ใช่หรือไม่?`, false, true);
     
     const btn = document.getElementById('modalBtn');
     btn.innerText = "ยืนยันการลบ";
     
-    // เมื่อกดยืนยัน
     btn.onclick = async () => {
         try {
-            // เปลี่ยนสถานะปุ่มชั่วคราว
             btn.disabled = true;
             btn.innerText = "กำลังลบ...";
 
             const { error } = await _supabase.from('projects').delete().eq('id', id);
-            if (error) throw error;
             
-            // ปิด Modal เดิมก่อน แล้วค่อยแจ้งเตือนว่าสำเร็จ
+            if (error) throw error;
+
+            // ✅ 1. ปิด Modal ทันทีที่ลบเสร็จ
             document.getElementById('universalModal').classList.add('hidden');
+            
+            // ✅ 2. คืนค่าสถานะปุ่ม "ก่อน" จะเปิด Modal ใหม่ (ป้องกันข้อความค้าง)
+            btn.disabled = false;
+            btn.innerText = "ตกลง"; 
+
+            // ✅ 3. ค่อยโชว์แจ้งเตือนสำเร็จ
             showAlert('success', 'ลบสำเร็จ', 'ลบข้อมูลโครงการเรียบร้อยแล้ว', true);
             
         } catch (err) {
-            showAlert('error', 'เกิดข้อผิดพลาด', err.message);
-        } finally {
+            // กรณี Error ก็ต้องคืนค่าปุ่มเช่นกัน
             btn.disabled = false;
+            btn.innerText = "ยืนยันการลบ";
+            showAlert('error', 'เกิดข้อผิดพลาด', err.message);
         }
     };
 }
