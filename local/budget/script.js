@@ -198,6 +198,14 @@ function updateUI() {
     
     // แสดงยอดงบประมาณรวม
     document.getElementById('totalBudgetInfo').innerHTML = `งบประมาณรวมทั้งสิ้น <span class="rounded inline-block px-2 py-0.5 bg-emerald-100  text-emerald-600 font-bold text-[15px] tracking-tight">${sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท`;
+   
+    // ✅ 2. ส่วนที่เพิ่มใหม่: ส่งค่าไปที่ Card ด้านบน
+    // (เราใช้ค่า totalItems และ sumBudget ที่มีอยู่แล้วได้เลย)
+    const cardBudget = document.getElementById('cardTotalBudget');
+    const cardProjects = document.getElementById('cardTotalProjects');
+
+    if (cardBudget) cardBudget.innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' บาท';
+    if (cardProjects) cardProjects.innerText = totalItems.toLocaleString() + ' รายการ';
     
     document.getElementById('btnPrev').disabled = currentPage === 1;
     document.getElementById('btnNext').disabled = currentPage >= totalPages || totalPages === 0;
