@@ -700,11 +700,14 @@ async function handleUpdateProject(e) {
 }
 
 // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. เช็คสถานะ Login ก่อน เพื่อให้ได้ค่า currentUser
+// ✅ แก้ไข: เติม async หน้า ( ) เพื่อให้ใช้ await ข้างในได้
+document.addEventListener('DOMContentLoaded', async () => {
+    
+    // 1. เช็คสถานะ Login ก่อน (รอให้เสร็จเพื่ออัปเดตค่า currentUser)
     await checkUserStatus(); 
-    // 2. ค่อยดึงข้อมูลมาแสดง (ซึ่งตอนนี้ renderTable จะเห็น currentUser แล้ว)
+    
+    // 2. โหลดข้อมูลอื่นๆ ต่อตามลำดับ
     fetchSystemInfo();
-    fetchData();
+    fetchData(); // ฟังก์ชันนี้จะเรียก renderTable ซึ่งจะเห็นค่า currentUser แล้ว
     updateLastUpdateDisplay();
 });
