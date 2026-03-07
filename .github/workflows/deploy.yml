@@ -29,5 +29,6 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          folder: . 
+          # เปลี่ยนไปใช้โฟลเดอร์ที่มีไฟล์ index.html ของคุณโดยตรง
+          folder: smartservices 
           branch: gh-pages
