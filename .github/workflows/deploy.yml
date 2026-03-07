@@ -17,18 +17,20 @@ jobs:
 
       - name: Inject Supabase Keys
         run: |
-          # ค้นหาไฟล์ index.html ทั้งหมดและทำการแทนที่ (แก้ปัญหาเรื่องโฟลเดอร์ซ้อน)
-          find . -name "index.html" -exec sed -i "s|MY_URL_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" {} +
-          find . -name "index.html" -exec sed -i "s|MY_KEY_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" {} +
+          # 1. แทนที่ค่าในไฟล์ index.html ที่อยู่ในโฟลเดอร์ smartservices
+          sed -i "s|MY_URL_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" smartservices/index.html
+          sed -i "s|MY_KEY_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" smartservices/index.html
           
-          echo "✅ ตรวจสอบผลลัพธ์หลังแทนที่:"
-          # พิมพ์บรรทัดที่มีการแทนที่ออกมาดู (GitHub จะเซนเซอร์เป็น *** ให้เอง)
+          # 2. ตรวจสอบใน Log ว่าสำเร็จไหม (ถ้าสำเร็จจะเห็นเป็น ***)
+          echo "Checking Injection Result:"
           grep "const SUPABASE_URL" smartservices/index.html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # เปลี่ยนไปใช้โฟลเดอร์ที่มีไฟล์ index.html ของคุณโดยตรง
+          # 3. ระบุโฟลเดอร์ต้นทางให้ชัดเจน
           folder: smartservices 
           branch: gh-pages
+          # 4. ล้างไฟล์เก่าใน branch gh-pages ทิ้งให้หมดเพื่อป้องกันไฟล์ซ้ำซ้อน
+          clean: true
