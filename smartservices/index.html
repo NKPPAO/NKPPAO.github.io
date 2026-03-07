@@ -478,11 +478,15 @@ function switchView(viewName) {
     views[viewName].classList.remove('hidden');
 
     if (viewName === 'booking') {
-        header.classList.add('hidden'); // ซ่อน Header ใหญ่ตอนทำรายการ
-        // อัปเดตปี พ.ศ. ในหน้าปฏิทิน
-        const thaiYear = new Date().getFullYear() + 543;
-        document.getElementById('current-year-th').innerText = thaiYear;
-    } else {
+    header.classList.add('hidden');
+    const thaiYear = new Date().getFullYear() + 543;
+    
+    // เปลี่ยนจาก 'current-year-th' เป็น 'current-year-display' ตาม HTML ของคุณ
+    const yearElem = document.getElementById('current-year-display');
+    if (yearElem) {
+        yearElem.innerText = thaiYear;
+    }
+} else {
         header.classList.remove('hidden');
     }
 
@@ -658,95 +662,79 @@ function handleServiceClick(name) {
 function renderDynamicFields(name) {
     const container = document.getElementById('dynamic-fields');
     const title = document.getElementById('form-title');
+    
+    if (!container) return; // กัน Error ถ้าหา container ไม่เจอ
+    
     container.innerHTML = ""; 
     title.innerText = name;
 
-    // 1. ดึงข้อมูล User มาใส่ในส่วน "ข้อมูลผู้ติดต่อ" (Section 1) อัตโนมัติ
+    // ดึงชื่อและเบอร์โทรจาก Metadata มาใส่ Section 1 อัตโนมัติ
     if (currentUser) {
         const nameInput = document.getElementById('common-name');
         const phoneInput = document.getElementById('common-phone');
         
-        // ดึงจาก Metadata ที่เราเก็บไว้ตอนสมัครสมาชิก (หรือจาก Google/Line Login)
-        if (nameInput) nameInput.value = currentUser.user_metadata?.full_name || "";
-        if (phoneInput) phoneInput.value = currentUser.user_metadata?.phone_number || "";
+        // ลองดึงหลายๆ ทางเผื่อไว้
+        const fullName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || "";
+        const phone = currentUser.user_metadata?.phone_number || currentUser.user_metadata?.phone || "";
+        
+        if (nameInput) nameInput.value = fullName;
+        if (phoneInput) phoneInput.value = phone;
     }
 
-    // 2. สร้างฟิลด์รายละเอียดตามประเภทบริการ (Section 2)
     let dynamicHtml = "";
 
-    if (name.includes('รถสุขา')) {
+    // ใช้ .trim() เพื่อตัดช่องว่างที่อาจหลุดมา
+    const serviceName = name.trim();
+
+    if (serviceName.includes('รถสุขา')) {
         dynamicHtml = `
             <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">E-mail สำหรับแจ้งผล</label>
-                <input type="email" id="f-email" value="${currentUser?.email || ''}" class="new-input-style" required>
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">สถานที่ใช้งาน</label>
+                <input type="text" id="f-location" placeholder="ระบุสถานที่หรือพิกัด" class="new-input-style" required>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">วันที่เริ่มใช้งาน</label>
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">เริ่มวันที่</label>
                     <input type="datetime-local" id="f-start" class="new-input-style" required>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">วันที่สิ้นสุด</label>
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">ถึงวันที่</label>
                     <input type="datetime-local" id="f-end" class="new-input-style" required>
                 </div>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">สถานที่ใช้งาน (ระบุพิกัดหรือชื่อสถานที่)</label>
-                <input type="text" id="f-location" placeholder="เช่น สนามกีฬาจังหวัดนครปฐม" class="new-input-style" required>
-            </div>
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">วัตถุประสงค์</label>
-                <textarea id="f-detail" rows="3" placeholder="ระบุเหตุผลการขอใช้บริการ..." class="new-input-style" required></textarea>
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">รายละเอียด/วัตถุประสงค์</label>
+                <textarea id="f-detail" rows="3" class="new-input-style" required></textarea>
             </div>
         `;
     } 
-    else if (name.includes('เจ้าภาพสถานสงเคราะห์')) {
+    else if (serviceName.includes('เจ้าภาพ')) {
         dynamicHtml = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">วันที่ต้องการจอง</label>
-                    <input type="date" id="f-date" class="new-input-style" required>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">กิจกรรม</label>
-                    <select id="f-activity" class="new-input-style cursor-pointer" required>
-                        <option value="">-- เลือกกิจกรรม --</option>
-                        <option value="บริจาคสิ่งของ">บริจาคสิ่งของ</option>
-                        <option value="จัดเลี้ยงอาหาร">จัดเลี้ยงอาหาร</option>
-                        <option value="จัดกิจกรรมนันทนาการ">จัดกิจกรรมนันทนาการ</option>
-                    </select>
-                </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">วันที่ต้องการเข้าจัดกิจกรรม</label>
+                <input type="date" id="f-date" class="new-input-style" required>
             </div>
-            <div class="space-y-3">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1 block italic">ช่วงเวลา</label>
+            <div class="space-y-4">
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic block">ช่วงเวลา</label>
                 <div class="grid grid-cols-3 gap-3">
-                    ${['เช้า', 'กลางวัน', 'เย็น'].map(time => `
-                        <label class="relative group cursor-pointer">
-                            <input type="checkbox" name="f-time" value="${time}" class="peer hidden">
-                            <div class="text-center p-3 rounded-2xl border border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-600 peer-checked:text-white transition-all font-bold text-sm text-slate-500">
-                                ${time}
-                            </div>
-                        </label>
-                    `).join('')}
+                    <label class="cursor-pointer"><input type="checkbox" name="f-time" value="เช้า" class="peer hidden"><div class="p-3 border rounded-2xl text-center peer-checked:bg-blue-600 peer-checked:text-white transition-all">เช้า</div></label>
+                    <label class="cursor-pointer"><input type="checkbox" name="f-time" value="กลางวัน" class="peer hidden"><div class="p-3 border rounded-2xl text-center peer-checked:bg-blue-600 peer-checked:text-white transition-all">กลางวัน</div></label>
+                    <label class="cursor-pointer"><input type="checkbox" name="f-time" value="เย็น" class="peer hidden"><div class="p-3 border rounded-2xl text-center peer-checked:bg-blue-600 peer-checked:text-white transition-all">เย็น</div></label>
                 </div>
             </div>
         `;
     } else {
-        // กรณีบริการอื่นๆ ที่ยังไม่มีฟิลด์เฉพาะ
+        // ถ้าไม่เข้าเงื่อนไขเลย ให้โชว์ฟิลด์พื้นฐานแทนที่จะปล่อยว่าง
         dynamicHtml = `
-            <div class="space-y-2 text-center py-10 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-                <p class="text-slate-400 font-medium">ไม่มีรายละเอียดเพิ่มเติมสำหรับบริการนี้</p>
-                <p class="text-xs text-slate-400 italic">กรุณากดส่งคำร้องเพื่อแจ้งความประสงค์</p>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">รายละเอียดคำร้อง</label>
+                <textarea id="f-generic-detail" rows="4" placeholder="กรุณาระบุรายละเอียดที่ต้องการรับบริการ..." class="new-input-style" required></textarea>
             </div>
         `;
     }
 
     container.innerHTML = dynamicHtml;
-    
-    // สำคัญ: สั่งให้ Lucide ทำงานเพื่อแสดงไอคอนใน HTML ที่เพิ่งฉีดเข้าไป
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
+    lucide.createIcons(); // ต้องมีบรรทัดนี้เพื่อให้ไอคอนในฟอร์มที่เพิ่งฉีดเข้าไปทำงาน
 }
 
 async function handleGlobalSubmit(e) {
