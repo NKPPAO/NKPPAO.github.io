@@ -39,15 +39,15 @@ jobs:
 
       - name: Inject Secrets
         run: |
-          sed -i "s|{{SUPABASE_URL}}|${{ secrets.MY_SUPABASE_URL }}|g" smartservices/index.html
-          sed -i "s|{{SUPABASE_KEY}}|${{ secrets.MY_SUPABASE_KEY }}|g" smartservices/index.html
+          sed -i "s|{{SUPABASE_SMARTSERVICES_URL}}|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" smartservices/index.html
+          sed -i "s|{{SUPABASE_SMARTSERVICES_ANON_KEY}}|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" smartservices/index.html
 
       # (เพิ่มเติม) ถ้าคุณต้องการ "ยิง" API ไปที่ Supabase เพื่ออัปเดตข้อมูลบางอย่าง
       - name: Notify Supabase Midnight Sync
         run: |
-          curl -X POST "${{ secrets.MY_SUPABASE_URL }}/rest/v1/rpc/your_function_name" \
-          -H "apikey: ${{ secrets.MY_SUPABASE_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.MY_SUPABASE_KEY }}" \
+          curl -X POST "${{ secrets.SUPABASE_SMARTSERVICES_URL }}/rest/v1/rpc/your_function_name" \
+          -H "apikey: ${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}" \
           -H "Content-Type: application/json"
 
       - name: Deploy to GitHub Pages
