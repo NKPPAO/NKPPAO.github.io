@@ -165,8 +165,8 @@ function updateUI() {
     const cardBudget = document.getElementById('cardTotalBudget');
     const cardProjects = document.getElementById('cardTotalProjects');
 
-    if (cardBudget) cardBudget.innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' บาท';
-    if (cardProjects) cardProjects.innerText = totalItems.toLocaleString() + ' รายการ';
+    if (cardBudget) cardBudget.innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2});
+    if (cardProjects) cardProjects.innerText = totalItems.toLocaleString() ;
     
     document.getElementById('btnPrev').disabled = currentPage === 1;
     document.getElementById('btnNext').disabled = currentPage >= totalPages || totalPages === 0;
