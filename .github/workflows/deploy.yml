@@ -17,22 +17,21 @@ jobs:
 
       - name: Inject Supabase Keys
         run: |
-          # 1. เช็คก่อนว่ามีไฟล์อยู่จริงไหม (จะโชว์ใน Log Actions)
-          ls -R smartservices/
+          # 1. ตรวจสอบว่าเราอยู่ที่ไหน และมีไฟล์จริงไหม (ดูใน Log Action ได้เลย)
+          echo "Current directory: $(pwd)"
+          ls -R
           
-          # 2. ใช้ @ แทน | เพื่อความปลอดภัยของ URL และระบุ Path ให้เป๊ะ
-          # เราใช้คำสั่งค้นหาคำว่า {{...}} ในไฟล์ smartservices/index.html
-          sed -i 's@{{SUPABASE_SMARTSERVICES_URL}}@${{ secrets.SUPABASE_SMARTSERVICES_URL }}@g' smartservices/index.html
-          sed -i 's@{{SUPABASE_SMARTSERVICES_ANON_KEY}}@${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}@g' smartservices/index.html
+          # 2. ใช้คำสั่ง sed โดยระบุ path จาก root ของ repo
+          # ลองเปลี่ยนจาก ' เป็น " เพื่อให้มั่นใจว่า shell อ่านค่า secret ได้ถูกต้อง
+          sed -i "s|MY_URL_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" ./smartservices/index.html
+          sed -i "s|MY_KEY_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" ./smartservices/index.html
           
-          # 3. ตรวจสอบว่าเปลี่ยนสำเร็จไหม (จะโชว์ใน Log เป็น ***)
-          grep "const SUPABASE_URL" smartservices/index.html
+          # 3. ตรวจสอบผลลัพธ์ใน Log (ถ้าสำเร็จจะเห็นเป็น ***)
+          cat ./smartservices/index.html | grep "const SUPABASE_URL"
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # สำคัญ: ถ้าต้องการให้หน้าเว็บอยู่ที่ nkppao.github.io/smartservices/
-          # เราควรส่งไฟล์จาก Root (.) ขึ้นไป เพื่อรักษาโครงสร้างโฟลเดอร์ไว้
           folder: . 
           branch: gh-pages
