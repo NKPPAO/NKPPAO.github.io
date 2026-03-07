@@ -2,10 +2,14 @@ name: Smart Portal CI/CD
 
 on:
   push:
-    branches: [ main ] # รันเมื่อมีการอัปเดตโค้ด
+    branches: [ main ]
   schedule:
-    - cron: '0 17 * * *' # รันทุกเที่ยงคืนเวลาไทย (17:00 UTC)
-  workflow_dispatch: # เปิดให้กดรันเองได้จากหน้าเว็บ GitHub
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+
+# 1. เพิ่มสิทธิ์ให้ Workflow สามารถเขียนข้อมูลลงใน Repo ได้ (แก้ Error 128)
+permissions:
+  contents: write
 
 jobs:
   build-and-deploy:
@@ -16,23 +20,25 @@ jobs:
 
       - name: Inject Supabase Keys
         run: |
-          # แทนที่ตัวแปรในไฟล์ index.html ด้วยรหัสลับจาก GitHub Secrets
+          # ตรวจสอบว่าใน index.html ใช้ชื่อตัวแปรตรงกันเป๊ะๆ
           sed -i "s|{{SUPABASE_SMARTSERVICES_URL}}|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" smartservices/index.html
           sed -i "s|{{SUPABASE_SMARTSERVICES_ANON_KEY}}|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" smartservices/index.html
+          
+          # บรรทัดตรวจสอบ (Debug): พิมพ์เนื้อหาไฟล์ออกมาดูใน Log (ไม่ต้องกลัว Key หลุด เพราะ GitHub จะเซนเซอร์เป็น *** ให้เอง)
+          grep "const SUPABASE_URL" smartservices/index.html
 
       - name: Supabase Connectivity Check
-        # ส่วนนี้จะรันเฉพาะตอนเที่ยงคืน หรือตอนที่คุณกดรันเอง (Manual)
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
-          echo "กำลังตรวจสอบการเชื่อมต่อกับ Supabase..."
           curl -X GET "${{ secrets.SUPABASE_SMARTSERVICES_URL }}/rest/v1/service_requests?select=id&limit=1" \
           -H "apikey: ${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}" \
           -H "Content-Type: application/json"
-          echo "การตรวจสอบเสร็จสมบูรณ์"
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: smartservices # ระบุโฟลเดอร์ย่อยที่มีไฟล์ index.html
-          branch: gh-pages # ไฟล์ที่ถูก 'ฉีด Key' แล้วจะถูกส่งไปที่สาขานี้เพื่อแสดงผลหน้าเว็บ
+          # 2. ใส่ Token เพื่อยืนยันสิทธิ์ในการเขียน Branch
+          token: ${{ secrets.GITHUB_TOKEN }}
+          folder: smartservices 
+          branch: gh-pages
