@@ -11,271 +11,276 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
         body { font-family: 'Sarabun', sans-serif; }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        .btn-animate { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-animate:active { transform: scale(0.95); }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
+<body class="bg-[#f8fafc] min-h-screen text-slate-800">
 
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="bg-blue-600 p-2 rounded-lg">
-                    <i data-lucide="layout-grid" class="text-white w-6 h-6"></i>
+    <div id="universal-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl z-10 overflow-hidden transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="p-8" id="modal-body">
                 </div>
-                <span class="font-bold text-xl tracking-tight text-blue-900">Nakhon Pathom PAO | SMART SERVICE PORTAL</span>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed top-5 right-5 z-[110] flex flex-col gap-3"></div>
+
+    <nav class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-xl shadow-blue-200 shadow-lg">
+                    <i data-lucide="layout-grid" class="text-white w-5 h-5"></i>
+                </div>
+                <span class="font-bold text-xl tracking-tight text-slate-900">SMART<span class="text-blue-600">PORTAL</span></span>
             </div>
-            <div id="auth-section" class="flex items-center gap-4">
-                <button id="btn-login" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm transition-all font-medium shadow-md">
+            <div id="auth-section">
+                <button id="btn-login-trigger" onclick="showLoginModal()" class="btn-animate bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg shadow-slate-200">
                     เข้าสู่ระบบ
                 </button>
             </div>
         </div>
     </nav>
 
-    <header class="bg-gradient-to-r from-blue-700 to-indigo-800 py-12 px-4">
-        <div class="max-w-7xl mx-auto text-center text-white">
-            <h1 class="text-3xl md:text-5xl font-bold mb-4">ยินดีต้อนรับสู่ศูนย์บริการออนไลน์</h1>
-            <p class="text-blue-100 text-lg max-w-2xl mx-auto">Nakhon Pathom PAO | เมืองแห่งคุณภาพชีวิต สู่การพัฒนาที่ยั่งยืน</p>
+    <header class="bg-[#0f172a] py-16 px-4 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10">
+            <div class="absolute top-10 left-10 w-64 h-64 bg-blue-500 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-10 right-10 w-96 h-96 bg-indigo-500 rounded-full blur-3xl"></div>
+        </div>
+        <div class="max-w-7xl mx-auto text-center relative z-10">
+            <h1 class="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight">ศูนย์บริการประชาชนออนไลน์</h1>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">เข้าถึงบริการภาครัฐได้ง่าย รวดเร็ว และปลอดภัย ตลอด 24 ชั่วโมง</p>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-10 -mt-10">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                <div class="bg-green-100 p-3 rounded-full text-green-600"><i data-lucide="check-circle"></i></div>
-                <div><p class="text-slate-500 text-sm">บริการทั้งหมด</p><h3 class="text-2xl font-bold" id="total-services-count">0 บริการ</h3></div>
+    <main class="max-w-7xl mx-auto px-4 py-12 -mt-12 relative z-20">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="glass p-6 rounded-3xl shadow-xl flex items-center gap-5 border border-white">
+                <div class="bg-blue-100 p-4 rounded-2xl text-blue-600"><i data-lucide="layers" class="w-6 h-6"></i></div>
+                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">บริการทั้งหมด</p><h3 class="text-2xl font-bold text-slate-900" id="stat-total">0</h3></div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                <div class="bg-blue-100 p-3 rounded-full text-blue-600"><i data-lucide="clock"></i></div>
-                <div><p class="text-slate-500 text-sm">อยู่ระหว่างดำเนินการ</p><h3 class="text-2xl font-bold" id="pending-count">0 รายการ</h3></div>
+            <div class="glass p-6 rounded-3xl shadow-xl flex items-center gap-5 border border-white">
+                <div class="bg-orange-100 p-4 rounded-2xl text-orange-600"><i data-lucide="clock" class="w-6 h-6"></i></div>
+                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">รอดำเนินการ</p><h3 class="text-2xl font-bold text-slate-900" id="stat-pending">0</h3></div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                <div class="bg-indigo-100 p-3 rounded-full text-indigo-600"><i data-lucide="user"></i></div>
-                <div><p class="text-slate-500 text-sm">สถานะบัญชี</p><h3 class="text-lg font-semibold truncate" id="user-display">กำลังโหลด...</h3></div>
+            <div class="glass p-6 rounded-3xl shadow-xl flex items-center gap-5 border border-white">
+                <div class="bg-emerald-100 p-4 rounded-2xl text-emerald-600"><i data-lucide="user-check" class="w-6 h-6"></i></div>
+                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">สถานะของคุณ</p><h3 class="text-lg font-bold text-slate-900" id="user-display">บุคคลทั่วไป</h3></div>
             </div>
         </div>
 
-        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-            <i data-lucide="component" class="text-blue-600"></i> เลือกรับบริการ
-        </h2>
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                <span class="w-2 h-8 bg-blue-600 rounded-full"></span>
+                เลือกรับบริการ
+            </h2>
+        </div>
+
         <div id="service-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="animate-pulse bg-white p-6 rounded-2xl h-40"></div>
-            <div class="animate-pulse bg-white p-6 rounded-2xl h-40"></div>
-            <div class="animate-pulse bg-white p-6 rounded-2xl h-40"></div>
-            <div class="animate-pulse bg-white p-6 rounded-2xl h-40"></div>
+            <div class="animate-pulse bg-white p-8 rounded-3xl h-52 shadow-sm border border-slate-100"></div>
+            <div class="animate-pulse bg-white p-8 rounded-3xl h-52 shadow-sm border border-slate-100"></div>
+            <div class="animate-pulse bg-white p-8 rounded-3xl h-52 shadow-sm border border-slate-100"></div>
+            <div class="animate-pulse bg-white p-8 rounded-3xl h-52 shadow-sm border border-slate-100"></div>
         </div>
     </main>
 
-    <div id="auth-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
-        <div class="p-8">
-            <div class="flex justify-between items-center mb-6">
-                <h2 id="modal-title" class="text-2xl font-bold text-slate-800">เข้าสู่ระบบ</h2>
-                <button onclick="toggleAuthModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x"></i></button>
-            </div>
-            
-            <form id="auth-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">อีเมล</label>
-                    <input type="email" id="auth-email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="name@email.com" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">รหัสผ่าน</label>
-                    <input type="password" id="auth-password" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="••••••••" required>
-                </div>
-                <button type="submit" id="btn-auth-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all">
-                    เข้าสู่ระบบ
-                </button>
-            </form>
-
-            <div class="mt-6 text-center">
-                <p class="text-slate-500 text-sm">
-                    <span id="auth-switch-text">ยังไม่มีบัญชีใช่ไหม?</span>
-                    <button onclick="switchAuthMode()" id="btn-switch-mode" class="text-blue-600 font-bold hover:underline ml-1">สมัครสมาชิก</button>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
     <script>
-        // --- ส่วนการตั้งค่า Supabase ---
         const SUPABASE_URL = 'MY_URL_PLACEHOLDER';
         const SUPABASE_KEY = 'MY_KEY_PLACEHOLDER';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ฟังก์ชันเริ่มทำงานเมื่อโหลดหน้าเว็บ
+        let currentUser = null;
+
         document.addEventListener('DOMContentLoaded', async () => {
-            lucide.createIcons(); 
-            await updateDashboardStats(); // ดึงตัวเลขสถิติ
-            await loadServices();        // ดึงรายการ Card บริการ
-            await checkUserStatus();     // ตรวจสอบสถานะล็อกอิน
+            lucide.createIcons();
+            await checkUser();
+            await loadServices();
+            await loadStats();
         });
 
-        // 1. ฟังก์ชันดึงตัวเลขสถิติ (Total Services & Pending Requests)
-        async function updateDashboardStats() {
-            try {
-                // นับจำนวนบริการทั้งหมด
-                const { count: totalServices } = await supabaseClient
-                    .from('services')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('is_active', true);
+        // --- Universal UI Components ---
 
-                // นับจำนวนคำขอที่ 'Pending' (ปรับชื่อตาราง/คอลัมน์ตามของคุณ)
-                const { count: pendingCount } = await supabaseClient
-                    .from('service_requests') 
-                    .select('*', { count: 'exact', head: true })
-                    .eq('status', 'Pending');
-
-                // แสดงผลบนหน้าเว็บ (ใส่ ID ให้ครอบตัวเลขใน HTML ด้วย)
-                document.getElementById('total-services-count').innerText = `${totalServices || 0} บริการ`;
-                document.getElementById('pending-count').innerText = `${pendingCount || 0} รายการ`;
-            } catch (err) {
-                console.error('Error updating stats:', err);
-            }
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-emerald-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-600'
+            };
+            toast.className = `${colors[type]} text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 transform translate-x-12 opacity-0 transition-all duration-300 min-w-[300px]`;
+            toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'info'}" class="w-5 h-5"></i> <span class="text-sm font-medium">${message}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => { toast.classList.remove('translate-x-12', 'opacity-0'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-12', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
         }
 
-        // 2. ฟังก์ชันตรวจสอบสถานะบัญชี (Auth Status)
-        async function checkUserStatus() {
-            const userDisplay = document.getElementById('user-display');
-            const btnLogin = document.getElementById('btn-login');
-
-            const { data: { user } } = await supabaseClient.auth.getUser();
-
-            if (user) {
-                userDisplay.innerText = user.email.split('@')[0]; // แสดงชื่อจาก Email
-                btnLogin.innerText = 'ออกจากระบบ';
-                btnLogin.onclick = async () => {
-                    await supabaseClient.auth.signOut();
-                    window.location.reload();
-                };
-            } else {
-                userDisplay.innerText = 'บุคคลทั่วไป';
-                btnLogin.onclick = () => {
-                    // ใส่ลิงก์หน้า Login ของคุณที่นี่
-                    alert('กรุณาเข้าสู่ระบบผ่านระบบยืนยันตัวตน');
-                };
-            }
+        function openModal(contentHtml) {
+            const modal = document.getElementById('universal-modal');
+            const inner = document.getElementById('modal-content');
+            document.getElementById('modal-body').innerHTML = contentHtml;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                inner.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+            lucide.createIcons();
         }
 
-        // 3. ฟังก์ชันดึงรายการบริการ (คงเดิมแต่ปรับปรุง Error Handling)
-        async function loadServices() {
-            const serviceContainer = document.getElementById('service-list');
-            try {
-                const { data: services, error } = await supabaseClient
-                    .from('services')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('name', { ascending: true });
+        function closeModal() {
+            const modal = document.getElementById('universal-modal');
+            const inner = document.getElementById('modal-content');
+            inner.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
+        }
 
-                if (error) throw error;
-                if (!services || services.length === 0) {
-                    serviceContainer.innerHTML = '<p class="col-span-full text-center text-slate-400">ยังไม่มีบริการเปิดให้ใช้งานในขณะนี้</p>';
-                    return;
+        // --- Auth Modals ---
+
+        function showLoginModal() {
+            openModal(`
+                <div class="text-center mb-8">
+                    <div class="bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-600">
+                        <i data-lucide="lock" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">เข้าสู่ระบบ</h2>
+                    <p class="text-slate-500 text-sm mt-1">ยินดีต้อนรับกลับมา! กรุณาระบุข้อมูลของคุณ</p>
+                </div>
+                <form onsubmit="handleLogin(event)" class="space-y-4">
+                    <input type="email" id="email" placeholder="อีเมลของคุณ" class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 outline-none transition-all text-sm" required>
+                    <input type="password" id="password" placeholder="รหัสผ่าน" class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 outline-none transition-all text-sm" required>
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-100 btn-animate mt-2">ยืนยันการเข้าสู่ระบบ</button>
+                </form>
+                <div class="mt-8 text-center border-t border-slate-100 pt-6">
+                    <p class="text-slate-500 text-sm">ยังไม่มีบัญชีใช่ไหม? <a href="javascript:showRegisterModal()" class="text-blue-600 font-bold hover:underline italic">สมัครสมาชิกฟรี</a></p>
+                </div>
+            `);
+        }
+
+        function showRegisterModal() {
+            openModal(`
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">สร้างบัญชีผู้ใช้งาน</h2>
+                    <p class="text-slate-500 text-sm mt-1">กรอกข้อมูลเบื้องต้นเพื่อเริ่มต้นใช้งาน</p>
+                </div>
+                <form onsubmit="handleRegister(event)" class="space-y-3">
+                    <input type="text" id="reg-name" placeholder="ชื่อ-นามสกุล" class="w-full px-5 py-3 rounded-2xl border border-slate-200 focus:border-blue-500 outline-none text-sm" required>
+                    <input type="email" id="reg-email" placeholder="อีเมล" class="w-full px-5 py-3 rounded-2xl border border-slate-200 focus:border-blue-500 outline-none text-sm" required>
+                    <input type="tel" id="reg-phone" placeholder="เบอร์โทรศัพท์" class="w-full px-5 py-3 rounded-2xl border border-slate-200 focus:border-blue-500 outline-none text-sm" required>
+                    <textarea id="reg-address" placeholder="ที่อยู่ปัจจุบัน" class="w-full px-5 py-3 rounded-2xl border border-slate-200 focus:border-blue-500 outline-none text-sm h-24" required></textarea>
+                    <input type="password" id="reg-pass" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" class="w-full px-5 py-3 rounded-2xl border border-slate-200 focus:border-blue-500 outline-none text-sm" required>
+                    <button class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl btn-animate mt-2">สมัครสมาชิก</button>
+                </form>
+                <button onclick="showLoginModal()" class="w-full mt-4 text-slate-500 text-xs hover:underline italic">ย้อนกลับไปหน้าเข้าสู่ระบบ</button>
+            `);
+        }
+
+        // --- Business Logic ---
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const { error } = await supabaseClient.auth.signInWithPassword({
+                email: e.target.email.value,
+                password: e.target.password.value
+            });
+            if (error) return showAlert(error.message, 'error');
+            showAlert('เข้าสู่ระบบสำเร็จ', 'success');
+            setTimeout(() => location.reload(), 1000);
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const { error } = await supabaseClient.auth.signUp({
+                email: e.target.elements['reg-email'].value,
+                password: e.target.elements['reg-pass'].value,
+                options: {
+                    data: {
+                        full_name: e.target.elements['reg-name'].value,
+                        phone_number: e.target.elements['reg-phone'].value,
+                        address: e.target.elements['reg-address'].value,
+                        role: 'member'
+                    }
                 }
+            });
+            if (error) return showAlert(error.message, 'error');
+            showAlert('สมัครสมาชิกสำเร็จ! กรุณาล็อกอิน', 'success');
+            showLoginModal();
+        }
 
-                serviceContainer.innerHTML = '';
-                services.forEach(item => {
-                    const card = `
-                        <div onclick="handleServiceClick('${item.name}')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group">
-                            <div class="bg-blue-50 w-12 h-12 flex items-center justify-center rounded-xl text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                <i data-lucide="file-text"></i>
-                            </div>
-                            <h3 class="font-bold text-lg mb-1">${item.name}</h3>
-                            <p class="text-slate-500 text-sm mb-4 line-clamp-2">${item.description || 'คลิกเพื่อดูรายละเอียดและยื่นคำร้อง'}</p>
-                            <span class="text-blue-600 text-sm font-semibold flex items-center gap-1 group-hover:underline">
-                                เลือกบริการ <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                            </span>
-                        </div>
-                    `;
-                    serviceContainer.innerHTML += card;
-                });
-                lucide.createIcons();
-            } catch (err) {
-                serviceContainer.innerHTML = `<p class="col-span-full text-center text-red-500">ขออภัย: ${err.message}</p>`;
+        async function checkUser() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            currentUser = user;
+            if (user) {
+                const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+                document.getElementById('user-display').innerText = profile?.full_name || user.email;
+                document.getElementById('btn-login-trigger').innerText = 'ออกจากระบบ';
+                document.getElementById('btn-login-trigger').onclick = async () => {
+                    await supabaseClient.auth.signOut();
+                    location.reload();
+                };
             }
         }
 
-        let isSignUpMode = false;
-let currentUser = null;
-
-// ฟังก์ชันเปิด-ปิด Modal
-function toggleAuthModal() {
-    const modal = document.getElementById('auth-modal');
-    modal.classList.toggle('hidden');
-    modal.classList.toggle('flex');
-}
-
-// สลับระหว่าง Login และ Register
-function switchAuthMode() {
-    isSignUpMode = !isSignUpMode;
-    document.getElementById('modal-title').innerText = isSignUpMode ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
-    document.getElementById('btn-auth-submit').innerText = isSignUpMode ? 'สร้างบัญชี' : 'เข้าสู่ระบบ';
-    document.getElementById('auth-switch-text').innerText = isSignUpMode ? 'มีบัญชีอยู่แล้ว?' : 'ยังไม่มีบัญชีใช่ไหม?';
-    document.getElementById('btn-switch-mode').innerText = isSignUpMode ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
-}
-
-// จัดการการ Login/Register
-document.getElementById('auth-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-password').value;
-    const btnSubmit = document.getElementById('btn-auth-submit');
-
-    btnSubmit.disabled = true;
-    btnSubmit.innerText = 'กำลังดำเนินการ...';
-
-    try {
-        if (isSignUpMode) {
-            const { error } = await supabaseClient.auth.signUp({ email, password });
-            if (error) throw error;
-            alert('สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยันตัวตน (ถ้ามี)');
-        } else {
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) throw error;
+        async function loadStats() {
+            const { count: total } = await supabaseClient.from('services').select('*', { count: 'exact', head: true }).eq('is_active', true);
+            document.getElementById('stat-total').innerText = total || 0;
+            
+            if (currentUser) {
+                const { count: pending } = await supabaseClient.from('service_requests').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id).eq('status', 'Pending');
+                document.getElementById('stat-pending').innerText = pending || 0;
+            }
         }
-        toggleAuthModal();
-        window.location.reload();
-    } catch (err) {
-        alert('ผิดพลาด: ' + err.message);
-    } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = isSignUpMode ? 'สร้างบัญชี' : 'เข้าสู่ระบบ';
-    }
-});
 
-// ตรวจสอบสถานะ User และปุ่มเข้าสู่ระบบ
-async function checkUserStatus() {
-    const userDisplay = document.getElementById('user-display');
-    const btnLogin = document.getElementById('btn-login');
+        async function loadServices() {
+            const container = document.getElementById('service-list');
+            const { data: services, error } = await supabaseClient.from('services').select('*').eq('is_active', true);
+            
+            if (error) return showAlert('โหลดข้อมูลล้มเหลว', 'error');
+            
+            container.innerHTML = '';
+            services.forEach(item => {
+                const card = `
+                    <div onclick="handleServiceClick('${item.name}')" class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-blue-100 hover:-translate-y-2 transition-all cursor-pointer group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-12 -mt-12 transition-all group-hover:scale-150 opacity-50"></div>
+                        <div class="bg-blue-50 w-14 h-14 flex items-center justify-center rounded-2xl text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors relative z-10">
+                            <i data-lucide="external-link" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-bold text-xl mb-2 text-slate-800 relative z-10">${item.name}</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-2 relative z-10">${item.description || 'กดเพื่อทำรายการยื่นคำร้อง'}</p>
+                        <div class="flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-widest relative z-10">
+                            ดำเนินการ <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+            lucide.createIcons();
+        }
 
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    currentUser = user;
-
-    if (user) {
-        userDisplay.innerText = user.email.split('@')[0];
-        btnLogin.innerText = 'ออกจากระบบ';
-        btnLogin.onclick = async () => {
-            await supabaseClient.auth.signOut();
-            window.location.reload();
-        };
-    } else {
-        userDisplay.innerText = 'บุคคลทั่วไป';
-        btnLogin.innerText = 'เข้าสู่ระบบ';
-        btnLogin.onclick = toggleAuthModal;
-    }
-}
-
-// ฟังก์ชันเมื่อคลิกเลือกบริการ
-function handleServiceClick(serviceName) {
-    if (!currentUser) {
-        alert('กรุณาเข้าสู่ระบบก่อนยื่นคำร้อง');
-        toggleAuthModal();
-    } else {
-        alert('กำลังนำคุณไปที่หน้ายื่นคำร้องสำหรับ: ' + serviceName);
-        // window.location.href = `request.html?service=${serviceName}`;
-    }
-}
+        function handleServiceClick(name) {
+            if (!currentUser) {
+                showAlert('กรุณาเข้าสู่ระบบก่อนใช้งานบริการ', 'info');
+                showLoginModal();
+                return;
+            }
+            showAlert(`กำลังพาคุณไปที่: ${name}`, 'success');
+        }
     </script>
 </body>
 </html>
