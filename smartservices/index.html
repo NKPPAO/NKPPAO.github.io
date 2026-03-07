@@ -748,29 +748,54 @@ function renderDynamicFields(name) {
 async function handleGlobalSubmit(event) {
     event.preventDefault();
     
+    // 1. ป้องกันปุ่มกดซ้ำ
     const submitBtn = event.target.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = 'กำลังส่งข้อมูล...';
+    if (submitBtn) submitBtn.disabled = true;
 
     try {
+        // --- 2. ประกาศตัวแปร details ตรงนี้! (ห้ามลืม) ---
+        const details = {
+            requester_name: document.getElementById('common-name')?.value || "",
+            requester_phone: document.getElementById('common-phone')?.value || "",
+            service_title: activeServiceName // ชื่อบริการภาษาไทยที่เราเก็บไว้
+        };
+
+        // 3. รวบรวมฟิลด์พิเศษตามที่ renderDynamicFields สร้างไว้
+        const dynamicIds = ['f-email', 'f-start', 'f-end', 'f-location', 'f-detail', 'f-date', 'f-activity'];
+        dynamicIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                // เก็บเฉพาะค่าที่มีข้อมูลเข้าไปใน details
+                details[id.replace('f-', '')] = el.value;
+            }
+        });
+
+        const timeCheckboxes = document.querySelectorAll('input[name="f-time"]:checked');
+            if (timeCheckboxes.length > 0) {
+                details['selected_times'] = Array.from(timeCheckboxes).map(cb => cb.value);
+            }
+
+        // 4. ส่งข้อมูลไปยัง Supabase
         const { data, error } = await supabaseClient
             .from('service_requests')
             .insert([{
                 user_id: currentUser.id,
-                service_id: activeServiceId, // ส่ง UUID ที่ถูกต้องเข้าเบส
-                request_details: {
-                    ...details,
-                    service_name_th: activeServiceName // แถมชื่อไทยลงใน JSONB เผื่อดูง่ายๆ
-                },
+                service_id: activeServiceId, // UUID จากตาราง services
+                request_details: details,    // ส่งก้อน details ที่ประกาศไว้ข้างบน
                 status: 'Pending'
             }]);
 
         if (error) throw error;
+
         showAlert('ส่งคำร้องสำเร็จ!', 'success');
         switchView('user');
+        if (typeof fetchUserRequests === 'function') fetchUserRequests();
+
     } catch (err) {
+        console.error("Submit Error:", err);
         showAlert('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
     }
 }
         
