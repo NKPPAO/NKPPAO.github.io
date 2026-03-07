@@ -152,7 +152,10 @@ function renderTable(data, startNumber) {
 
 function updateUI() {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-    document.getElementById('pageDisplay').innerText = `หน้า ${currentPage} จาก ${totalPages || 1}`;
+    const container = document.getElementById('pagination-controls');
+    
+    //const totalPages = Math.ceil(totalItems / itemsPerPage);
+   // document.getElementById('pageDisplay').innerText = `หน้า ${currentPage} จาก ${totalPages || 1}`;
     
     // แสดงสรุปจำนวนรายการ
     document.getElementById('pInfo').innerHTML = `พบข้อมูลทั้งหมด <span class="text-blue-600 font-bold">${totalItems.toLocaleString()}</span> รายการ`;
@@ -168,8 +171,62 @@ function updateUI() {
     if (cardBudget) cardBudget.innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2});
     if (cardProjects) cardProjects.innerText = totalItems.toLocaleString() ;
     
-    document.getElementById('btnPrev').disabled = currentPage === 1;
-    document.getElementById('btnNext').disabled = currentPage >= totalPages || totalPages === 0;
+    //document.getElementById('btnPrev').disabled = currentPage === 1;
+    //document.getElementById('btnNext').disabled = currentPage >= totalPages || totalPages === 0;
+    // ล้างปุ่มเดิมใน Pagination
+    container.innerHTML = '';
+
+    // --- ฟังก์ชันสร้างปุ่ม ---
+    const createBtn = (content, targetPage, isDisabled = false, isActive = false) => {
+        const btn = document.createElement('button');
+        btn.disabled = isDisabled;
+        btn.onclick = () => {
+            currentPage = targetPage;
+            fetchData();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        
+        // Tailwind Classes สำหรับปุ่ม
+        let baseClass = "w-10 h-10 flex items-center justify-center rounded-xl transition-all text-sm font-bold ";
+        if (isActive) {
+            baseClass += "bg-blue-600 text-white shadow-md shadow-blue-100 scale-110 z-10";
+        } else if (isDisabled) {
+            baseClass += "bg-transparent text-slate-200 cursor-not-allowed";
+        } else {
+            baseClass += "bg-slate-50 text-slate-500 hover:bg-blue-50 hover:text-blue-600";
+        }
+        btn.className = baseClass;
+        btn.innerHTML = content;
+        return btn;
+    };
+
+    // --- สัญลักษณ์ SVG ---
+    const svgFirst = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>`;
+    const svgPrev = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>`;
+    const svgNext = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>`;
+    const svgLast = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414zm6 0a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L14.586 10l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>`;
+
+    // --- เริ่มการสร้างปุ่ม ---
+    // 1. ปุ่มหน้าแรก & หน้าก่อนหน้า
+    container.appendChild(createBtn(svgFirst, 1, currentPage === 1));
+    container.appendChild(createBtn(svgPrev, currentPage - 1, currentPage === 1));
+
+    // 2. คำนวณช่วงตัวเลขหน้า (แสดงรอบๆ หน้าปัจจุบัน)
+    let startPage = Math.max(1, currentPage - 1);
+    let endPage = Math.min(totalPages, startPage + 2);
+    
+    // ปรับให้แสดง 3 ปุ่มเสมอถ้าเป็นไปได้
+    if (endPage - startPage < 2) {
+        startPage = Math.max(1, endPage - 2);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        container.appendChild(createBtn(i, i, false, i === currentPage));
+    }
+
+    // 3. ปุ่มหน้าถัดไป & หน้าสุดท้าย
+    container.appendChild(createBtn(svgNext, currentPage + 1, currentPage === totalPages || totalPages === 0));
+    container.appendChild(createBtn(svgLast, totalPages, currentPage === totalPages || totalPages === 0));
 }
 
 function changePage(step) {
