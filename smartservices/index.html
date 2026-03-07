@@ -70,8 +70,6 @@
         // --- ส่วนการตั้งค่า Supabase ---
         const SUPABASE_URL = '{{SUPABASE_SMARTSERVICES_URL}}'; 
         const SUPABASE_KEY = '{{SUPABASE_SMARTSERVICES_ANON_KEY}}';
-        
-        // เปลี่ยนชื่อตัวแปรจาก supabase เป็น supabaseClient
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // ฟังก์ชันเริ่มทำงานเมื่อโหลดหน้าเว็บ
