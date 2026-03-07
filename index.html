@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Service Portal | ระบบบริการประชาชน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i data-lucide="layout-grid" class="text-white w-6 h-6"></i>
+                </div>
+                <span class="font-bold text-xl tracking-tight text-blue-900">SMART PORTAL</span>
+            </div>
+            <div id="auth-section" class="flex items-center gap-4">
+                <button id="btn-login" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm transition-all font-medium shadow-md">
+                    เข้าสู่ระบบ
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-gradient-to-r from-blue-700 to-indigo-800 py-12 px-4">
+        <div class="max-w-7xl mx-auto text-center text-white">
+            <h1 class="text-3xl md:text-5xl font-bold mb-4">ยินดีต้อนรับสู่ศูนย์บริการออนไลน์</h1>
+            <p class="text-blue-100 text-lg max-w-2xl mx-auto">รวดเร็ว โปร่งใส เข้าถึงง่าย ทุกที่ทุกเวลา เพื่อคุณภาพชีวิตที่ดีขึ้นของประชาชน</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-10 -mt-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                <div class="bg-green-100 p-3 rounded-full text-green-600"><i data-lucide="check-circle"></i></div>
+                <div><p class="text-slate-500 text-sm">บริการทั้งหมด</p><h3 class="text-2xl font-bold">12 บริการ</h3></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                <div class="bg-blue-100 p-3 rounded-full text-blue-600"><i data-lucide="clock"></i></div>
+                <div><p class="text-slate-500 text-sm">อยู่ระหว่างดำเนินการ</p><h3 class="text-2xl font-bold" id="pending-count">0 รายการ</h3></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                <div class="bg-indigo-100 p-3 rounded-full text-indigo-600"><i data-lucide="user"></i></div>
+                <div><p class="text-slate-500 text-sm">สถานะบัญชี</p><h3 class="text-lg font-semibold" id="user-display">บุคคลทั่วไป</h3></div>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+            <i data-lucide="component" class="text-blue-600"></i> เลือกรับบริการ
+        </h2>
+        <div id="service-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="animate-pulse bg-white p-6 rounded-2xl h-40"></div>
+            <div class="animate-pulse bg-white p-6 rounded-2xl h-40"></div>
+            <div class="animate-pulse bg-white p-6 rounded-2xl h-40"></div>
+            <div class="animate-pulse bg-white p-6 rounded-2xl h-40"></div>
+        </div>
+    </main>
+
+    <script>
+        // --- ส่วนการตั้งค่า Supabase ---
+        const SUPABASE_URL = 'https://qivysmrrauxskzjjyecw.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpdnlzbXJyYXV4c2t6amp5ZWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NjYyMTcsImV4cCI6MjA4ODQ0MjIxN30.-wVRDazgM1x83LSyco-xtchqj_JnM0NQJ-26a1N5DuI';
+        
+        // เปลี่ยนชื่อตัวแปรจาก supabase เป็น supabaseClient
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ฟังก์ชันเริ่มทำงานเมื่อโหลดหน้าเว็บ
+        document.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons(); // โหลดไอคอน
+            await loadServices();
+        });
+
+        // ฟังก์ชันดึงรายการบริการจาก Supabase
+        async function loadServices() {
+        const serviceContainer = document.getElementById('service-list');
+        
+        try {
+            // ใช้ supabaseClient ที่เราตั้งชื่อใหม่
+            const { data: services, error } = await supabaseClient
+                .from('services')
+                .select('*')
+                .eq('is_active', true);
+
+                if (error) throw error;
+
+                serviceContainer.innerHTML = ''; // เคลียร์ loading
+                
+                services.forEach(item => {
+                    const card = `
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group">
+                            <div class="bg-blue-50 w-12 h-12 flex items-center justify-center rounded-xl text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <i data-lucide="file-text"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-1">${item.name}</h3>
+                            <p class="text-slate-500 text-sm mb-4">${item.description || 'คลิกเพื่อดูรายละเอียด'}</p>
+                            <span class="text-blue-600 text-sm font-semibold flex items-center gap-1 group-hover:underline">
+                                เลือกบริการ <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </span>
+                        </div>
+                    `;
+                    serviceContainer.innerHTML += card;
+                });
+                lucide.createIcons(); // อัปเดตไอคอนใน Card
+                
+            } catch (err) {
+                serviceContainer.innerHTML = `<p class="col-span-full text-center text-red-500">ไม่สามารถโหลดข้อมูลได้: ${err.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
