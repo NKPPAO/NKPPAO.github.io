@@ -315,27 +315,31 @@ async function checkUser() {
     const authSection = document.getElementById('auth-section');
 
     if (user) {
-        // ดึงข้อมูล Profile
+        // 1. พยายามดึงข้อมูลจากตาราง profiles
         const { data: profile, error } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('id', user.id)
-            .maybeSingle(); // ใช้ maybeSingle เพื่อไม่ให้มัน Error ถ้าไม่เจอข้อมูล
+            .maybeSingle();
 
-        if (error) console.error("Profile Error:", error);
+        // 2. ตรวจสอบสถานะ Staff (เช็คจากตาราง profiles หรือ user_metadata)
+        // หมายเหตุ: ถ้ายังไม่ได้ตั้งค่าใน DB คุณสามารถเปลี่ยนเป็น const isStaff = true; เพื่อทดสอบ UI ก่อนได้
+        const isStaff = profile?.role === 'staff' || user.user_metadata?.role === 'staff' || user.email === 'admin@example.com'; 
 
-        // แสดงชื่อ (ถ้าไม่มีชื่อใน Profile ให้ใช้ Email แทน)
+        console.log("Current User:", user.email);
+        console.log("Profile Role:", profile?.role);
+        console.log("Is Staff:", isStaff);
+
+        // 3. แสดงชื่อ
         const displayName = profile?.full_name || user.email;
         document.getElementById('user-display').innerText = displayName;
 
+        // 4. สร้าง Navbar
         let navHtml = `<div class="flex items-center gap-3">`;
-        
-        // ตรวจสอบสิทธิ์ Staff (ตรวจสอบทั้งจาก Profile และ User Metadata เพื่อความชัวร์)
-        const isStaff = profile?.role === 'staff' || user.user_metadata?.role === 'staff';
         
         if (isStaff) {
             navHtml += `
-                <button onclick="switchView('admin')" class="btn-animate bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-bold border border-orange-200 flex items-center gap-2">
+                <button onclick="switchView('admin')" class="btn-animate bg-orange-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-orange-200 flex items-center gap-2">
                     <i data-lucide="shield-check" class="w-4 h-4"></i> จัดการระบบ
                 </button>
             `;
@@ -351,6 +355,7 @@ async function checkUser() {
         lucide.createIcons();
     }
 }
+        
 // ฟังก์ชันโหลดข้อมูลสำหรับ Staff
 async function loadAdminData() {
     const tableBody = document.getElementById('all-requests-table');
@@ -464,6 +469,22 @@ async function handleLogout() {
             }
             showAlert(`กำลังพาคุณไปที่: ${name}`, 'success');
         }
+
+        async function updateRequestStatus(id, newStatus) {
+    const { error } = await supabaseClient
+        .from('service_requests')
+        .update({ status: newStatus })
+        .eq('id', id);
+
+    if (error) return showAlert('อัปเดตไม่สำเร็จ', 'error');
+    showAlert('อัปเดตสถานะเรียบร้อยแล้ว', 'success');
+    loadAdminData(); // โหลดตารางใหม่
+}
+
+function viewRequestDetail(id) {
+    showAlert('กำลังเปิดดูรายละเอียดคำร้อง: ' + id, 'info');
+    // อนาคตสามารถทำ Modal แสดงรายละเอียดเต็มๆ ตรงนี้
+}
     </script>
 </body>
 </html>
