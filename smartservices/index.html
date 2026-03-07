@@ -62,6 +62,7 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-12 -mt-12 relative z-20">
+    <div id="user-view">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <div class="glass p-6 rounded-3xl shadow-xl flex items-center gap-5 border border-white">
                 <div class="bg-blue-100 p-4 rounded-2xl text-blue-600"><i data-lucide="layers" class="w-6 h-6"></i></div>
@@ -90,6 +91,37 @@
             <div class="animate-pulse bg-white p-8 rounded-3xl h-52 shadow-sm border border-slate-100"></div>
             <div class="animate-pulse bg-white p-8 rounded-3xl h-52 shadow-sm border border-slate-100"></div>
         </div>
+    </div>
+
+    <div id="admin-view" class="hidden">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                <span class="w-2 h-8 bg-orange-500 rounded-full"></span>
+                รายการคำร้องทั้งหมด (เจ้าหน้าที่)
+            </h2>
+            <button onclick="switchView('user')" class="text-sm font-bold text-blue-600 hover:underline">
+                กลับหน้าบริการประชาชน
+            </button>
+        </div>
+
+        <div class="glass rounded-[2rem] overflow-hidden shadow-2xl border-none">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-900 text-white">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest">ผู้ยื่น/บริการ</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest">วันที่ยื่น</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest">สถานะ</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-requests-table" class="divide-y divide-slate-100 bg-white/50">
+                        <tr><td colspan="4" class="p-10 text-center text-slate-400">กำลังโหลดข้อมูล...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     </main>
 
     <script>
@@ -223,19 +255,97 @@
             showLoginModal();
         }
 
-        async function checkUser() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            currentUser = user;
-            if (user) {
-                const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-                document.getElementById('user-display').innerText = profile?.full_name || user.email;
-                document.getElementById('btn-login-trigger').innerText = 'ออกจากระบบ';
-                document.getElementById('btn-login-trigger').onclick = async () => {
-                    await supabaseClient.auth.signOut();
-                    location.reload();
-                };
-            }
+        // ฟังก์ชันสลับหน้า View
+function switchView(viewName) {
+    const userView = document.getElementById('user-view');
+    const adminView = document.getElementById('admin-view');
+    const header = document.querySelector('header');
+
+    if (viewName === 'admin') {
+        userView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+        header.classList.replace('bg-[#0f172a]', 'bg-orange-950'); // เปลี่ยนสี Header ให้รู้ว่าอยู่โหมด Admin
+        loadAdminData(); // โหลดข้อมูลทั้งหมด
+    } else {
+        adminView.classList.add('hidden');
+        userView.classList.remove('hidden');
+        header.classList.replace('bg-orange-950', 'bg-[#0f172a]');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ปรับปรุงฟังก์ชัน checkUser เพื่อสร้างปุ่มสลับหน้า
+async function checkUser() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    currentUser = user;
+    const authSection = document.getElementById('auth-section');
+
+    if (user) {
+        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        document.getElementById('user-display').innerText = profile?.full_name || user.email;
+
+        let navHtml = `<div class="flex items-center gap-3">`;
+        
+        // ถ้าเป็น Staff ให้เพิ่มปุ่มสลับหน้า (ไม่ใช่ลิงก์ไปหน้าใหม่)
+        if (profile?.role === 'staff' || profile?.role === 'admin') {
+            navHtml += `
+                <button onclick="switchView('admin')" class="btn-animate bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-bold border border-orange-200 flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> จัดการระบบ
+                </button>
+            `;
         }
+
+        navHtml += `
+            <button onclick="handleLogout()" class="btn-animate bg-white text-slate-700 px-5 py-2 rounded-xl text-sm font-bold border border-slate-200">
+                ออกจากระบบ
+            </button>
+        </div>`;
+        authSection.innerHTML = navHtml;
+        lucide.createIcons();
+    }
+}
+
+// ฟังก์ชันโหลดข้อมูลสำหรับ Staff
+async function loadAdminData() {
+    const tableBody = document.getElementById('all-requests-table');
+    
+    // ดึงข้อมูลคำร้องทั้งหมด พร้อมข้อมูล Profile ของคนยื่น (ต้องตั้งค่า Foreign Key ใน Supabase)
+    const { data, error } = await supabaseClient
+        .from('service_requests')
+        .select(`*, profiles(full_name, phone_number)`)
+        .order('created_at', { ascending: false });
+
+    if (error) return showAlert('ไม่สามารถดึงข้อมูลได้', 'error');
+
+    tableBody.innerHTML = data.map(req => `
+        <tr class="hover:bg-white transition-colors">
+            <td class="px-6 py-4">
+                <div class="font-bold text-slate-900">${req.profiles?.full_name || 'ไม่ระบุชื่อ'}</div>
+                <div class="text-xs text-blue-600 font-medium">${req.service_name}</div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-500">
+                ${new Date(req.created_at).toLocaleDateString('th-TH')}
+            </td>
+            <td class="px-6 py-4">
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase ${req.status === 'Pending' ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600'}">
+                    ${req.status}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+                <button onclick="viewRequestDetail('${req.id}')" class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-blue-600">
+                    <i data-lucide="eye" class="w-5 h-5"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+    lucide.createIcons();
+}
+
+async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    showAlert('ออกจากระบบแล้ว', 'info');
+    setTimeout(() => location.reload(), 800);
+}
 
         async function loadStats() {
             const { count: total } = await supabaseClient.from('services').select('*', { count: 'exact', head: true }).eq('is_active', true);
