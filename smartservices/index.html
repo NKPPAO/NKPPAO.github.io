@@ -625,7 +625,7 @@ async function handleLogout() {
             container.innerHTML = '';
             services.forEach(item => {
                 const card = `
-                    <div onclick="handleServiceClick('${item.name}')" class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-blue-100 hover:-translate-y-2 transition-all cursor-pointer group relative overflow-hidden">
+                    <div onclick="handleServiceClick('${service.id}', '${service.name}')" class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-blue-100 hover:-translate-y-2 transition-all cursor-pointer group relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-12 -mt-12 transition-all group-hover:scale-150 opacity-50"></div>
                         <div class="bg-blue-50 w-14 h-14 flex items-center justify-center rounded-2xl text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors relative z-10">
                             <i data-lucide="external-link" class="w-6 h-6"></i>
@@ -643,18 +643,21 @@ async function handleLogout() {
         }
 
 // ตัวแปร Global สำหรับเก็บชื่อบริการที่คลิก
-let activeService = ""; 
+let activeServiceId = ""; // เก็บ UUID
+let activeServiceName = ""; // เก็บชื่อภาษาไทย
 
-function handleServiceClick(name) {
+function handleServiceClick(id, name) {
     if (!currentUser) {
-        showAlert('กรุณาเข้าสู่ระบบก่อนรับบริการ', 'error');
+        showAlert('กรุณาเข้าสู่ระบบก่อน', 'error');
         return showLoginModal();
     }
-    activeService = name; // เก็บค่าไว้ใช้ตอน Submit
+    activeServiceId = id;    // เก็บ UUID ไว้ใช้ส่ง insert
+    activeServiceName = name; // เก็บชื่อไว้โชว์ในหัวข้อฟอร์ม
+    
     switchView('booking');
-    renderDynamicFields(name);
+    renderDynamicFields(name); // ส่งชื่อไปเพื่อให้ฟังก์ชันเช็คเงื่อนไขสร้างฟิลด์ถูก
 }
-
+        
 function renderDynamicFields(name) {
     const container = document.getElementById('dynamic-fields');
     const title = document.getElementById('form-title');
@@ -767,10 +770,9 @@ async function handleGlobalSubmit(event) {
             .from('service_requests')
             .insert([{
                 user_id: currentUser.id,
-                service_id: activeService, // ใช้ชื่อบริการหรือ ID ใส่ในช่องนี้
-                request_details: details,   // ข้อมูลชื่อ/เบอร์/รายละเอียด จะอยู่ในนี้หมดเลย
+                service_id: activeServiceId, // ส่ง UUID ที่ถูกต้อง (รหัสจากตาราง services)
+                request_details: details,
                 status: 'Pending'
-                // created_at และ updated_at ปกติ Supabase จะใส่ให้เองอัตโนมัติ
             }]);
 
         if (error) throw error;
