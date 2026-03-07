@@ -67,8 +67,11 @@ body {
     /* ตั้งค่าพื้นหลัง */
     background-color: #f8f9fa; /* สีพื้นหลัก */
     background-image: 
-        radial-gradient(circle at top right, rgba(0, 123, 255, 0.15) 0%, transparent 400px),
-        radial-gradient(circle at bottom left, rgba(0, 86, 179, 0.1) 0%, transparent 400px);
+        /* มุมขวาบน: สีฟ้าสว่าง (Electric Blue) */
+        radial-gradient(circle at top right, rgba(0, 102, 255, 0.4) 0%, transparent 400px),
+
+        /* มุมซ้ายล่าง: สีน้ำเงินเข้มเข้มข้น */
+        radial-gradient(circle at bottom left, rgba(0, 212, 255, 0.3) 0%, transparent 400px);
     
     /* ทำให้พื้นหลังอยู่กับที่ */
     background-attachment: fixed;
