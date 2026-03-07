@@ -21,3 +21,37 @@ jobs:
           # ระบุโฟลเดอร์ย่อยที่เป็นตัวเก็บไฟล์สำหรับแสดงผล
           folder: smartservices 
           branch: gh-pages
+
+name: Daily Portal Sync & Deploy
+on:
+  push:
+    branches: [ main ]
+  # ส่วนที่เพิ่มเข้ามา: สั่งให้รันอัตโนมัติทุกเที่ยงคืน (เวลา UTC)
+  schedule:
+    - cron: '0 17 * * *' # 17:00 UTC คือ 00:00 น. (เที่ยงคืน) ของประเทศไทย
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Inject Secrets
+        run: |
+          sed -i "s|{{SUPABASE_URL}}|${{ secrets.MY_SUPABASE_URL }}|g" smartservices/index.html
+          sed -i "s|{{SUPABASE_KEY}}|${{ secrets.MY_SUPABASE_KEY }}|g" smartservices/index.html
+
+      # (เพิ่มเติม) ถ้าคุณต้องการ "ยิง" API ไปที่ Supabase เพื่ออัปเดตข้อมูลบางอย่าง
+      - name: Notify Supabase Midnight Sync
+        run: |
+          curl -X POST "${{ secrets.MY_SUPABASE_URL }}/rest/v1/rpc/your_function_name" \
+          -H "apikey: ${{ secrets.MY_SUPABASE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.MY_SUPABASE_KEY }}" \
+          -H "Content-Type: application/json"
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: smartservices 
+          branch: gh-pages
