@@ -464,35 +464,6 @@ function switchView(viewName) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ฟังก์ชันส่งข้อมูลจอง
-async function handleBooking(e) {
-    e.preventDefault();
-    
-    const bookingData = {
-        user_id: currentUser.id,
-        service_name: 'จองรถสุขาเคลื่อนที่',
-        full_name: document.getElementById('book-name').value,
-        phone: document.getElementById('book-phone').value,
-        email: document.getElementById('book-email').value,
-        address: document.getElementById('book-address').value,
-        start_date: document.getElementById('book-start').value,
-        end_date: document.getElementById('book-end').value,
-        location: document.getElementById('book-location').value,
-        detail: document.getElementById('book-detail').value,
-        status: 'Pending'
-    };
-
-    const { error } = await supabaseClient
-        .from('service_requests')
-        .insert([bookingData]);
-
-    if (error) return showAlert(error.message, 'error');
-
-    showAlert('ส่งคำร้องจองรถสุขาเรียบร้อยแล้ว เจ้าหน้าที่จะติดต่อกลับโดยเร็วที่สุด', 'success');
-    switchView('user');
-    loadStats(); // อัปเดตตัวเลขรอดำเนินการ
-}
-
 // ปรับปรุงฟังก์ชัน checkUser เพื่อสร้างปุ่มสลับหน้า
 async function checkUser() {
     const { data: { user } } = await supabaseClient.auth.getUser();
@@ -574,7 +545,7 @@ async function loadAdminData() {
         return `
             <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
                 <td class="px-6 py-5">
-                    <div class="font-bold text-slate-900">${req.profiles?.full_name || 'ไม่ระบุชื่อ'}</div>
+                    <div class="font-bold text-slate-900">${req.full_name || req.request_details?.full_name || 'ไม่ระบุชื่อ'}</div>
                     <div class="flex items-center gap-2 text-xs text-slate-500 mt-1">
                         <span class="bg-slate-100 px-2 py-0.5 rounded text-blue-600 font-bold">${req.service_name}</span>
                         <span><i data-lucide="phone" class="w-3 h-3 inline"></i> ${req.profiles?.phone_number || '-'}</span>
@@ -728,18 +699,32 @@ function renderDynamicFields(name) {
             </div>
         `;
     }
+
+    if (currentUser) {
+        // ดึงชื่อจาก Metadata หรือ Profile ที่เราเก็บไว้ตอน Login
+        const nameInput = document.getElementById('common-name');
+        const phoneInput = document.getElementById('common-phone');
+        
+        if (nameInput) nameInput.value = currentUser.user_metadata?.full_name || '';
+        if (phoneInput) phoneInput.value = currentUser.user_metadata?.phone_number || '';
+    }
     lucide.createIcons();
 }
 
 async function handleGlobalSubmit(e) {
     e.preventDefault();
     
-    // รวบรวมข้อมูลพิเศษเข้า JSONB
+    // 1. ดึงข้อมูลพื้นฐานที่มีทุกฟอร์ม
+    const fullName = document.getElementById('common-name').value;
+    const phone = document.getElementById('common-phone').value;
+
+    // 2. รวบรวมข้อมูลพิเศษเข้า JSONB ตามประเภทบริการ
     let detailsObj = {};
     if (activeService.includes('รถสุขา')) {
         detailsObj = {
+            full_name: fullName, // เก็บซ้ำใน JSONB ด้วยเพื่อความชัวร์
+            phone: phone,
             email: document.getElementById('f-email').value,
-            address: document.getElementById('f-address').value,
             start: document.getElementById('f-start').value,
             end: document.getElementById('f-end').value,
             location: document.getElementById('f-location').value,
@@ -748,26 +733,37 @@ async function handleGlobalSubmit(e) {
     } else if (activeService.includes('เจ้าภาพ')) {
         const times = Array.from(document.querySelectorAll('input[name="f-time"]:checked')).map(el => el.value);
         detailsObj = {
+            full_name: fullName,
+            phone: phone,
             date: document.getElementById('f-date').value,
             periods: times,
-            activity: document.getElementById('f-activity').value
+            activity: document.getElementById('f-activity').value,
+            remark: document.getElementById('f-remark').value
         };
     }
 
+    // 3. เตรียมข้อมูลส่งไป Supabase
     const payload = {
         user_id: currentUser.id,
         service_name: activeService,
         status: 'Pending',
-        request_details: detailsObj // ยัดลง JSONB ช่องเดียวจบ!
+        request_details: detailsObj,
+        // ถ้าคุณมีคอลัมน์เหล่านี้ในตารางหลัก ให้ใส่ไปด้วย:
+        full_name: fullName, 
+        phone: phone
     };
 
     const { error } = await supabaseClient.from('service_requests').insert([payload]);
-    if (error) return showAlert(error.message, 'error');
+    
+    if (error) {
+        console.error(error);
+        return showAlert('เกิดข้อผิดพลาด: ' + error.message, 'error');
+    }
 
-    showAlert('บันทึกคำร้องสำเร็จ', 'success');
+    showAlert('ส่งคำร้องสำเร็จแล้ว!', 'success');
     switchView('user');
+    loadStats(); // อัปเดตตัวเลขหน้าหลัก
 }
-
         async function updateRequestStatus(id, newStatus) {
     const { error } = await supabaseClient
         .from('service_requests')
@@ -782,35 +778,6 @@ async function handleGlobalSubmit(e) {
 function viewRequestDetail(id) {
     showAlert('กำลังเปิดดูรายละเอียดคำร้อง: ' + id, 'info');
     // อนาคตสามารถทำ Modal แสดงรายละเอียดเต็มๆ ตรงนี้
-}
-
-        // ฟังก์ชันส่งข้อมูลจอง
-async function handleBooking(e) {
-    e.preventDefault();
-    
-    const bookingData = {
-        user_id: currentUser.id,
-        service_name: 'จองรถสุขาเคลื่อนที่',
-        full_name: document.getElementById('book-name').value,
-        phone: document.getElementById('book-phone').value,
-        email: document.getElementById('book-email').value,
-        address: document.getElementById('book-address').value,
-        start_date: document.getElementById('book-start').value,
-        end_date: document.getElementById('book-end').value,
-        location: document.getElementById('book-location').value,
-        detail: document.getElementById('book-detail').value,
-        status: 'Pending'
-    };
-
-    const { error } = await supabaseClient
-        .from('service_requests')
-        .insert([bookingData]);
-
-    if (error) return showAlert(error.message, 'error');
-
-    showAlert('ส่งคำร้องจองรถสุขาเรียบร้อยแล้ว เจ้าหน้าที่จะติดต่อกลับโดยเร็วที่สุด', 'success');
-    switchView('user');
-    loadStats(); // อัปเดตตัวเลขรอดำเนินการ
 }
     </script>
 </body>
