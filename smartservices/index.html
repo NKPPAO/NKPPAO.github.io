@@ -315,13 +315,25 @@ async function checkUser() {
     const authSection = document.getElementById('auth-section');
 
     if (user) {
-        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-        document.getElementById('user-display').innerText = profile?.full_name || user.email;
+        // ดึงข้อมูล Profile
+        const { data: profile, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle(); // ใช้ maybeSingle เพื่อไม่ให้มัน Error ถ้าไม่เจอข้อมูล
+
+        if (error) console.error("Profile Error:", error);
+
+        // แสดงชื่อ (ถ้าไม่มีชื่อใน Profile ให้ใช้ Email แทน)
+        const displayName = profile?.full_name || user.email;
+        document.getElementById('user-display').innerText = displayName;
 
         let navHtml = `<div class="flex items-center gap-3">`;
         
-        // ถ้าเป็น Staff ให้เพิ่มปุ่มสลับหน้า (ไม่ใช่ลิงก์ไปหน้าใหม่)
-        if (profile?.role === 'staff' || profile?.role === 'admin') {
+        // ตรวจสอบสิทธิ์ Staff (ตรวจสอบทั้งจาก Profile และ User Metadata เพื่อความชัวร์)
+        const isStaff = profile?.role === 'staff' || user.user_metadata?.role === 'staff';
+        
+        if (isStaff) {
             navHtml += `
                 <button onclick="switchView('admin')" class="btn-animate bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-bold border border-orange-200 flex items-center gap-2">
                     <i data-lucide="shield-check" class="w-4 h-4"></i> จัดการระบบ
@@ -334,11 +346,11 @@ async function checkUser() {
                 ออกจากระบบ
             </button>
         </div>`;
+        
         authSection.innerHTML = navHtml;
         lucide.createIcons();
     }
 }
-
 // ฟังก์ชันโหลดข้อมูลสำหรับ Staff
 async function loadAdminData() {
     const tableBody = document.getElementById('all-requests-table');
