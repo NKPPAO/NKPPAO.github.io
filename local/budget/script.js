@@ -44,8 +44,8 @@ async function fetchData() {
         sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
         
         // อัปเดตตัวเลขบน Card (เฉพาะยอดหลัก)
-        document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' บาท';
-        document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString() + ' รายการ';
+        document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString();
 
         totalItems = count;
         renderTable(data, from);
