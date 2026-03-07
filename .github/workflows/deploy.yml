@@ -29,8 +29,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # 3. ระบุโฟลเดอร์ต้นทางให้ชัดเจน
-          folder: smartservices 
-          branch: gh-pages
-          # 4. ล้างไฟล์เก่าใน branch gh-pages ทิ้งให้หมดเพื่อป้องกันไฟล์ซ้ำซ้อน
+          folder: smartservices # ดึงเฉพาะไฟล์ในโฟลเดอร์นี้ออกมา
+          branch: gh-pages      # ส่งไปที่สาขาสำหรับแสดงผล
+          target-folder: smartservices # บังคับให้วางไว้ในโฟลเดอร์ชื่อ smartservices บนสาขาปลายทาง
           clean: true
