@@ -467,24 +467,29 @@ function switchView(viewName) {
     };
     const header = document.querySelector('header');
 
-    // ซ่อนทุกหน้าก่อน
-    Object.values(views).forEach(v => v.classList.add('hidden'));
+    // 1. ซ่อนทุกหน้าก่อน
+    Object.values(views).forEach(v => v?.classList.add('hidden'));
     
-    // แสดงหน้าที่เลือก
-    views[viewName].classList.remove('hidden');
-
-    if (viewName === 'booking') {
-    header.classList.add('hidden');
-    const thaiYear = new Date().getFullYear() + 543;
-    
-    // เปลี่ยนจาก 'current-year-th' เป็น 'current-year-display' ตาม HTML ของคุณ
-    const yearElem = document.getElementById('current-year-display');
-    if (yearElem) {
-        yearElem.innerText = thaiYear;
+    // 2. แสดงหน้าที่เลือก
+    if (views[viewName]) {
+        views[viewName].classList.remove('hidden');
     }
-} else {
+
+    // --- ส่วนที่ต้องเพิ่ม/แก้ไข ---
+    if (viewName === 'booking') {
+        header.classList.add('hidden');
+        const thaiYear = new Date().getFullYear() + 543;
+        const yearElem = document.getElementById('current-year-display');
+        if (yearElem) yearElem.innerText = thaiYear;
+    } 
+    else if (viewName === 'admin') { // ⭐ เพิ่มตรงนี้!
+        header.classList.remove('hidden');
+        loadAdminData(); // สั่งให้โหลดข้อมูลมาโชว์ในตารางทันทีที่เปิดหน้านี้
+    } 
+    else {
         header.classList.remove('hidden');
     }
+    // -------------------------
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
