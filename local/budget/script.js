@@ -787,7 +787,12 @@ function openEditModal(item) {
     
     document.getElementById('editId').value = item.id;
     document.getElementById('editYear').value = item.fiscal_year;
-    document.getElementById('editAmphoe').value = item.amphoe;
+    
+    //document.getElementById('editAmphoe').value = item.amphoe;
+    // ตั้งค่า Dropdown ให้ตรงกับข้อมูลที่มีใน Database
+    const amphoeSelect = document.getElementById('editAmphoe');
+    amphoeSelect.value = item.amphoe;
+    
     document.getElementById('editTambon').value = item.tambon;
     document.getElementById('editProjectName').value = item.project_name;
     document.getElementById('editBudget').value = item.budget;
