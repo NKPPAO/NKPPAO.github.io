@@ -9,82 +9,78 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
-        /* แก้ปัญหาการล้นหน้าจอ (Horizontal Overflow) */
-        html, body {
-            overflow-x: hidden;
-            width: 100%;
-        }
-        
-        /* ปรับตาราง Admin ให้ Scroll ได้เฉพาะส่วนตาราง */
-        .overflow-x-auto {
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        @media (max-width: 640px) {
-            .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
-            h1 { font-size: 1.5rem !important; } /* ย่อหัวข้อใหญ่บนมือถือ */
-            .glass { border-radius: 1.5rem; }
-        }
-        
-        /* เพิ่มอนิเมชั่นตอนเปลี่ยนหน้า */
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        body { font-family: 'Sarabun', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
-        .btn-animate { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-animate:active { transform: scale(0.95); }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
 
-        /* ใส่ในแท็ก style */
-#service-list {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-}
-
-input, textarea, select {
-    font-size: 16px !important; /* ป้องกัน iOS Auto-zoom ซึ่งทำให้หน้าจอล้น */
-}
-
-.glass {
-    width: 100%;
-    max-width: 100vw;
-    box-sizing: border-box;
-}
-
-        new-input-style {
-        @apply w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white/50 focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all placeholder:text-slate-300 font-medium text-slate-700 shadow-sm;
+    /* พื้นฐานและการป้องกันการล้นหน้าจอ */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+        font-family: 'Sarabun', sans-serif;
+        scroll-behavior: smooth;
     }
-    /* ปรับแต่ง Scrollbar ในส่วนปฏิทิน */
-    #calendar-events::-webkit-scrollbar { width: 4px; }
-    #calendar-events::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
-        /* คลาสใหม่สำหรับฟอร์มจอง */
+    /* สไตล์ Input ใหม่ (เปลี่ยนจาก @apply เป็น Standard CSS) */
     .new-input-style {
-        @apply w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white/50 focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all placeholder:text-slate-300 font-medium text-slate-700 shadow-sm;
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border-radius: 1rem;
+        border: 1px solid #e2e8f0;
+        background-color: rgba(255, 255, 255, 0.5);
+        outline: none;
+        transition: all 0.2s;
+        font-size: 16px !important; /* ป้องกัน iOS Zoom */
+        color: #334155;
     }
 
-    /* ตกแต่งปุ่ม Checkbox/Radio ให้ดูทันสมัย */
-    input[type="checkbox"]:checked + div {
-        @apply bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100;
+    .new-input-style:focus {
+        background-color: #ffffff;
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 4px #eff6ff;
     }
 
+    /* Glass Morphism */
     .glass {
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
-        
-    </style>
+
+    /* จัดระเบียบ Grid ของบริการให้สวยงาม */
+    #service-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+        gap: 1.5rem;
+    }
+
+    /* อนิเมชั่นตอนเปลี่ยนหน้า */
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ปรับแต่งปุ่มเมื่อกด (Feedback) */
+    .btn-animate:active {
+        transform: scale(0.95);
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 640px) {
+        .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
+        h1 { font-size: 1.75rem !important; line-height: 1.2; }
+        .glass { border-radius: 1.5rem; }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
 </head>
 <body class="bg-[#f8fafc] min-h-screen text-slate-800">
 
