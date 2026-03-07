@@ -17,17 +17,13 @@ jobs:
 
       - name: Inject Supabase Keys
         run: |
-          # 1. ตรวจสอบว่าเราอยู่ที่ไหน และมีไฟล์จริงไหม (ดูใน Log Action ได้เลย)
-          echo "Current directory: $(pwd)"
-          ls -R
+          # ค้นหาไฟล์ index.html ทั้งหมดและทำการแทนที่ (แก้ปัญหาเรื่องโฟลเดอร์ซ้อน)
+          find . -name "index.html" -exec sed -i "s|MY_URL_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" {} +
+          find . -name "index.html" -exec sed -i "s|MY_KEY_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" {} +
           
-          # 2. ใช้คำสั่ง sed โดยระบุ path จาก root ของ repo
-          # ลองเปลี่ยนจาก ' เป็น " เพื่อให้มั่นใจว่า shell อ่านค่า secret ได้ถูกต้อง
-          sed -i "s|MY_URL_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" ./smartservices/index.html
-          sed -i "s|MY_KEY_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" ./smartservices/index.html
-          
-          # 3. ตรวจสอบผลลัพธ์ใน Log (ถ้าสำเร็จจะเห็นเป็น ***)
-          cat ./smartservices/index.html | grep "const SUPABASE_URL"
+          echo "✅ ตรวจสอบผลลัพธ์หลังแทนที่:"
+          # พิมพ์บรรทัดที่มีการแทนที่ออกมาดู (GitHub จะเซนเซอร์เป็น *** ให้เอง)
+          grep "const SUPABASE_URL" smartservices/index.html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
