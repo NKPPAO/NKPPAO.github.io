@@ -1,0 +1,194 @@
+<style>
+    /* Style for the body: Sets the background image, covers the entire view, centers content */
+    body {
+      //background-image: url(' IMAGE URL ');
+      background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Sarabun', sans-serif !important;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    /* Style for the container: White background, padding, rounded borders, shadow, and specific width */
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 300px;
+    }
+
+    /* Style for the logo: Centers the logo image within its container */
+    .logo {
+      background-image: url('https://www.nkppao.go.th/customers/webpages/images/master_001.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 100px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    #login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* จัดให้อยู่ตรงกลางภายใน form */
+}
+
+    /* From Uiverse.io by kamehame-ha */ 
+.coolinput {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  position: static;
+  max-width: 240px;
+}
+
+.coolinput label.text {
+  font-size: 1rem;
+  color: #818CF8;
+  font-weight: 700;
+  position: relative;
+  top: 0.5rem;
+  margin: 0 0 0 7px;
+  padding: 0 3px;
+  background: #ffffff;
+  width: fit-content;
+}
+
+.coolinput input[type=text].input {
+  padding: 11px 10px;
+  font-size: 1rem;
+  font-family: 'Sarabun', sans-serif !important;
+  border: 2px #818CF8 solid;
+  border-radius: 5px;
+  background: #ffffff;
+}
+
+.coolinput input[type=password].input {
+  padding: 11px 10px;
+  font-size: 1rem;
+  font-family: 'Sarabun', sans-serif !important;
+  border: 2px #818CF8 solid;
+  border-radius: 5px;
+  background: #ffffff;
+}
+
+.coolinput input[type=text].input:focus {
+  outline: none;
+}
+
+.coolinput input[type=password].input:focus {
+  outline: none;
+}
+input[type=button], input[type=submit], input[type=reset] {
+  background-color: #818CF8;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-family: 'Sarabun', sans-serif !important;
+  border: 2px solid #667eea;
+  padding: 20px;
+  color: white;
+  padding: 16px 32px;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+#cover-spin {
+    position:fixed;
+    width:100%;
+    left:0;right:0;top:0;bottom:0;
+    background-color: rgba(255,255,255,0.7);
+    z-index:9999;
+    display:none;
+}
+
+@-webkit-keyframes spin {
+	from {-webkit-transform:rotate(0deg);}
+	to {-webkit-transform:rotate(360deg);}
+}
+
+@keyframes spin {
+	from {transform:rotate(0deg);}
+	to {transform:rotate(360deg);}
+}
+
+#cover-spin::after {
+    content:'';
+    display:block;
+    position:absolute;
+    left:48%;top:40%;
+    width:40px;height:40px;
+    border-style:solid;
+    border-color:black;
+    border-top-color:transparent;
+    border-width: 4px;
+    border-radius:50%;
+    -webkit-animation: spin .8s linear infinite;
+    animation: spin .8s linear infinite;
+}
+
+/******* sweetalert2 ********/
+  .swal2-container {
+    z-index: 100000 !important;
+  }
+
+  .colored-toast.swal2-icon-success {
+    background-color: #a5dc86 !important;
+  }
+
+  .colored-toast.swal2-icon-error {
+    background-color: #f27474 !important;
+  }
+
+  .colored-toast.swal2-icon-warning {
+    background-color: #f8bb86 !important;
+  }
+
+  .colored-toast.swal2-icon-info {
+    background-color: #3fc3ee !important;
+  }
+
+  .colored-toast.swal2-icon-question {
+    background-color: #87adbd !important;
+  }
+
+  .colored-toast .swal2-title {
+    color: white;
+  }
+
+  .colored-toast .swal2-close {
+    color: white;
+  }
+
+  .colored-toast .swal2-html-container {
+    color: white;
+  }
+
+/* ซ่อนโหลดดิ้งตอนแรก */
+/*.loading {
+    display: none;
+    margin-top: 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 5px solid #ccc;
+    border-top: 5px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+  */
+  </style>

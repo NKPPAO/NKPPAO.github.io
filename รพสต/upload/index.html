@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>ระบบอัปโหลดไฟล์ รพ.สต.</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+select, input[type=file], button { margin: 5px 0; padding: 5px; }
+#toast { position: fixed; bottom:10px; right:10px; background:#333;color:white;padding:10px;border-radius:4px; display:none; }
+</style>
+</head>
+<body>
+<h2>อัปโหลดไฟล์โรงพยาบาล</h2>
+
+<form id="uploadForm" method="post" enctype="multipart/form-data" target="hiddenFrame">
+  <label>เลือกโรงพยาบาล:</label><br>
+  <select name="hospitalId" id="hospitalSelect" required>
+    <option value="">โหลดรายชื่อ...</option>
+  </select>
+  <br>
+  <label>ไฟล์:</label><br>
+  <input type="file" name="file" required><br><br>
+  <button type="submit">อัปโหลด</button>
+</form>
+
+<div id="toast"></div>
+<iframe name="hiddenFrame" style="display:none;"></iframe>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-_P9n2Qyf_QgFSVOrNZ5WWQAsrXEY2DRhpmeaJvtZIM7O4LN4_nL4AVqEO-tklfz3_A/exec';
+const toast = document.getElementById("toast");
+
+// โหลดรายชื่อโรงพยาบาลจาก sheet (JSONP)
+function loadHospitals(){
+  const cbName = 'cb_' + Date.now();
+  window[cbName] = function(data){
+    if(data.ok){
+      const select = document.getElementById('hospitalSelect');
+      select.innerHTML = '<option value="">-- เลือกโรงพยาบาล --</option>';
+      data.hospitals.forEach(h=>{
+        const opt = document.createElement('option');
+        opt.value = h.id;
+        opt.textContent = h.hospitalName;
+        select.appendChild(opt);
+      });
+    }
+  };
+  const script = document.createElement('script');
+  script.src = SCRIPT_URL + '?action=list&callback=' + cbName;
+  document.body.appendChild(script);
+}
+
+// toast
+function showToast(msg, ok=true){
+  toast.textContent = msg;
+  toast.style.background = ok ? '#28a745':'#dc3545';
+  toast.style.display = 'block';
+  setTimeout(()=>toast.style.display='none',3000);
+}
+
+// รับผลลัพธ์จาก iframe
+window.addEventListener('message', e=>{
+  if(!e.data) return;
+  try{
+    const res = typeof e.data==='string'?JSON.parse(e.data):e.data;
+    showToast(res.message,res.ok);
+  }catch(err){ console.error(err); }
+});
+
+// set form action
+document.getElementById('uploadForm').action = SCRIPT_URL;
+
+loadHospitals();
+</script>
+</body>
+</html>
