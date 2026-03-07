@@ -43,7 +43,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
                 <div class="bg-green-100 p-3 rounded-full text-green-600"><i data-lucide="check-circle"></i></div>
-                <div><p class="text-slate-500 text-sm">บริการทั้งหมด</p><h3 class="text-2xl font-bold">12 บริการ</h3></div>
+                <div><p class="text-slate-500 text-sm">บริการทั้งหมด</p><h3 class="text-2xl font-bold" id="total-services-count">0 บริการ</h3></div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
                 <div class="bg-blue-100 p-3 rounded-full text-blue-600"><i data-lucide="clock"></i></div>
@@ -51,7 +51,7 @@
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
                 <div class="bg-indigo-100 p-3 rounded-full text-indigo-600"><i data-lucide="user"></i></div>
-                <div><p class="text-slate-500 text-sm">สถานะบัญชี</p><h3 class="text-lg font-semibold" id="user-display">บุคคลทั่วไป</h3></div>
+                <div><p class="text-slate-500 text-sm">สถานะบัญชี</p><h3 class="text-lg font-semibold truncate" id="user-display">กำลังโหลด...</h3></div>
             </div>
         </div>
 
@@ -74,25 +74,75 @@
 
         // ฟังก์ชันเริ่มทำงานเมื่อโหลดหน้าเว็บ
         document.addEventListener('DOMContentLoaded', async () => {
-            lucide.createIcons(); // โหลดไอคอน
-            await loadServices();
+            lucide.createIcons(); 
+            await updateDashboardStats(); // ดึงตัวเลขสถิติ
+            await loadServices();        // ดึงรายการ Card บริการ
+            await checkUserStatus();     // ตรวจสอบสถานะล็อกอิน
         });
 
-        // ฟังก์ชันดึงรายการบริการจาก Supabase
+        // 1. ฟังก์ชันดึงตัวเลขสถิติ (Total Services & Pending Requests)
+        async function updateDashboardStats() {
+            try {
+                // นับจำนวนบริการทั้งหมด
+                const { count: totalServices } = await supabaseClient
+                    .from('services')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('is_active', true);
+
+                // นับจำนวนคำขอที่ 'Pending' (ปรับชื่อตาราง/คอลัมน์ตามของคุณ)
+                const { count: pendingCount } = await supabaseClient
+                    .from('service_requests') 
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'Pending');
+
+                // แสดงผลบนหน้าเว็บ (ใส่ ID ให้ครอบตัวเลขใน HTML ด้วย)
+                document.getElementById('total-services-count').innerText = `${totalServices || 0} บริการ`;
+                document.getElementById('pending-count').innerText = `${pendingCount || 0} รายการ`;
+            } catch (err) {
+                console.error('Error updating stats:', err);
+            }
+        }
+
+        // 2. ฟังก์ชันตรวจสอบสถานะบัญชี (Auth Status)
+        async function checkUserStatus() {
+            const userDisplay = document.getElementById('user-display');
+            const btnLogin = document.getElementById('btn-login');
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            if (user) {
+                userDisplay.innerText = user.email.split('@')[0]; // แสดงชื่อจาก Email
+                btnLogin.innerText = 'ออกจากระบบ';
+                btnLogin.onclick = async () => {
+                    await supabaseClient.auth.signOut();
+                    window.location.reload();
+                };
+            } else {
+                userDisplay.innerText = 'บุคคลทั่วไป';
+                btnLogin.onclick = () => {
+                    // ใส่ลิงก์หน้า Login ของคุณที่นี่
+                    alert('กรุณาเข้าสู่ระบบผ่านระบบยืนยันตัวตน');
+                };
+            }
+        }
+
+        // 3. ฟังก์ชันดึงรายการบริการ (คงเดิมแต่ปรับปรุง Error Handling)
         async function loadServices() {
-        const serviceContainer = document.getElementById('service-list');
-        
-        try {
-            // ใช้ supabaseClient ที่เราตั้งชื่อใหม่
-            const { data: services, error } = await supabaseClient
-                .from('services')
-                .select('*')
-                .eq('is_active', true);
+            const serviceContainer = document.getElementById('service-list');
+            try {
+                const { data: services, error } = await supabaseClient
+                    .from('services')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name', { ascending: true });
 
                 if (error) throw error;
+                if (!services || services.length === 0) {
+                    serviceContainer.innerHTML = '<p class="col-span-full text-center text-slate-400">ยังไม่มีบริการเปิดให้ใช้งานในขณะนี้</p>';
+                    return;
+                }
 
-                serviceContainer.innerHTML = ''; // เคลียร์ loading
-                
+                serviceContainer.innerHTML = '';
                 services.forEach(item => {
                     const card = `
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group">
@@ -100,7 +150,7 @@
                                 <i data-lucide="file-text"></i>
                             </div>
                             <h3 class="font-bold text-lg mb-1">${item.name}</h3>
-                            <p class="text-slate-500 text-sm mb-4">${item.description || 'คลิกเพื่อดูรายละเอียด'}</p>
+                            <p class="text-slate-500 text-sm mb-4 line-clamp-2">${item.description || 'คลิกเพื่อดูรายละเอียดและยื่นคำร้อง'}</p>
                             <span class="text-blue-600 text-sm font-semibold flex items-center gap-1 group-hover:underline">
                                 เลือกบริการ <i data-lucide="chevron-right" class="w-4 h-4"></i>
                             </span>
@@ -108,10 +158,9 @@
                     `;
                     serviceContainer.innerHTML += card;
                 });
-                lucide.createIcons(); // อัปเดตไอคอนใน Card
-                
+                lucide.createIcons();
             } catch (err) {
-                serviceContainer.innerHTML = `<p class="col-span-full text-center text-red-500">ไม่สามารถโหลดข้อมูลได้: ${err.message}</p>`;
+                serviceContainer.innerHTML = `<p class="col-span-full text-center text-red-500">ขออภัย: ${err.message}</p>`;
             }
         }
     </script>
