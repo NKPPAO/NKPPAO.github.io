@@ -60,6 +60,13 @@ input, textarea, select {
     max-width: 100vw;
     box-sizing: border-box;
 }
+
+        new-input-style {
+        @apply w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white/50 focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all placeholder:text-slate-300 font-medium text-slate-700 shadow-sm;
+    }
+    /* ปรับแต่ง Scrollbar ในส่วนปฏิทิน */
+    #calendar-events::-webkit-scrollbar { width: 4px; }
+    #calendar-events::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-[#f8fafc] min-h-screen text-slate-800">
@@ -183,60 +190,118 @@ input, textarea, select {
     </div>
 
         <div id="booking-view" class="hidden animate-fade-in pb-20">
-    <div class="flex items-center mb-8">
-        <button onclick="switchView('user')" class="flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold">
-            <i data-lucide="arrow-left" class="w-5 h-5"></i> ย้อนกลับ
+    <div class="max-w-5xl mx-auto mb-8 flex items-center justify-between px-4">
+        <button onclick="switchView('user')" class="group flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-all font-bold">
+            <div class="bg-white p-2 rounded-xl shadow-sm group-hover:shadow-md transition-all">
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </div>
+            <span>ย้อนกลับ</span>
         </button>
+        <div class="text-right">
+            <h2 id="form-title" class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">บริการออนไลน์</h2>
+            <p class="text-slate-400 text-xs uppercase tracking-widest font-bold">Nakhon Pathom Smart Portal</p>
+        </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div id="calendar-sidebar" class="lg:col-span-1">
-            <div class="glass p-6 rounded-[2rem] border-white shadow-xl sticky top-24">
-                <h3 class="font-bold mb-4 flex items-center gap-2 text-blue-600">
-                    <i data-lucide="calendar" class="w-5 h-5"></i> ตารางปี พ.ศ. <span id="current-year-th"></span>
+    <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 px-4">
+        
+        <div class="lg:col-span-4 space-y-6 order-2 lg:order-1">
+            <div class="glass p-8 rounded-[2.5rem] border-white shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-bl-full -mr-10 -mt-10 opacity-50"></div>
+                <h3 class="font-bold mb-6 flex items-center gap-3 text-slate-800">
+                    <i data-lucide="calendar-days" class="w-6 h-6 text-blue-600"></i>
+                    <span>ตรวจสอบวันว่าง</span>
                 </h3>
-                <div id="calendar-content" class="space-y-3">
-                    <div class="p-3 bg-orange-50 border-l-4 border-orange-500 rounded-r-xl mb-2">
-                        <p class="text-xs font-bold text-orange-800">ช่วงเช้า: จองแล้ว</p>
+                
+                <div id="calendar-sidebar-content" class="space-y-4">
+                    <div class="text-center py-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ปีพุทธศักราช</p>
+                        <p class="text-3xl font-black text-blue-600" id="current-year-display">2569</p>
+                    </div>
+                    
+                    <div id="calendar-events" class="space-y-3 pt-2">
+                        <div class="flex items-start gap-3 p-3 rounded-2xl hover:bg-white transition-colors">
+                            <div class="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5"></div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">15 มี.ค. - 17 มี.ค.</p>
+                                <p class="text-[11px] text-slate-500 italic">มีคิวจองแล้ว (รถสุขา)</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl relative">
+                <i data-lucide="help-circle" class="absolute top-6 right-6 w-8 h-8 opacity-20"></i>
+                <h4 class="font-bold mb-3 text-lg">ต้องการความช่วยเหลือ?</h4>
+                <p class="text-slate-400 text-xs leading-relaxed mb-6">หากพบปัญหาในการกรอกข้อมูล หรือต้องการสอบถามรายละเอียดเพิ่มเติม ติดต่อกองช่าง อบจ.นครปฐม</p>
+                <a href="tel:034-xxx-xxx" class="flex items-center gap-3 text-blue-400 font-bold hover:text-white transition-colors">
+                    <i data-lucide="phone-call" class="w-5 h-5"></i>
+                    034-XXX-XXXX
+                </a>
+            </div>
         </div>
 
-        <div class="lg:col-span-2">
-            <form id="dynamic-booking-form" onsubmit="handleGlobalSubmit(event)" class="glass p-6 md:p-10 rounded-[2.5rem] shadow-2xl border-white space-y-6">
-                <h2 id="form-title" class="text-2xl font-bold text-slate-900 mb-6">ระบุรายละเอียดการจอง</h2>
+        <div class="lg:col-span-8 order-1 lg:order-2">
+            <form id="dynamic-booking-form" onsubmit="handleGlobalSubmit(event)" class="space-y-8">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="common-name" placeholder="ชื่อ-นามสกุล" class="input-style" required>
-                    <input type="tel" id="common-phone" placeholder="เบอร์โทรศัพท์" class="input-style" required>
+                <div class="glass p-8 md:p-10 rounded-[2.5rem] border-white shadow-xl space-y-6">
+                    <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">1</span>
+                        <h3 class="font-bold text-slate-800">ข้อมูลผู้ขอรับบริการ</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase ml-1">ชื่อ-นามสกุล</label>
+                            <input type="text" id="common-name" placeholder="ระบุชื่อจริง-นามสกุล" class="new-input-style" required>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase ml-1">เบอร์โทรศัพท์ติดต่อ</label>
+                            <input type="tel" id="common-phone" placeholder="08X-XXXXXXX" class="new-input-style" required>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="dynamic-fields" class="space-y-6">
+                <div class="glass p-8 md:p-10 rounded-[2.5rem] border-white shadow-xl space-y-6">
+                    <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                        <span class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold text-sm">2</span>
+                        <h3 class="font-bold text-slate-800">รายละเอียดการจอง</h3>
+                    </div>
+                    
+                    <div id="dynamic-fields" class="grid grid-cols-1 gap-6">
+                        </div>
+                </div>
+
+                <div class="glass p-8 md:p-10 rounded-[2.5rem] border-white shadow-xl space-y-6">
+                    <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                        <span class="w-8 h-8 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center font-bold text-sm">3</span>
+                        <h3 class="font-bold text-slate-800">การยืนยันข้อมูล</h3>
                     </div>
 
-                <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-3">
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" id="con-1" class="mt-1 w-5 h-5 rounded text-blue-600" required>
-                        <span class="text-sm text-slate-600">ยินยอมปฏิบัติตามระเบียบของ อบจ.นครปฐม</span>
-                    </label>
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" id="con-2" class="mt-1 w-5 h-5 rounded text-blue-600" required>
-                        <span class="text-sm text-slate-600">ยินยอมให้บันทึกข้อมูลส่วนตัวเพื่อการดำเนินงาน</span>
-                    </label>
+                    <div class="grid grid-cols-1 gap-3">
+                        <label class="flex items-center gap-4 p-4 rounded-2xl hover:bg-blue-50/50 transition-all cursor-pointer border border-transparent hover:border-blue-100 group">
+                            <input type="checkbox" id="con-1" class="w-6 h-6 rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500" required>
+                            <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors font-medium">ข้าพเจ้ายินยอมปฏิบัติตามข้อบัญญัติและระเบียบฯ ทุกประการ</span>
+                        </label>
+                        <label class="flex items-center gap-4 p-4 rounded-2xl hover:bg-blue-50/50 transition-all cursor-pointer border border-transparent hover:border-blue-100 group">
+                            <input type="checkbox" id="con-2" class="w-6 h-6 rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500" required>
+                            <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors font-medium">ยินยอมให้บันทึกและประมวลผลข้อมูลส่วนบุคคล</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-100 transition-all btn-animate flex items-center justify-center gap-3 text-lg">
+                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                        ส่งคำร้องขอรับบริการ
+                    </button>
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg btn-animate">
-                    ยืนยันการส่งข้อมูล
-                </button>
             </form>
         </div>
     </div>
 </div>
 
-<style>
-    .input-style { @apply w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all; }
-</style>
+
         
     </main>
 
@@ -594,45 +659,76 @@ function handleServiceClick(name) {
 function renderDynamicFields(name) {
     const container = document.getElementById('dynamic-fields');
     const title = document.getElementById('form-title');
-    container.innerHTML = ""; // ล้างข้อมูลเก่า
+    container.innerHTML = ""; 
     title.innerText = name;
+    
+    // อัปเดตปี พ.ศ. ในหน้าจอ
+    document.getElementById('current-year-display').innerText = new Date().getFullYear() + 543;
 
     if (name.includes('รถสุขา')) {
         container.innerHTML = `
-            <input type="email" id="f-email" placeholder="E-mail" class="input-style" required>
-            <textarea id="f-address" placeholder="ที่อยู่ผู้ขอใช้" class="input-style" required></textarea>
-            <div class="grid grid-cols-2 gap-4">
-                <div><label class="text-xs font-bold">เริ่ม</label><input type="datetime-local" id="f-start" class="input-style" required></div>
-                <div><label class="text-xs font-bold">ถึง</label><input type="datetime-local" id="f-end" class="input-style" required></div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1">E-mail สำหรับแจ้งเตือน</label>
+                <input type="email" id="f-email" placeholder="example@mail.com" class="new-input-style" required>
             </div>
-            <input type="text" id="f-location" placeholder="สถานที่ใช้งาน" class="input-style" required>
-            <textarea id="f-detail" placeholder="วัตถุประสงค์" class="input-style" required></textarea>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">วันที่เริ่มใช้งาน</label>
+                    <input type="datetime-local" id="f-start" class="new-input-style" required>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">วันที่สิ้นสุด</label>
+                    <input type="datetime-local" id="f-end" class="new-input-style" required>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1">สถานที่ใช้งาน / พิกัด</label>
+                <input type="text" id="f-location" placeholder="เช่น บริเวณสนามกีฬา อบจ. หรือแนบพิกัด GPS" class="new-input-style" required>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1">วัตถุประสงค์การใช้งาน</label>
+                <textarea id="f-detail" rows="3" placeholder="ระบุรายละเอียดงาน..." class="new-input-style" required></textarea>
+            </div>
         `;
     } 
     else if (name.includes('เจ้าภาพสถานสงเคราะห์')) {
         container.innerHTML = `
-            <div class="space-y-4">
-                <label class="block text-sm font-bold">เลือกวันที่ต้องการเป็นเจ้าภาพ</label>
-                <input type="date" id="f-date" class="input-style" required>
-                
-                <label class="block text-sm font-bold mt-4">เลือกช่วงเวลา (เลือกได้มากกว่า 1)</label>
-                <div class="grid grid-cols-3 gap-2">
-                    <label class="p-3 border rounded-xl text-center cursor-pointer hover:bg-blue-50"><input type="checkbox" name="f-time" value="เช้า"> เช้า</label>
-                    <label class="p-3 border rounded-xl text-center cursor-pointer hover:bg-blue-50"><input type="checkbox" name="f-time" value="กลางวัน"> กลางวัน</label>
-                    <label class="p-3 border rounded-xl text-center cursor-pointer hover:bg-blue-50"><input type="checkbox" name="f-time" value="เย็น"> เย็น</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">วันที่ต้องการจอง</label>
+                    <input type="date" id="f-date" class="new-input-style" required>
                 </div>
-
-                <label class="block text-sm font-bold mt-4">กิจกรรมการเป็นเจ้าภาพ</label>
-                <select id="f-activity" class="input-style" required>
-                    <option value="">-- เลือกกิจกรรม --</option>
-                    <option value="บริจาคสิ่งของ">บริจาคสิ่งของ</option>
-                    <option value="บริจาคเงิน">บริจาคเงิน</option>
-                    <option value="จัดกิจกรรม">จัดกิจกรรม</option>
-                    <option value="จัดเลี้ยงอาหาร">จัดเลี้ยงอาหาร</option>
-                </select>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">กิจกรรมหลัก</label>
+                    <select id="f-activity" class="new-input-style cursor-pointer" required>
+                        <option value="">-- เลือกกิจกรรม --</option>
+                        <option value="บริจาคสิ่งของ">บริจาคสิ่งของ</option>
+                        <option value="บริจาคเงิน">บริจาคเงิน</option>
+                        <option value="จัดกิจกรรม">จัดกิจกรรม</option>
+                        <option value="จัดเลี้ยงอาหาร">จัดเลี้ยงอาหาร</option>
+                    </select>
+                </div>
+            </div>
+            <div class="space-y-3">
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 block">เลือกช่วงเวลาที่ต้องการ (เลือกได้มากกว่า 1 ช่วง)</label>
+                <div class="grid grid-cols-3 gap-3">
+                    ${['เช้า', 'กลางวัน', 'เย็น'].map(time => `
+                        <label class="relative group">
+                            <input type="checkbox" name="f-time" value="${time}" class="peer hidden">
+                            <div class="text-center p-3 rounded-2xl border border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 transition-all cursor-pointer font-bold text-sm text-slate-500 group-hover:border-blue-300">
+                                ${time}
+                            </div>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1">รายละเอียดเพิ่มเติม (ถ้ามี)</label>
+                <textarea id="f-remark" rows="2" placeholder="เช่น จำนวนผู้ร่วมกิจกรรม หรือรายการอาหารที่ต้องการจัดเลี้ยง" class="new-input-style"></textarea>
             </div>
         `;
     }
+    lucide.createIcons();
 }
 
 async function handleGlobalSubmit(e) {
