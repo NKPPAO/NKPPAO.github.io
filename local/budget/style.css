@@ -128,6 +128,20 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
+/* บังคับขนาดไอคอนใน Card สรุป */
+.summary-icon {
+    flex-shrink: 0 !important; /* ห้ามหดตัวเด็ดขาด */
+    aspect-ratio: 1 / 1;       /* รักษาทรงจัตุรัส */
+}
+
+/* ปรับขนาดฟอนต์บนมือถือให้เล็กลงอัตโนมัติถ้าพื้นที่ไม่พอ */
+@media (max-width: 640px) {
+    #cardTotalBudget, #cardTotalProjects {
+        font-size: 1.1rem; /* ลดขนาดตัวเลขลงเล็กน้อยบนมือถือ */
+        letter-spacing: -0.02em;
+    }
+}
+
 /* เอฟเฟกต์ Fade In เมื่อข้อมูลโหลดเสร็จ */
 @keyframes fadeInScale {
     from { opacity: 0; transform: scale(0.95); }
