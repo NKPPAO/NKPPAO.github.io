@@ -1,57 +1,38 @@
-name: Deploy Smart Portal
+name: Smart Portal CI/CD
+
 on:
   push:
-    branches: [ main ]
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Inject Secrets
-        run: |
-          # ระบุตำแหน่งไฟล์ index.html ที่อยู่ในโฟลเดอร์ย่อย
-          sed -i "s|{{SUPABASE_SMARTSERVICES_URL}}|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" smartservices/index.html
-          sed -i "s|{{SUPABASE_SMARTSERVICES_ANON_KEY}}|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" smartservices/index.html
-
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          # ระบุโฟลเดอร์ย่อยที่เป็นตัวเก็บไฟล์สำหรับแสดงผล
-          folder: smartservices 
-          branch: gh-pages
-
-name: Daily Portal Sync & Deploy
-on:
-  push:
-    branches: [ main ]
-  # ส่วนที่เพิ่มเข้ามา: สั่งให้รันอัตโนมัติทุกเที่ยงคืน (เวลา UTC)
+    branches: [ main ] # รันเมื่อมีการอัปเดตโค้ด
   schedule:
-    - cron: '0 17 * * *' # 17:00 UTC คือ 00:00 น. (เที่ยงคืน) ของประเทศไทย
+    - cron: '0 17 * * *' # รันทุกเที่ยงคืนเวลาไทย (17:00 UTC)
+  workflow_dispatch: # เปิดให้กดรันเองได้จากหน้าเว็บ GitHub
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Inject Secrets
+      - name: Inject Supabase Keys
         run: |
+          # แทนที่ตัวแปรในไฟล์ index.html ด้วยรหัสลับจาก GitHub Secrets
           sed -i "s|{{SUPABASE_SMARTSERVICES_URL}}|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" smartservices/index.html
           sed -i "s|{{SUPABASE_SMARTSERVICES_ANON_KEY}}|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" smartservices/index.html
 
-      # (เพิ่มเติม) ถ้าคุณต้องการ "ยิง" API ไปที่ Supabase เพื่ออัปเดตข้อมูลบางอย่าง
-      - name: Notify Supabase Midnight Sync
+      - name: Supabase Connectivity Check
+        # ส่วนนี้จะรันเฉพาะตอนเที่ยงคืน หรือตอนที่คุณกดรันเอง (Manual)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
-          curl -X POST "${{ secrets.SUPABASE_SMARTSERVICES_URL }}/rest/v1/rpc/your_function_name" \
+          echo "กำลังตรวจสอบการเชื่อมต่อกับ Supabase..."
+          curl -X GET "${{ secrets.SUPABASE_SMARTSERVICES_URL }}/rest/v1/service_requests?select=id&limit=1" \
           -H "apikey: ${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}" \
           -H "Content-Type: application/json"
+          echo "การตรวจสอบเสร็จสมบูรณ์"
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: smartservices 
-          branch: gh-pages
+          folder: smartservices # ระบุโฟลเดอร์ย่อยที่มีไฟล์ index.html
+          branch: gh-pages # ไฟล์ที่ถูก 'ฉีด Key' แล้วจะถูกส่งไปที่สาขานี้เพื่อแสดงผลหน้าเว็บ
