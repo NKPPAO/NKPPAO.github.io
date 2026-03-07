@@ -12,18 +12,26 @@
 </head>
 <body>
 
-<header class="bg-white/30 backdrop-blur-md pt-12 pb-24 z-40 transition-all">
+<header class="relative bg-white/30 backdrop-blur-md pt-12 pb-24 z-40 transition-all">
+    <div class="absolute top-4 right-4 sm:top-6 sm:right-8 flex items-center gap-2 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/50 shadow-sm">
+        <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <p class="text-[10px] sm:text-xs text-slate-600 whitespace-nowrap">
+            อัปเดตล่าสุด: <span id="nav-last-update" class="font-bold text-slate-800"></span>
+        </p>
+    </div>
+
     <div class="max-w-7xl mx-auto px-4 text-center">
         <div class="inline-block p-4 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-white/50 mb-6">
             <img src="https://www.nkppao.go.th/customers/webpages/images/master_001.png" alt="Logo" class="w-20 h-20 sm:w-24 sm:h-24 object-contain">
         </div>
-        <h1 id="main-header" class="text-xl sm:text-4xl font-[800] text-[#0056b3] px-2">
+        <h1 id="main-header" class="text-xl sm:text-4xl font-[800] text-[#0056b3] px-2 uppercase tracking-wide">
             ระบบสืบค้นข้อมูล
         </h1>
-        <p class="text-lg sm:text-xl font-bold text-slate-700">องค์การบริหารส่วนจังหวัดนครปฐม</p>
-        
-        <p id="sub-header" class="text-sm text-slate-700"></p>
-        <p class="text-sm text-slate-700">อัปเดตล่าสุด: <span id="nav-last-update"></span></p>
+        <p class="text-lg sm:text-xl font-bold text-slate-700 mt-1">องค์การบริหารส่วนจังหวัดนครปฐม</p>
+        <p id="sub-header" class="text-sm text-slate-500 mt-1 italic font-medium"></p>
     </div>
 </header>
 
