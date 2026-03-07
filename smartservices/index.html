@@ -45,6 +45,21 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* ใส่ในแท็ก style */
+#service-list {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+
+input, textarea, select {
+    font-size: 16px !important; /* ป้องกัน iOS Auto-zoom ซึ่งทำให้หน้าจอล้น */
+}
+
+.glass {
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+}
     </style>
 </head>
 <body class="bg-[#f8fafc] min-h-screen text-slate-800">
@@ -167,95 +182,61 @@
         </div>
     </div>
 
-        <div id="booking-view" class="hidden animate-fade-in">
-    <div class="flex items-center justify-between mb-8">
-        <button onclick="switchView('user')" class="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors">
+        <div id="booking-view" class="hidden animate-fade-in pb-20">
+    <div class="flex items-center mb-8">
+        <button onclick="switchView('user')" class="flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold">
             <i data-lucide="arrow-left" class="w-5 h-5"></i> ย้อนกลับ
         </button>
-        <h2 class="text-xl font-bold text-slate-900">แบบฟอร์มจองรถสุขาเคลื่อนที่</h2>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-1">
-            <div class="glass p-6 rounded-3xl sticky top-24">
-                <h3 class="font-bold mb-4 flex items-center gap-2">
-                    <i data-lucide="calendar" class="text-blue-600"></i> ตารางการจอง (พ.ศ. <span id="current-year-th"></span>)
+        <div id="calendar-sidebar" class="lg:col-span-1">
+            <div class="glass p-6 rounded-[2rem] border-white shadow-xl sticky top-24">
+                <h3 class="font-bold mb-4 flex items-center gap-2 text-blue-600">
+                    <i data-lucide="calendar" class="w-5 h-5"></i> ตารางปี พ.ศ. <span id="current-year-th"></span>
                 </h3>
-                <div id="calendar-container" class="space-y-3">
-                    <p class="text-xs text-slate-400 italic">เลือกวันเวลาที่ว่างเพื่อทำการจอง</p>
-                    <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl">
-                        <div class="flex items-center justify-between text-xs font-bold text-blue-700">
-                            <span>15 มี.ค. 69</span>
-                            <span class="bg-blue-200 px-2 py-0.5 rounded">จองแล้ว</span>
-                        </div>
-                        <p class="text-[10px] text-blue-600 mt-1">งานนมัสการองค์พระปฐมเจดีย์</p>
+                <div id="calendar-content" class="space-y-3">
+                    <div class="p-3 bg-orange-50 border-l-4 border-orange-500 rounded-r-xl mb-2">
+                        <p class="text-xs font-bold text-orange-800">ช่วงเช้า: จองแล้ว</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="lg:col-span-2">
-            <form onsubmit="handleBooking(event)" class="glass p-8 rounded-[2.5rem] shadow-2xl border-white space-y-6">
+            <form id="dynamic-booking-form" onsubmit="handleGlobalSubmit(event)" class="glass p-6 md:p-10 rounded-[2.5rem] shadow-2xl border-white space-y-6">
+                <h2 id="form-title" class="text-2xl font-bold text-slate-900 mb-6">ระบุรายละเอียดการจอง</h2>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-sm font-semibold text-slate-700">ชื่อ-นามสกุล</label>
-                        <input type="text" id="book-name" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    <input type="text" id="common-name" placeholder="ชื่อ-นามสกุล" class="input-style" required>
+                    <input type="tel" id="common-phone" placeholder="เบอร์โทรศัพท์" class="input-style" required>
+                </div>
+
+                <div id="dynamic-fields" class="space-y-6">
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-semibold text-slate-700">หมายเลขโทรศัพท์</label>
-                        <input type="tel" id="book-phone" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
-                    </div>
-                </div>
 
-                <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-700">E-mail</label>
-                    <input type="email" id="book-email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-700">ที่อยู่ผู้ขอใช้บริการ</label>
-                    <textarea id="book-address" rows="2" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required></textarea>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-sm font-semibold text-slate-700">ตั้งแต่ (วันที่และเวลา)</label>
-                        <input type="datetime-local" id="book-start" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-semibold text-slate-700">ถึง (วันที่และเวลา)</label>
-                        <input type="datetime-local" id="book-end" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-700">สถานที่ใช้งาน</label>
-                    <input type="text" id="book-location" placeholder="เช่น บริเวณหน้าหอประชุม..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-700">วัตถุประสงค์/รายละเอียดการขอใช้รถ</label>
-                    <textarea id="book-detail" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required></textarea>
-                </div>
-
-                <div class="space-y-3 pt-4 border-t border-slate-100">
-                    <label class="flex items-start gap-3 cursor-pointer group">
-                        <input type="checkbox" id="consent-1" class="mt-1.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500" required>
-                        <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">ยินยอมปฏิบัติตามข้อบัญญัติและระเบียบการใช้รถสุขาเคลื่อนที่ของ อบจ.นครปฐม ทุกประการ</span>
+                <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-3">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="con-1" class="mt-1 w-5 h-5 rounded text-blue-600" required>
+                        <span class="text-sm text-slate-600">ยินยอมปฏิบัติตามระเบียบของ อบจ.นครปฐม</span>
                     </label>
-                    <label class="flex items-start gap-3 cursor-pointer group">
-                        <input type="checkbox" id="consent-2" class="mt-1.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500" required>
-                        <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">ยินยอมให้บันทึกข้อมูลส่วนบุคคลเพื่อใช้ประกอบการยื่นคำร้องและติดต่อประสานงาน</span>
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="con-2" class="mt-1 w-5 h-5 rounded text-blue-600" required>
+                        <span class="text-sm text-slate-600">ยินยอมให้บันทึกข้อมูลส่วนตัวเพื่อการดำเนินงาน</span>
                     </label>
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 hover:bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl transition-all btn-animate flex items-center justify-center gap-2">
-                    <i data-lucide="send" class="w-5 h-5"></i> ยืนยันการส่งข้อมูลจองรถ
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg btn-animate">
+                    ยืนยันการส่งข้อมูล
                 </button>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+    .input-style { @apply w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all; }
+</style>
         
     </main>
 
@@ -600,19 +581,95 @@ async function handleLogout() {
             lucide.createIcons();
         }
 
-        // แก้ไขฟังก์ชันคลิกที่ Card บริการ
+      let activeService = ""; // เก็บชื่อบริการที่กำลังทำรายการ
+
 function handleServiceClick(name) {
-    if (!currentUser) {
-        showAlert('กรุณาเข้าสู่ระบบก่อนใช้งานบริการ', 'info');
-        showLoginModal();
-        return;
-    }
+    if (!currentUser) return showLoginModal();
     
+    activeService = name;
+    switchView('booking');
+    renderDynamicFields(name);
+}
+
+function renderDynamicFields(name) {
+    const container = document.getElementById('dynamic-fields');
+    const title = document.getElementById('form-title');
+    container.innerHTML = ""; // ล้างข้อมูลเก่า
+    title.innerText = name;
+
     if (name.includes('รถสุขา')) {
-        switchView('booking');
-    } else {
-        showAlert(`บริการ ${name} กำลังเตรียมเปิดให้ใช้งานเร็วๆ นี้`, 'info');
+        container.innerHTML = `
+            <input type="email" id="f-email" placeholder="E-mail" class="input-style" required>
+            <textarea id="f-address" placeholder="ที่อยู่ผู้ขอใช้" class="input-style" required></textarea>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs font-bold">เริ่ม</label><input type="datetime-local" id="f-start" class="input-style" required></div>
+                <div><label class="text-xs font-bold">ถึง</label><input type="datetime-local" id="f-end" class="input-style" required></div>
+            </div>
+            <input type="text" id="f-location" placeholder="สถานที่ใช้งาน" class="input-style" required>
+            <textarea id="f-detail" placeholder="วัตถุประสงค์" class="input-style" required></textarea>
+        `;
+    } 
+    else if (name.includes('เจ้าภาพสถานสงเคราะห์')) {
+        container.innerHTML = `
+            <div class="space-y-4">
+                <label class="block text-sm font-bold">เลือกวันที่ต้องการเป็นเจ้าภาพ</label>
+                <input type="date" id="f-date" class="input-style" required>
+                
+                <label class="block text-sm font-bold mt-4">เลือกช่วงเวลา (เลือกได้มากกว่า 1)</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <label class="p-3 border rounded-xl text-center cursor-pointer hover:bg-blue-50"><input type="checkbox" name="f-time" value="เช้า"> เช้า</label>
+                    <label class="p-3 border rounded-xl text-center cursor-pointer hover:bg-blue-50"><input type="checkbox" name="f-time" value="กลางวัน"> กลางวัน</label>
+                    <label class="p-3 border rounded-xl text-center cursor-pointer hover:bg-blue-50"><input type="checkbox" name="f-time" value="เย็น"> เย็น</label>
+                </div>
+
+                <label class="block text-sm font-bold mt-4">กิจกรรมการเป็นเจ้าภาพ</label>
+                <select id="f-activity" class="input-style" required>
+                    <option value="">-- เลือกกิจกรรม --</option>
+                    <option value="บริจาคสิ่งของ">บริจาคสิ่งของ</option>
+                    <option value="บริจาคเงิน">บริจาคเงิน</option>
+                    <option value="จัดกิจกรรม">จัดกิจกรรม</option>
+                    <option value="จัดเลี้ยงอาหาร">จัดเลี้ยงอาหาร</option>
+                </select>
+            </div>
+        `;
     }
+}
+
+async function handleGlobalSubmit(e) {
+    e.preventDefault();
+    
+    // รวบรวมข้อมูลพิเศษเข้า JSONB
+    let detailsObj = {};
+    if (activeService.includes('รถสุขา')) {
+        detailsObj = {
+            email: document.getElementById('f-email').value,
+            address: document.getElementById('f-address').value,
+            start: document.getElementById('f-start').value,
+            end: document.getElementById('f-end').value,
+            location: document.getElementById('f-location').value,
+            purpose: document.getElementById('f-detail').value
+        };
+    } else if (activeService.includes('เจ้าภาพ')) {
+        const times = Array.from(document.querySelectorAll('input[name="f-time"]:checked')).map(el => el.value);
+        detailsObj = {
+            date: document.getElementById('f-date').value,
+            periods: times,
+            activity: document.getElementById('f-activity').value
+        };
+    }
+
+    const payload = {
+        user_id: currentUser.id,
+        service_name: activeService,
+        status: 'Pending',
+        request_details: detailsObj // ยัดลง JSONB ช่องเดียวจบ!
+    };
+
+    const { error } = await supabaseClient.from('service_requests').insert([payload]);
+    if (error) return showAlert(error.message, 'error');
+
+    showAlert('บันทึกคำร้องสำเร็จ', 'success');
+    switchView('user');
 }
 
         async function updateRequestStatus(id, newStatus) {
