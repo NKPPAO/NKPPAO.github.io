@@ -3,11 +3,8 @@ name: Smart Portal CI/CD
 on:
   push:
     branches: [ main ]
-  schedule:
-    - cron: '0 17 * * *'
   workflow_dispatch:
 
-# 1. เพิ่มสิทธิ์ให้ Workflow สามารถเขียนข้อมูลลงใน Repo ได้ (แก้ Error 128)
 permissions:
   contents: write
 
@@ -20,24 +17,22 @@ jobs:
 
       - name: Inject Supabase Keys
         run: |
-          sed -i "s|MY_URL_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g" smartservices/index.html
-          sed -i "s|MY_KEY_PLACEHOLDER|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g" smartservices/index.html
+          # 1. เช็คก่อนว่ามีไฟล์อยู่จริงไหม (จะโชว์ใน Log Actions)
+          ls -R smartservices/
           
-          # บรรทัดตรวจสอบ (Debug): พิมพ์เนื้อหาไฟล์ออกมาดูใน Log (ไม่ต้องกลัว Key หลุด เพราะ GitHub จะเซนเซอร์เป็น *** ให้เอง)
+          # 2. ใช้ @ แทน | เพื่อความปลอดภัยของ URL และระบุ Path ให้เป๊ะ
+          # เราใช้คำสั่งค้นหาคำว่า {{...}} ในไฟล์ smartservices/index.html
+          sed -i 's@{{SUPABASE_SMARTSERVICES_URL}}@${{ secrets.SUPABASE_SMARTSERVICES_URL }}@g' smartservices/index.html
+          sed -i 's@{{SUPABASE_SMARTSERVICES_ANON_KEY}}@${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}@g' smartservices/index.html
+          
+          # 3. ตรวจสอบว่าเปลี่ยนสำเร็จไหม (จะโชว์ใน Log เป็น ***)
           grep "const SUPABASE_URL" smartservices/index.html
-
-      - name: Supabase Connectivity Check
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        run: |
-          curl -X GET "${{ secrets.SUPABASE_SMARTSERVICES_URL }}/rest/v1/service_requests?select=id&limit=1" \
-          -H "apikey: ${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}" \
-          -H "Content-Type: application/json"
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          # 2. ใส่ Token เพื่อยืนยันสิทธิ์ในการเขียน Branch
           token: ${{ secrets.GITHUB_TOKEN }}
-          folder: smartservices 
+          # สำคัญ: ถ้าต้องการให้หน้าเว็บอยู่ที่ nkppao.github.io/smartservices/
+          # เราควรส่งไฟล์จาก Root (.) ขึ้นไป เพื่อรักษาโครงสร้างโฟลเดอร์ไว้
+          folder: . 
           branch: gh-pages
