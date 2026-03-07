@@ -642,12 +642,15 @@ async function handleLogout() {
             lucide.createIcons();
         }
 
-      let activeService = ""; // เก็บชื่อบริการที่กำลังทำรายการ
+// ตัวแปร Global สำหรับเก็บชื่อบริการที่คลิก
+let activeService = ""; 
 
 function handleServiceClick(name) {
-    if (!currentUser) return showLoginModal();
-    
-    activeService = name;
+    if (!currentUser) {
+        showAlert('กรุณาเข้าสู่ระบบก่อนรับบริการ', 'error');
+        return showLoginModal();
+    }
+    activeService = name; // เก็บค่าไว้ใช้ตอน Submit
     switchView('booking');
     renderDynamicFields(name);
 }
@@ -657,83 +660,93 @@ function renderDynamicFields(name) {
     const title = document.getElementById('form-title');
     container.innerHTML = ""; 
     title.innerText = name;
-    
-    // อัปเดตปี พ.ศ. ในหน้าจอ
-    document.getElementById('current-year-display').innerText = new Date().getFullYear() + 543;
+
+    // 1. ดึงข้อมูล User มาใส่ในส่วน "ข้อมูลผู้ติดต่อ" (Section 1) อัตโนมัติ
+    if (currentUser) {
+        const nameInput = document.getElementById('common-name');
+        const phoneInput = document.getElementById('common-phone');
+        
+        // ดึงจาก Metadata ที่เราเก็บไว้ตอนสมัครสมาชิก (หรือจาก Google/Line Login)
+        if (nameInput) nameInput.value = currentUser.user_metadata?.full_name || "";
+        if (phoneInput) phoneInput.value = currentUser.user_metadata?.phone_number || "";
+    }
+
+    // 2. สร้างฟิลด์รายละเอียดตามประเภทบริการ (Section 2)
+    let dynamicHtml = "";
 
     if (name.includes('รถสุขา')) {
-        container.innerHTML = `
+        dynamicHtml = `
             <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1">E-mail สำหรับแจ้งเตือน</label>
-                <input type="email" id="f-email" placeholder="example@mail.com" class="new-input-style" required>
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">E-mail สำหรับแจ้งผล</label>
+                <input type="email" id="f-email" value="${currentUser?.email || ''}" class="new-input-style" required>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">วันที่เริ่มใช้งาน</label>
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">วันที่เริ่มใช้งาน</label>
                     <input type="datetime-local" id="f-start" class="new-input-style" required>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">วันที่สิ้นสุด</label>
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">วันที่สิ้นสุด</label>
                     <input type="datetime-local" id="f-end" class="new-input-style" required>
                 </div>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1">สถานที่ใช้งาน / พิกัด</label>
-                <input type="text" id="f-location" placeholder="เช่น บริเวณสนามกีฬา อบจ. หรือแนบพิกัด GPS" class="new-input-style" required>
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">สถานที่ใช้งาน (ระบุพิกัดหรือชื่อสถานที่)</label>
+                <input type="text" id="f-location" placeholder="เช่น สนามกีฬาจังหวัดนครปฐม" class="new-input-style" required>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1">วัตถุประสงค์การใช้งาน</label>
-                <textarea id="f-detail" rows="3" placeholder="ระบุรายละเอียดงาน..." class="new-input-style" required></textarea>
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">วัตถุประสงค์</label>
+                <textarea id="f-detail" rows="3" placeholder="ระบุเหตุผลการขอใช้บริการ..." class="new-input-style" required></textarea>
             </div>
         `;
     } 
     else if (name.includes('เจ้าภาพสถานสงเคราะห์')) {
-        container.innerHTML = `
+        dynamicHtml = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">วันที่ต้องการจอง</label>
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">วันที่ต้องการจอง</label>
                     <input type="date" id="f-date" class="new-input-style" required>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">กิจกรรมหลัก</label>
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1 italic">กิจกรรม</label>
                     <select id="f-activity" class="new-input-style cursor-pointer" required>
                         <option value="">-- เลือกกิจกรรม --</option>
                         <option value="บริจาคสิ่งของ">บริจาคสิ่งของ</option>
-                        <option value="บริจาคเงิน">บริจาคเงิน</option>
-                        <option value="จัดกิจกรรม">จัดกิจกรรม</option>
                         <option value="จัดเลี้ยงอาหาร">จัดเลี้ยงอาหาร</option>
+                        <option value="จัดกิจกรรมนันทนาการ">จัดกิจกรรมนันทนาการ</option>
                     </select>
                 </div>
             </div>
             <div class="space-y-3">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1 block">เลือกช่วงเวลาที่ต้องการ (เลือกได้มากกว่า 1 ช่วง)</label>
+                <label class="text-xs font-bold text-slate-500 uppercase ml-1 block italic">ช่วงเวลา</label>
                 <div class="grid grid-cols-3 gap-3">
                     ${['เช้า', 'กลางวัน', 'เย็น'].map(time => `
-                        <label class="relative group">
+                        <label class="relative group cursor-pointer">
                             <input type="checkbox" name="f-time" value="${time}" class="peer hidden">
-                            <div class="text-center p-3 rounded-2xl border border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 transition-all cursor-pointer font-bold text-sm text-slate-500 group-hover:border-blue-300">
+                            <div class="text-center p-3 rounded-2xl border border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-600 peer-checked:text-white transition-all font-bold text-sm text-slate-500">
                                 ${time}
                             </div>
                         </label>
                     `).join('')}
                 </div>
             </div>
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1">รายละเอียดเพิ่มเติม (ถ้ามี)</label>
-                <textarea id="f-remark" rows="2" placeholder="เช่น จำนวนผู้ร่วมกิจกรรม หรือรายการอาหารที่ต้องการจัดเลี้ยง" class="new-input-style"></textarea>
+        `;
+    } else {
+        // กรณีบริการอื่นๆ ที่ยังไม่มีฟิลด์เฉพาะ
+        dynamicHtml = `
+            <div class="space-y-2 text-center py-10 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                <p class="text-slate-400 font-medium">ไม่มีรายละเอียดเพิ่มเติมสำหรับบริการนี้</p>
+                <p class="text-xs text-slate-400 italic">กรุณากดส่งคำร้องเพื่อแจ้งความประสงค์</p>
             </div>
         `;
     }
 
-    if (currentUser) {
-        // ดึงชื่อจาก Metadata หรือ Profile ที่เราเก็บไว้ตอน Login
-        const nameInput = document.getElementById('common-name');
-        const phoneInput = document.getElementById('common-phone');
-        
-        if (nameInput) nameInput.value = currentUser.user_metadata?.full_name || '';
-        if (phoneInput) phoneInput.value = currentUser.user_metadata?.phone_number || '';
+    container.innerHTML = dynamicHtml;
+    
+    // สำคัญ: สั่งให้ Lucide ทำงานเพื่อแสดงไอคอนใน HTML ที่เพิ่งฉีดเข้าไป
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
     }
-    lucide.createIcons();
 }
 
 async function handleGlobalSubmit(e) {
