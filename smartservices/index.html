@@ -70,7 +70,9 @@
         // --- ส่วนการตั้งค่า Supabase ---
         const SUPABASE_URL = '{{SUPABASE_SMARTSERVICES_URL}}'; 
         const SUPABASE_KEY = '{{SUPABASE_SMARTSERVICES_ANON_KEY}}';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // เปลี่ยนชื่อตัวแปรจาก supabase เป็น supabaseClient
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // ฟังก์ชันเริ่มทำงานเมื่อโหลดหน้าเว็บ
         document.addEventListener('DOMContentLoaded', async () => {
@@ -80,13 +82,14 @@
 
         // ฟังก์ชันดึงรายการบริการจาก Supabase
         async function loadServices() {
-            const serviceContainer = document.getElementById('service-list');
-            
-            try {
-                const { data: services, error } = await supabase
-                    .from('services')
-                    .select('*')
-                    .eq('is_active', true);
+        const serviceContainer = document.getElementById('service-list');
+        
+        try {
+            // ใช้ supabaseClient ที่เราตั้งชื่อใหม่
+            const { data: services, error } = await supabaseClient
+                .from('services')
+                .select('*')
+                .eq('is_active', true);
 
                 if (error) throw error;
 
