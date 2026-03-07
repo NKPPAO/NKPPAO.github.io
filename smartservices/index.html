@@ -10,6 +10,31 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+        /* แก้ปัญหาการล้นหน้าจอ (Horizontal Overflow) */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+        
+        /* ปรับตาราง Admin ให้ Scroll ได้เฉพาะส่วนตาราง */
+        .overflow-x-auto {
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        @media (max-width: 640px) {
+            .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
+            h1 { font-size: 1.5rem !important; } /* ย่อหัวข้อใหญ่บนมือถือ */
+            .glass { border-radius: 1.5rem; }
+        }
+        
+        /* เพิ่มอนิเมชั่นตอนเปลี่ยนหน้า */
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         body { font-family: 'Sarabun', sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
         .btn-animate { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
