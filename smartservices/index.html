@@ -733,59 +733,77 @@ function renderDynamicFields(name) {
     lucide.createIcons(); // ต้องมีบรรทัดนี้เพื่อให้ไอคอนในฟอร์มที่เพิ่งฉีดเข้าไปทำงาน
 }
 
-async function handleGlobalSubmit(e) {
-    e.preventDefault();
+async function handleGlobalSubmit(event) {
+    event.preventDefault();
     
-    // 1. ดึงข้อมูลพื้นฐานที่มีทุกฟอร์ม
-    const fullName = document.getElementById('common-name').value;
-    const phone = document.getElementById('common-phone').value;
+    // แสดง Loading เพื่อบอกผู้ใช้ว่ากำลังประมวลผล
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> กำลังส่งข้อมูล...';
+    lucide.createIcons();
 
-    // 2. รวบรวมข้อมูลพิเศษเข้า JSONB ตามประเภทบริการ
-    let detailsObj = {};
-    if (activeService.includes('รถสุขา')) {
-        detailsObj = {
-            full_name: fullName, // เก็บซ้ำใน JSONB ด้วยเพื่อความชัวร์
-            phone: phone,
-            email: document.getElementById('f-email').value,
-            start: document.getElementById('f-start').value,
-            end: document.getElementById('f-end').value,
-            location: document.getElementById('f-location').value,
-            purpose: document.getElementById('f-detail').value
+    try {
+        // 1. รวบรวมข้อมูลพื้นฐาน (Common Fields)
+        const commonData = {
+            name: document.getElementById('common-name')?.value || "",
+            phone: document.getElementById('common-phone')?.value || "",
+            service_type: activeService // ชื่อบริการที่เราเก็บไว้ตอนคลิกเลือก
         };
-    } else if (activeService.includes('เจ้าภาพ')) {
-        const times = Array.from(document.querySelectorAll('input[name="f-time"]:checked')).map(el => el.value);
-        detailsObj = {
-            full_name: fullName,
-            phone: phone,
-            date: document.getElementById('f-date').value,
-            periods: times,
-            activity: document.getElementById('f-activity').value,
-            remark: document.getElementById('f-remark').value
-        };
+
+        // 2. รวบรวมข้อมูล Dynamic (ใช้ Optional Chaining ?. เพื่อป้องกัน Error)
+        // สร้าง Object เปล่าเพื่อเก็บรายละเอียดเฉพาะของแต่ละบริการ
+        const details = {};
+
+        // รายการ ID ทั้งหมดที่อาจจะมีในฟอร์ม (ต้องตรงกับที่เขียนใน renderDynamicFields)
+        const dynamicIds = [
+            'f-email', 'f-start', 'f-end', 'f-location', 'f-detail', 
+            'f-date', 'f-activity', 'f-generic-detail'
+        ];
+
+        dynamicIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                details[id.replace('f-', '')] = el.value; // เก็บค่าโดยตัด f- ออกเพื่อให้ชื่อสวย
+            }
+        });
+
+        // พิเศษ: สำหรับ Checkbox (ช่วงเวลา) ที่มีหลายค่า
+        const timeCheckboxes = document.querySelectorAll('input[name="f-time"]:checked');
+        if (timeCheckboxes.length > 0) {
+            details['selected_times'] = Array.from(timeCheckboxes).map(cb => cb.value);
+        }
+
+        // 3. ส่งข้อมูลไปยัง Supabase
+        const { data, error } = await supabaseClient
+            .from('service_requests') // ชื่อ Table ใน Supabase ของคุณ
+            .insert([{
+                user_id: currentUser.id,
+                service_name: activeService,
+                requester_name: commonData.name,
+                requester_phone: commonData.phone,
+                request_details: details, // เก็บลงคอลัมน์ JSONB
+                status: 'Pending',
+                created_at: new Date()
+            }]);
+
+        if (error) throw error;
+
+        // 4. สำเร็จ!
+        showAlert('ส่งคำร้องเรียบร้อยแล้ว เจ้าหน้าที่จะติดต่อกลับโดยเร็ว', 'success');
+        switchView('user'); // กลับหน้าหลัก
+        fetchUserRequests(); // อัปเดตตาราง/สถิติ
+
+    } catch (err) {
+        console.error("Submit Error:", err);
+        showAlert('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+        lucide.createIcons();
     }
-
-    // 3. เตรียมข้อมูลส่งไป Supabase
-    const payload = {
-        user_id: currentUser.id,
-        service_name: activeService,
-        status: 'Pending',
-        request_details: detailsObj,
-        // ถ้าคุณมีคอลัมน์เหล่านี้ในตารางหลัก ให้ใส่ไปด้วย:
-        full_name: fullName, 
-        phone: phone
-    };
-
-    const { error } = await supabaseClient.from('service_requests').insert([payload]);
-    
-    if (error) {
-        console.error(error);
-        return showAlert('เกิดข้อผิดพลาด: ' + error.message, 'error');
-    }
-
-    showAlert('ส่งคำร้องสำเร็จแล้ว!', 'success');
-    switchView('user');
-    loadStats(); // อัปเดตตัวเลขหน้าหลัก
 }
+        
         async function updateRequestStatus(id, newStatus) {
     const { error } = await supabaseClient
         .from('service_requests')
