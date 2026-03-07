@@ -151,3 +151,17 @@ body {
 .animate-card {
     animation: fadeInScale 0.6s ease-out forwards;
 }
+
+/* ซ่อน Scrollbar สำหรับ Pagination บนมือถือ */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* เอฟเฟกต์ตอนกดปุ่มตัวเลข */
+#pagination-controls button:active {
+    transform: scale(0.9);
+}
