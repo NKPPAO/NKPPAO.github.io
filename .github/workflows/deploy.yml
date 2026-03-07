@@ -20,9 +20,8 @@ jobs:
 
       - name: Inject Supabase Keys
         run: |
-          # ใช้คำสั่ง sed แบบระบุไฟล์ให้ชัดเจน และลองเปลี่ยนตัวคั่นเป็น @ เพื่อเลี่ยงปัญหา / ใน URL
-          sed -i 's@{{SUPABASE_SMARTSERVICES_URL}}@${{ secrets.SUPABASE_SMARTSERVICES_URL }}@g' smartservices/index.html
-          sed -i 's@{{SUPABASE_SMARTSERVICES_ANON_KEY}}@${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}@g' smartservices/index.html
+          sed -i 's|{{SUPABASE_SMARTSERVICES_URL}}|${{ secrets.SUPABASE_SMARTSERVICES_URL }}|g' smartservices/index.html
+          sed -i 's|{{SUPABASE_SMARTSERVICES_ANON_KEY}}|${{ secrets.SUPABASE_SMARTSERVICES_ANON_KEY }}|g' smartservices/index.html
           
           # บรรทัดตรวจสอบ (Debug): พิมพ์เนื้อหาไฟล์ออกมาดูใน Log (ไม่ต้องกลัว Key หลุด เพราะ GitHub จะเซนเซอร์เป็น *** ให้เอง)
           grep "const SUPABASE_URL" smartservices/index.html
