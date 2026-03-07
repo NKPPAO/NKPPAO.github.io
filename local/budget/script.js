@@ -183,7 +183,15 @@ function updateUI() {
         btn.onclick = () => {
             currentPage = targetPage;
             fetchData();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            //window.scrollTo({ top: 0, behavior: 'smooth' });
+            // --- แก้ไขตรงนี้: ล็อกหน้าจอไว้ที่ตาราง ---
+            const tableElement = document.querySelector('main'); // หรือใช้ id ของส่วนตาราง
+            if (tableElement) {
+                tableElement.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' // ให้ขยับมาเริ่มที่ขอบบนของ main
+                });
+            }
         };
         
         // Tailwind Classes สำหรับปุ่ม
