@@ -736,63 +736,48 @@ function renderDynamicFields(name) {
 async function handleGlobalSubmit(event) {
     event.preventDefault();
     
-    // แสดง Loading เพื่อบอกผู้ใช้ว่ากำลังประมวลผล
     const submitBtn = event.target.querySelector('button[type="submit"]');
     const originalBtnText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> กำลังส่งข้อมูล...';
-    lucide.createIcons();
+    submitBtn.innerHTML = 'กำลังส่งข้อมูล...';
 
     try {
-        // 1. รวบรวมข้อมูลพื้นฐาน (Common Fields)
-        const commonData = {
-            name: document.getElementById('common-name')?.value || "",
-            phone: document.getElementById('common-phone')?.value || "",
-            service_type: activeService // ชื่อบริการที่เราเก็บไว้ตอนคลิกเลือก
+        // 1. รวบรวมรายละเอียดทั้งหมดลงใน Object เดียว (เพื่อใส่ใน request_details)
+        const details = {
+            requester_name: document.getElementById('common-name')?.value || "",
+            requester_phone: document.getElementById('common-phone')?.value || "",
+            submitted_at: new Date().toISOString()
         };
 
-        // 2. รวบรวมข้อมูล Dynamic (ใช้ Optional Chaining ?. เพื่อป้องกัน Error)
-        // สร้าง Object เปล่าเพื่อเก็บรายละเอียดเฉพาะของแต่ละบริการ
-        const details = {};
-
-        // รายการ ID ทั้งหมดที่อาจจะมีในฟอร์ม (ต้องตรงกับที่เขียนใน renderDynamicFields)
-        const dynamicIds = [
-            'f-email', 'f-start', 'f-end', 'f-location', 'f-detail', 
-            'f-date', 'f-activity', 'f-generic-detail'
-        ];
-
+        // 2. ดึงค่าจากฟิลด์ Dynamic (พวกวันที่, สถานที่ ฯลฯ)
+        const dynamicIds = ['f-email', 'f-start', 'f-end', 'f-location', 'f-detail', 'f-date', 'f-activity'];
         dynamicIds.forEach(id => {
             const el = document.getElementById(id);
-            if (el) {
-                details[id.replace('f-', '')] = el.value; // เก็บค่าโดยตัด f- ออกเพื่อให้ชื่อสวย
-            }
+            if (el) details[id.replace('f-', '')] = el.value;
         });
 
-        // พิเศษ: สำหรับ Checkbox (ช่วงเวลา) ที่มีหลายค่า
+        // เก็บค่า Checkbox ถ้ามี
         const timeCheckboxes = document.querySelectorAll('input[name="f-time"]:checked');
         if (timeCheckboxes.length > 0) {
             details['selected_times'] = Array.from(timeCheckboxes).map(cb => cb.value);
         }
 
-        // 3. ส่งข้อมูลไปยัง Supabase
+        // 3. ส่งข้อมูลให้ตรงกับคอลัมน์ในฐานข้อมูลจริงของคุณ
         const { data, error } = await supabaseClient
-            .from('service_requests') // ชื่อ Table ใน Supabase ของคุณ
+            .from('service_requests')
             .insert([{
                 user_id: currentUser.id,
-                service_name: activeService,
-                requester_name: commonData.name,
-                requester_phone: commonData.phone,
-                request_details: details, // เก็บลงคอลัมน์ JSONB
-                status: 'Pending',
-                created_at: new Date()
+                service_id: activeService, // ใช้ชื่อบริการหรือ ID ใส่ในช่องนี้
+                request_details: details,   // ข้อมูลชื่อ/เบอร์/รายละเอียด จะอยู่ในนี้หมดเลย
+                status: 'Pending'
+                // created_at และ updated_at ปกติ Supabase จะใส่ให้เองอัตโนมัติ
             }]);
 
         if (error) throw error;
 
-        // 4. สำเร็จ!
-        showAlert('ส่งคำร้องเรียบร้อยแล้ว เจ้าหน้าที่จะติดต่อกลับโดยเร็ว', 'success');
-        switchView('user'); // กลับหน้าหลัก
-        fetchUserRequests(); // อัปเดตตาราง/สถิติ
+        showAlert('ส่งคำร้องสำเร็จ!', 'success');
+        switchView('user');
+        if (typeof fetchUserRequests === 'function') fetchUserRequests();
 
     } catch (err) {
         console.error("Submit Error:", err);
