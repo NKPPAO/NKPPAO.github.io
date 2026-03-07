@@ -617,45 +617,54 @@ async function handleLogout() {
         }
 
         async function loadServices() {
-            const container = document.getElementById('service-list');
-            const { data: services, error } = await supabaseClient.from('services').select('*').eq('is_active', true);
-            
-            if (error) return showAlert('โหลดข้อมูลล้มเหลว', 'error');
-            
-            container.innerHTML = '';
-            services.forEach(item => {
-                const card = `
-                    <div onclick="handleServiceClick('${service.id}', '${service.name}')" class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-blue-100 hover:-translate-y-2 transition-all cursor-pointer group relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-12 -mt-12 transition-all group-hover:scale-150 opacity-50"></div>
-                        <div class="bg-blue-50 w-14 h-14 flex items-center justify-center rounded-2xl text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors relative z-10">
-                            <i data-lucide="external-link" class="w-6 h-6"></i>
-                        </div>
-                        <h3 class="font-bold text-xl mb-2 text-slate-800 relative z-10">${item.name}</h3>
-                        <p class="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-2 relative z-10">${item.description || 'กดเพื่อทำรายการยื่นคำร้อง'}</p>
-                        <div class="flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-widest relative z-10">
-                            ดำเนินการ <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += card;
-            });
-            lucide.createIcons();
-        }
+    const { data: services, error } = await supabaseClient
+        .from('services')
+        .select('*');
 
-// ตัวแปร Global สำหรับเก็บชื่อบริการที่คลิก
-let activeServiceId = ""; // เก็บ UUID
-let activeServiceName = ""; // เก็บชื่อภาษาไทย
+    if (error) {
+        console.error('Error loading services:', error);
+        return;
+    }
+
+    const container = document.getElementById('service-list');
+    container.innerHTML = ""; // ล้าง Skeleton loader ออก
+
+    services.forEach((item) => { // ใช้ชื่อ 'item' หรือ 'service' ก็ได้ แต่ต้องเหมือนกัน
+        const card = document.createElement('div');
+        card.className = "glass p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all cursor-pointer group btn-animate";
+        
+        // ตรงนี้สำคัญ: ส่ง item.id (UUID) และ item.name (ชื่อภาษาไทย)
+        card.onclick = () => handleServiceClick(item.id, item.name);
+
+        card.innerHTML = `
+            <div class="bg-blue-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
+                <i data-lucide="component" class="text-blue-600 group-hover:text-white w-7 h-7"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-lg mb-2">${item.name}</h3>
+            <p class="text-slate-500 text-sm leading-relaxed">${item.description || 'กดเพื่อดูรายละเอียดและขอรับบริการ'}</p>
+        `;
+        container.appendChild(card);
+    });
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ประกาศตัวแปร Global ไว้ด้านบนสุดของสคริปต์
+let activeServiceId = ""; 
+let activeServiceName = "";
 
 function handleServiceClick(id, name) {
     if (!currentUser) {
         showAlert('กรุณาเข้าสู่ระบบก่อน', 'error');
         return showLoginModal();
     }
-    activeServiceId = id;    // เก็บ UUID ไว้ใช้ส่ง insert
-    activeServiceName = name; // เก็บชื่อไว้โชว์ในหัวข้อฟอร์ม
+    
+    // เก็บค่าทั้งสองอย่างไว้
+    activeServiceId = id;    // รหัส UUID เช่น '550e8400-e29b...'
+    activeServiceName = name; // ชื่อบริการเช่น 'รถสุขา'
     
     switchView('booking');
-    renderDynamicFields(name); // ส่งชื่อไปเพื่อให้ฟังก์ชันเช็คเงื่อนไขสร้างฟิลด์ถูก
+    renderDynamicFields(name); // ใช้ชื่อในการสร้างฟิลด์ f-location, f-date ฯลฯ
 }
         
 function renderDynamicFields(name) {
@@ -745,49 +754,23 @@ async function handleGlobalSubmit(event) {
     submitBtn.innerHTML = 'กำลังส่งข้อมูล...';
 
     try {
-        // 1. รวบรวมรายละเอียดทั้งหมดลงใน Object เดียว (เพื่อใส่ใน request_details)
-        const details = {
-            requester_name: document.getElementById('common-name')?.value || "",
-            requester_phone: document.getElementById('common-phone')?.value || "",
-            submitted_at: new Date().toISOString()
-        };
-
-        // 2. ดึงค่าจากฟิลด์ Dynamic (พวกวันที่, สถานที่ ฯลฯ)
-        const dynamicIds = ['f-email', 'f-start', 'f-end', 'f-location', 'f-detail', 'f-date', 'f-activity'];
-        dynamicIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) details[id.replace('f-', '')] = el.value;
-        });
-
-        // เก็บค่า Checkbox ถ้ามี
-        const timeCheckboxes = document.querySelectorAll('input[name="f-time"]:checked');
-        if (timeCheckboxes.length > 0) {
-            details['selected_times'] = Array.from(timeCheckboxes).map(cb => cb.value);
-        }
-
-        // 3. ส่งข้อมูลให้ตรงกับคอลัมน์ในฐานข้อมูลจริงของคุณ
         const { data, error } = await supabaseClient
             .from('service_requests')
             .insert([{
                 user_id: currentUser.id,
-                service_id: activeServiceId, // ส่ง UUID ที่ถูกต้อง (รหัสจากตาราง services)
-                request_details: details,
+                service_id: activeServiceId, // ส่ง UUID ที่ถูกต้องเข้าเบส
+                request_details: {
+                    ...details,
+                    service_name_th: activeServiceName // แถมชื่อไทยลงใน JSONB เผื่อดูง่ายๆ
+                },
                 status: 'Pending'
             }]);
 
         if (error) throw error;
-
         showAlert('ส่งคำร้องสำเร็จ!', 'success');
         switchView('user');
-        if (typeof fetchUserRequests === 'function') fetchUserRequests();
-
     } catch (err) {
-        console.error("Submit Error:", err);
         showAlert('เกิดข้อผิดพลาด: ' + err.message, 'error');
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
-        lucide.createIcons();
     }
 }
         
