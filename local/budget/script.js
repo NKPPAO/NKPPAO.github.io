@@ -624,37 +624,57 @@ async function processUpload() {
         try {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
-            const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet);
 
-            if (rows.length === 0) throw new Error("ไม่พบข้อมูลในไฟล์");
+            if (rows.length === 0) throw new Error("ไม่พบข้อมูลในไฟล์ หรือไฟล์ว่างเปล่า");
 
-            // เตรียมข้อมูลโดย "ไม่ต้องใส่ฟิลด์ id"
+            // --- ส่วนตรวจสอบหัวตาราง (Validation) ---
+            const firstRow = rows[0];
+            const requiredColumns = ['ปีงบประมาณ', 'อำเภอ', 'ชื่อโครงการ', 'งบประมาณ'];
+            const missingColumns = requiredColumns.filter(col => !(col in firstRow));
+
+            if (missingColumns.length > 0) {
+                throw new Error(`รูปแบบไฟล์ไม่ถูกต้อง ขาดคอลัมน์: ${missingColumns.join(', ')}`);
+            }
+
+            // เตรียมข้อมูล
             const finalData = rows.map((row, index) => {
-                // ทำความสะอาดค่างบประมาณ (เผื่อมีเครื่องหมายคอมมา)
                 const cleanBudget = String(row['งบประมาณ'] || 0).replace(/,/g, '');
+                const budgetValue = parseFloat(cleanBudget);
+
+                // ตรวจสอบเบื้องต้นว่าค่าในแถวนั้นๆ ถูกต้องไหม
+                if (isNaN(budgetValue)) {
+                    console.warn(`แถวที่ ${index + 2}: ค่างบประมาณไม่ใช่ตัวเลข`);
+                }
 
                 return {
-                    // id ไม่ต้องใส่ เพราะ DB จะสร้างให้เองอัตโนมัติ
                     fiscal_year: row['ปีงบประมาณ'],
                     amphoe: row['อำเภอ'],
                     tambon: row['ตำบล'] || '',
                     project_name: row['ชื่อโครงการ'] || '',
-                    budget: parseFloat(cleanBudget),
+                    budget: budgetValue || 0,
                     remark: row['หมายเหตุ'] || ''
                 };
             });
 
-            // บันทึกข้อมูลแบบ Bulk Insert
-            const { error } = await _supabase.from('projects').insert(finalData);
+            // บันทึกข้อมูลไปยัง Supabase
+            const { error: supabaseError } = await _supabase.from('projects').insert(finalData);
             
-            if (error) throw error;
+            if (supabaseError) throw supabaseError;
+
             showAlert('success', 'นำเข้าข้อมูลสำเร็จ', `เพิ่มโครงการใหม่ ${finalData.length} รายการแล้ว`, true);
-            //alert(`สำเร็จ! นำเข้าข้อมูล ${finalData.length} รายการเรียบร้อยแล้ว`);
-            location.reload();
+            
+            // รอให้ User อ่าน Alert แป๊บนึงก่อน Refresh (ถ้า showAlert ไม่ได้ค้างหน้าจอไว้)
+            setTimeout(() => location.reload(), 1500);
 
         } catch (err) {
-            showAlert('error', 'เกิดข้อผิดพลาด', error.message);
-            //alert("เกิดข้อผิดพลาด: " + err.message);
+            console.error("Upload process error:", err);
+            
+            // แก้ไขจาก error.message เป็น err.message เพื่อแก้ ReferenceError
+            const errorMessage = err.message || "เกิดข้อผิดพลาดไม่ทราบสาเหตุ";
+            showAlert('error', 'เกิดข้อผิดพลาด', errorMessage);
+            
             btn.disabled = false;
             btn.innerText = "เริ่มอัปโหลด";
         }
