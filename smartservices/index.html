@@ -141,6 +141,97 @@
             </div>
         </div>
     </div>
+
+        <div id="booking-view" class="hidden animate-fade-in">
+    <div class="flex items-center justify-between mb-8">
+        <button onclick="switchView('user')" class="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i> ย้อนกลับ
+        </button>
+        <h2 class="text-xl font-bold text-slate-900">แบบฟอร์มจองรถสุขาเคลื่อนที่</h2>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1">
+            <div class="glass p-6 rounded-3xl sticky top-24">
+                <h3 class="font-bold mb-4 flex items-center gap-2">
+                    <i data-lucide="calendar" class="text-blue-600"></i> ตารางการจอง (พ.ศ. <span id="current-year-th"></span>)
+                </h3>
+                <div id="calendar-container" class="space-y-3">
+                    <p class="text-xs text-slate-400 italic">เลือกวันเวลาที่ว่างเพื่อทำการจอง</p>
+                    <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                        <div class="flex items-center justify-between text-xs font-bold text-blue-700">
+                            <span>15 มี.ค. 69</span>
+                            <span class="bg-blue-200 px-2 py-0.5 rounded">จองแล้ว</span>
+                        </div>
+                        <p class="text-[10px] text-blue-600 mt-1">งานนมัสการองค์พระปฐมเจดีย์</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2">
+            <form onsubmit="handleBooking(event)" class="glass p-8 rounded-[2.5rem] shadow-2xl border-white space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-slate-700">ชื่อ-นามสกุล</label>
+                        <input type="text" id="book-name" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-slate-700">หมายเลขโทรศัพท์</label>
+                        <input type="tel" id="book-phone" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700">E-mail</label>
+                    <input type="email" id="book-email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700">ที่อยู่ผู้ขอใช้บริการ</label>
+                    <textarea id="book-address" rows="2" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-slate-700">ตั้งแต่ (วันที่และเวลา)</label>
+                        <input type="datetime-local" id="book-start" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-slate-700">ถึง (วันที่และเวลา)</label>
+                        <input type="datetime-local" id="book-end" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700">สถานที่ใช้งาน</label>
+                    <input type="text" id="book-location" placeholder="เช่น บริเวณหน้าหอประชุม..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700">วัตถุประสงค์/รายละเอียดการขอใช้รถ</label>
+                    <textarea id="book-detail" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required></textarea>
+                </div>
+
+                <div class="space-y-3 pt-4 border-t border-slate-100">
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <input type="checkbox" id="consent-1" class="mt-1.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500" required>
+                        <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">ยินยอมปฏิบัติตามข้อบัญญัติและระเบียบการใช้รถสุขาเคลื่อนที่ของ อบจ.นครปฐม ทุกประการ</span>
+                    </label>
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <input type="checkbox" id="consent-2" class="mt-1.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500" required>
+                        <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">ยินยอมให้บันทึกข้อมูลส่วนบุคคลเพื่อใช้ประกอบการยื่นคำร้องและติดต่อประสานงาน</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl transition-all btn-animate flex items-center justify-center gap-2">
+                    <i data-lucide="send" class="w-5 h-5"></i> ยืนยันการส่งข้อมูลจองรถ
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+        
     </main>
 
     <script>
@@ -275,37 +366,60 @@
         }
 
         // ฟังก์ชันสลับหน้า View
+// แก้ไขฟังก์ชัน switchView ให้รองรับ Booking View
 function switchView(viewName) {
-    const userView = document.getElementById('user-view');
-    const adminView = document.getElementById('admin-view');
+    const views = {
+        'user': document.getElementById('user-view'),
+        'admin': document.getElementById('admin-view'),
+        'booking': document.getElementById('booking-view')
+    };
     const header = document.querySelector('header');
-    const body = document.body;
 
-    if (viewName === 'admin') {
-        userView.classList.add('hidden');
-        adminView.classList.remove('hidden');
-        // เปลี่ยนสี Header และ Body ให้เป็นโทนเจ้าหน้าที่ (เข้ม/ส้ม)
-        header.className = 'py-16 px-4 relative overflow-hidden transition-colors duration-500';
-        body.className = 'min-h-screen text-slate-800 transition-colors duration-500';
-        
-        // ปรับข้อความใน Header
-        header.querySelector('h1').innerText = 'ระบบจัดการสำหรับเจ้าหน้าที่';
-        header.querySelector('h1').className = 'text-2xl md:text-5xl font-bold mb-6 text-blue-600 tracking-tight';
-        header.querySelector('p').innerText = 'ตรวจสอบและจัดการคำร้องขอรับบริการจากประชาชน';
-        
-        loadAdminData(); 
+    // ซ่อนทุกหน้าก่อน
+    Object.values(views).forEach(v => v.classList.add('hidden'));
+    
+    // แสดงหน้าที่เลือก
+    views[viewName].classList.remove('hidden');
+
+    if (viewName === 'booking') {
+        header.classList.add('hidden'); // ซ่อน Header ใหญ่ตอนทำรายการ
+        // อัปเดตปี พ.ศ. ในหน้าปฏิทิน
+        const thaiYear = new Date().getFullYear() + 543;
+        document.getElementById('current-year-th').innerText = thaiYear;
     } else {
-        adminView.classList.add('hidden');
-        userView.classList.remove('hidden');
-        // กลับมาเป็นสีโทนประชาชน (ขาว/ฟ้า)
-        header.className = 'py-16 px-4 relative overflow-hidden transition-colors duration-500';
-        body.className = 'bg-[#f8fafc] min-h-screen text-slate-800 transition-colors duration-500';
-        
-        header.querySelector('h1').innerText = 'ศูนย์บริการประชาชนออนไลน์';
-        header.querySelector('h1').className = 'text-2xl md:text-5xl font-bold mb-6 text-blue-600 tracking-tight';
-        header.querySelector('p').innerText = 'Nakhon Pathom PAO Smart Service';
+        header.classList.remove('hidden');
     }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ฟังก์ชันส่งข้อมูลจอง
+async function handleBooking(e) {
+    e.preventDefault();
+    
+    const bookingData = {
+        user_id: currentUser.id,
+        service_name: 'จองรถสุขาเคลื่อนที่',
+        full_name: document.getElementById('book-name').value,
+        phone: document.getElementById('book-phone').value,
+        email: document.getElementById('book-email').value,
+        address: document.getElementById('book-address').value,
+        start_date: document.getElementById('book-start').value,
+        end_date: document.getElementById('book-end').value,
+        location: document.getElementById('book-location').value,
+        detail: document.getElementById('book-detail').value,
+        status: 'Pending'
+    };
+
+    const { error } = await supabaseClient
+        .from('service_requests')
+        .insert([bookingData]);
+
+    if (error) return showAlert(error.message, 'error');
+
+    showAlert('ส่งคำร้องจองรถสุขาเรียบร้อยแล้ว เจ้าหน้าที่จะติดต่อกลับโดยเร็วที่สุด', 'success');
+    switchView('user');
+    loadStats(); // อัปเดตตัวเลขรอดำเนินการ
 }
 
 // ปรับปรุงฟังก์ชัน checkUser เพื่อสร้างปุ่มสลับหน้า
@@ -461,14 +575,20 @@ async function handleLogout() {
             lucide.createIcons();
         }
 
-        function handleServiceClick(name) {
-            if (!currentUser) {
-                showAlert('กรุณาเข้าสู่ระบบก่อนใช้งานบริการ', 'info');
-                showLoginModal();
-                return;
-            }
-            showAlert(`กำลังพาคุณไปที่: ${name}`, 'success');
-        }
+        // แก้ไขฟังก์ชันคลิกที่ Card บริการ
+function handleServiceClick(name) {
+    if (!currentUser) {
+        showAlert('กรุณาเข้าสู่ระบบก่อนใช้งานบริการ', 'info');
+        showLoginModal();
+        return;
+    }
+    
+    if (name.includes('รถสุขา')) {
+        switchView('booking');
+    } else {
+        showAlert(`บริการ ${name} กำลังเตรียมเปิดให้ใช้งานเร็วๆ นี้`, 'info');
+    }
+}
 
         async function updateRequestStatus(id, newStatus) {
     const { error } = await supabaseClient
@@ -484,6 +604,35 @@ async function handleLogout() {
 function viewRequestDetail(id) {
     showAlert('กำลังเปิดดูรายละเอียดคำร้อง: ' + id, 'info');
     // อนาคตสามารถทำ Modal แสดงรายละเอียดเต็มๆ ตรงนี้
+}
+
+        // ฟังก์ชันส่งข้อมูลจอง
+async function handleBooking(e) {
+    e.preventDefault();
+    
+    const bookingData = {
+        user_id: currentUser.id,
+        service_name: 'จองรถสุขาเคลื่อนที่',
+        full_name: document.getElementById('book-name').value,
+        phone: document.getElementById('book-phone').value,
+        email: document.getElementById('book-email').value,
+        address: document.getElementById('book-address').value,
+        start_date: document.getElementById('book-start').value,
+        end_date: document.getElementById('book-end').value,
+        location: document.getElementById('book-location').value,
+        detail: document.getElementById('book-detail').value,
+        status: 'Pending'
+    };
+
+    const { error } = await supabaseClient
+        .from('service_requests')
+        .insert([bookingData]);
+
+    if (error) return showAlert(error.message, 'error');
+
+    showAlert('ส่งคำร้องจองรถสุขาเรียบร้อยแล้ว เจ้าหน้าที่จะติดต่อกลับโดยเร็วที่สุด', 'success');
+    switchView('user');
+    loadStats(); // อัปเดตตัวเลขรอดำเนินการ
 }
     </script>
 </body>
