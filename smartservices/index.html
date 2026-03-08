@@ -81,7 +81,7 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-12 -mt-12 relative z-20">
-        <div id="user-view">
+        <div id="user-view" class="animate-fade-in">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 <div class="glass p-6 rounded-3xl shadow-xl flex items-center gap-5 border border-white">
                     <div class="bg-blue-100 p-4 rounded-2xl text-blue-600"><i data-lucide="layers" class="w-6 h-6"></i></div>
@@ -116,14 +116,11 @@
         <div class="flex items-center justify-between mb-8 mt-8">
             <div>
                 <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                    <span class="w-2 h-8 bg-orange-500 rounded-full"></span>
+                    <span class="w-2 h-8 bg-blue-600 rounded-full"></span>
                     สถานะการจองของฉัน
                 </h2>
                 <p class="text-slate-500 text-sm mt-1 ml-5">รายการคำร้องทั้งหมดที่คุณเคยยื่นไว้</p>
             </div>
-            <button onclick="switchView('user')" class="flex items-center gap-2 text-blue-600 font-bold text-sm hover:underline">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i> กลับหน้าหลัก
-            </button>
         </div>
 
         <div id="user-request-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -134,7 +131,7 @@
         </div>
     </div>
     
-        <div id="admin-view" class="hidden">
+        <div id="admin-view" class="hidden animate-fade-in">
             
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
@@ -159,9 +156,6 @@
                     <span class="w-2 h-8 bg-orange-500 rounded-full"></span>
                     รายการคำร้องทั้งหมด (เจ้าหน้าที่)
                 </h2>
-                <button onclick="switchView('user')" class="text-sm font-bold text-blue-600 hover:underline">
-                    กลับหน้าบริการประชาชน
-                </button>
             </div>
     
             <div class="glass rounded-[2rem] overflow-hidden shadow-2xl border-none">
@@ -225,7 +219,7 @@
                     </div>
                 </div>
     
-                <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl relative">
+                <div class="bg-blue-300 p-8 rounded-[2.5rem] text-white shadow-2xl relative">
                     <i data-lucide="help-circle" class="absolute top-6 right-6 w-8 h-8 opacity-20"></i>
                     <h4 class="font-bold mb-3 text-lg">ต้องการความช่วยเหลือ?</h4>
                     
