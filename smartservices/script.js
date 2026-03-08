@@ -130,31 +130,34 @@ async function handleRegister(e) {
 
 // ฟังก์ชันสลับหน้า View
 function switchView(viewName) {
-    // 1. รายการ View ทั้งหมดที่คุณมีใน HTML
+    // รายชื่อ ID ของ Section ทั้งหมดใน HTML (ตรวจดูว่าตรงกับในไฟล์ .html ของคุณไหม)
     const views = ['user-view', 'my-bookings-view', 'admin-view', 'booking-view'];
     
-    // 2. ซ่อนทุกหน้าก่อน
-    views.forEach(viewId => {
-        const el = document.getElementById(viewId);
+    // กำหนดเป้าหมาย: ถ้าส่งมาแค่ 'user' ให้กลายเป็น 'user-view'
+    const targetId = viewName.endsWith('-view') ? viewName : `${viewName}-view`;
+    
+    let found = false;
+    views.forEach(id => {
+        const el = document.getElementById(id);
         if (el) {
-            el.classList.add('hidden');
+            if (id === targetId) {
+                el.classList.remove('hidden');
+                found = true;
+            } else {
+                el.classList.add('hidden');
+            }
         }
     });
-    
-    // 3. แสดงเฉพาะหน้าที่เลือก (เติมคำว่า -view ต่อท้าย id)
-    const activeViewId = viewName.includes('-view') ? viewName : `${viewName}-view`;
-    const activeView = document.getElementById(activeViewId);
-    
-    if (activeView) {
-        activeView.classList.remove('hidden');
-        
-        // 4. ถ้าสลับมาหน้า 'my-bookings' ให้โหลดข้อมูลใหม่ทันที
-        if (viewName === 'my-bookings') {
-            loadUserBookings(); 
-        }
+
+    if (!found) {
+        console.warn(`ไม่พบ Element ที่มี ID: ${targetId} กรุณาเช็คใน HTML`);
     }
 
-    // 5. เลื่อนหน้าจอกลับไปด้านบนสุด (เพื่อความลื่นไหล)
+    // ถ้าไปหน้าแสดงรายการจอง ให้โหลดข้อมูลใหม่
+    if (viewName.includes('user') || viewName.includes('booking')) {
+        fetchUserRequests(); 
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
