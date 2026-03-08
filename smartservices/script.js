@@ -130,28 +130,109 @@ async function handleRegister(e) {
 
 // ฟังก์ชันสลับหน้า View
 function switchView(viewName) {
-    // รายชื่อ View ทั้งหมดที่มี
+    // 1. รายการ View ทั้งหมดที่คุณมีใน HTML
     const views = ['user-view', 'my-bookings-view', 'admin-view', 'booking-view'];
     
-    // ซ่อนทุกหน้า
+    // 2. ซ่อนทุกหน้าก่อน
     views.forEach(viewId => {
         const el = document.getElementById(viewId);
-        if (el) el.classList.add('hidden');
+        if (el) {
+            el.classList.add('hidden');
+        }
     });
     
-    // แสดงเฉพาะหน้าที่เลือก
-    const activeView = document.getElementById(`${viewName}-view`);
+    // 3. แสดงเฉพาะหน้าที่เลือก (เติมคำว่า -view ต่อท้าย id)
+    const activeViewId = viewName.includes('-view') ? viewName : `${viewName}-view`;
+    const activeView = document.getElementById(activeViewId);
+    
     if (activeView) {
         activeView.classList.remove('hidden');
         
-        // ถ้าเป็นหน้าแสดงรายการจอง ให้สั่งโหลดข้อมูลใหม่ทุกครั้งที่เปิด
+        // 4. ถ้าสลับมาหน้า 'my-bookings' ให้โหลดข้อมูลใหม่ทันที
         if (viewName === 'my-bookings') {
-            loadUserBookings(); // ฟังก์ชันดึงข้อมูลจาก Supabase โดยใช้ User ID
+            loadUserBookings(); 
         }
     }
-    
-    // เลื่อนหน้าจอกลับไปด้านบนสุด (ตามที่คุณเคยแก้ไว้ก่อนหน้านี้)
+
+    // 5. เลื่อนหน้าจอกลับไปด้านบนสุด (เพื่อความลื่นไหล)
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function loadUserBookings() {
+    const container = document.getElementById('user-request-list');
+    
+    // แสดง Loading ระหว่างรอข้อมูล
+    container.innerHTML = `
+        <div class="col-span-full py-20 text-center text-slate-400">
+            <i data-lucide="loader-2" class="w-10 h-10 animate-spin mx-auto mb-4 text-blue-500"></i>
+            <p class="font-bold">กำลังดึงข้อมูลการจองของคุณ...</p>
+        </div>`;
+    lucide.createIcons();
+
+    // 1. ตรวจสอบว่าผู้ใช้ Login หรือยัง
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        container.innerHTML = `<div class="col-span-full text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
+            <p class="text-slate-400 font-bold">กรุณาเข้าสู่ระบบเพื่อดูรายการจอง</p>
+        </div>`;
+        return;
+    }
+
+    // 2. ดึงข้อมูล (ปรับชื่อ table 'bookings' ให้ตรงกับของคุณ)
+    const { data: bookings, error } = await supabase
+        .from('bookings') 
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error || !bookings || bookings.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full py-20 text-center bg-white rounded-[3rem] shadow-sm border border-slate-100">
+                <i data-lucide="calendar-x" class="w-12 h-12 mx-auto mb-4 text-slate-200"></i>
+                <p class="text-slate-400 font-bold text-lg text-blue-600">ยังไม่มีรายการจองในขณะนี้</p>
+                <button onclick="switchView('user')" class="mt-4 text-blue-600 hover:underline font-bold text-sm">เริ่มรับบริการได้ที่หน้าหลัก</button>
+            </div>`;
+        lucide.createIcons();
+        return;
+    }
+
+    // 3. เรนเดอร์ HTML Cards
+    container.innerHTML = bookings.map(book => {
+        // จัดการสีสถานะ
+        const statusMap = {
+            'รอดำเนินการ': { bar: 'bg-orange-400', text: 'text-orange-700', bg: 'bg-orange-50' },
+            'อนุมัติแล้ว': { bar: 'bg-emerald-400', text: 'text-emerald-700', bg: 'bg-emerald-50' },
+            'ปฏิเสธ': { bar: 'bg-rose-400', text: 'text-rose-700', bg: 'bg-rose-50' }
+        };
+        const style = statusMap[book.status] || { bar: 'bg-slate-400', text: 'text-slate-700', bg: 'bg-slate-50' };
+
+        return `
+        <div class="bg-white p-7 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-slate-50 group relative overflow-hidden">
+            <div class="absolute left-0 top-0 bottom-0 w-2 ${style.bar}"></div>
+            <div class="flex justify-between items-start mb-4">
+                <div class="pl-2">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">REF: #${book.id.slice(0,8)}</span>
+                    <h3 class="font-bold text-lg text-slate-900 mt-1">${book.service_name}</h3>
+                </div>
+                <span class="px-4 py-1.5 rounded-full text-[11px] font-bold ${style.text} ${style.bg}">
+                    ${book.status}
+                </span>
+            </div>
+            <div class="space-y-3 mb-6 pl-2">
+                <div class="flex items-center gap-3 text-slate-500">
+                    <i data-lucide="calendar" class="w-4 h-4 text-blue-500"></i>
+                    <span class="text-sm font-medium">วันที่จอง: ${new Date(book.booking_date).toLocaleDateString('th-TH')}</span>
+                </div>
+            </div>
+            <div class="pt-4 border-t border-slate-50 flex items-center justify-between pl-2">
+                <button onclick="viewBookingDetail('${book.id}')" class="text-blue-600 font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+                    ดูรายละเอียด <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+
+    lucide.createIcons();
 }
 
 // ปรับปรุงฟังก์ชัน checkUser เพื่อสร้างปุ่มสลับหน้าบน Navbar
@@ -606,9 +687,11 @@ console.error(err);
 }
 
 function closeDetailModal() {
-const modal = document.getElementById('request-detail-modal');
-modal.classList.add('hidden');
-modal.classList.remove('flex');
+    const modal = document.getElementById('request-detail-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 }
 
 async function fetchUserRequests() {
