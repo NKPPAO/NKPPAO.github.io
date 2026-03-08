@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+
+/* พื้นฐานและการป้องกันการล้นหน้าจอ */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    font-family: 'Sarabun', sans-serif;
+    scroll-behavior: smooth;
+}
+
+/* สไตล์ Input ใหม่ (เปลี่ยนจาก @apply เป็น Standard CSS) */
+.new-input-style {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    background-color: rgba(255, 255, 255, 0.5);
+    outline: none;
+    transition: all 0.2s;
+    font-size: 16px !important; /* ป้องกัน iOS Zoom */
+    color: #334155;
+}
+
+.new-input-style:focus {
+    background-color: #ffffff;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 4px #eff6ff;
+}
+
+/* Glass Morphism */
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* จัดระเบียบ Grid ของบริการให้สวยงาม */
+#service-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 1.5rem;
+}
+
+/* อนิเมชั่นตอนเปลี่ยนหน้า */
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ปรับแต่งปุ่มเมื่อกด (Feedback) */
+.btn-animate:active {
+    transform: scale(0.95);
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+    .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
+    h1 { font-size: 1.75rem !important; line-height: 1.2; }
+    .glass { border-radius: 1.5rem; }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f8fafc; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
