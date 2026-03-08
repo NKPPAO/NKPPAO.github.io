@@ -897,56 +897,85 @@ async function handleGlobalSubmit(event) {
 
 async function viewRequestDetail(id) {
     try {
+        console.log("🔍 กำลังดึงข้อมูล ID:", id);
         const { data: req, error } = await supabaseClient
             .from('service_requests')
             .select('*')
             .eq('id', id)
             .single();
 
-        if (error || !req) return alert('ไม่พบข้อมูลรายละเอียด');
+        if (error || !req) {
+            console.error("❌ หาข้อมูลไม่เจอ:", error);
+            return;
+        }
+
+        console.log("📦 ข้อมูลที่ดึงได้:", req);
 
         const modal = document.getElementById('detail-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
 
-        // ตั้งหัวข้อ
+        // ตรวจสอบว่ามี Element ครบไหม
+        if (!modal || !modalTitle || !modalBody) {
+            console.error("❌ หา Element Modal ไม่เจอใน HTML! กรุณาเช็ค ID");
+            return;
+        }
+
+        // 1. ใส่หัวข้อ
         modalTitle.innerText = req.request_details?.service_title || 'รายละเอียดคำร้อง';
 
-        // สร้างเนื้อหาจาก JSONB
+        // 2. สร้างเนื้อหา
         let detailHtml = `<div class="space-y-4">`;
         
-        // เพิ่มสถานะแบบเด่นๆ
-        const statusLabel = req.status === 'Pending' ? 'รอดำเนินการ' : req.status;
+        // ส่วนแสดงสถานะ
+        const statusColors = {
+            'Pending': 'bg-orange-100 text-orange-600',
+            'Completed': 'bg-emerald-100 text-emerald-600',
+            'Rejected': 'bg-rose-100 text-rose-600'
+        };
+        const statusText = req.status === 'Pending' ? 'รอดำเนินการ' : req.status;
+
         detailHtml += `
-            <div class="p-4 rounded-2xl bg-blue-50 border border-blue-100 mb-6 text-center">
-                <p class="text-xs text-blue-500 font-bold uppercase mb-1">สถานะปัจจุบัน</p>
-                <p class="text-xl font-bold text-blue-700">${statusLabel}</p>
+            <div class="p-4 rounded-2xl ${statusColors[req.status] || 'bg-slate-100'} text-center mb-6">
+                <p class="text-[10px] font-bold uppercase opacity-70 mb-1">สถานะ</p>
+                <p class="text-xl font-bold">${statusText}</p>
             </div>
         `;
 
-        // วนลูปโชว์ข้อมูลใน request_details
-        for (const [key, value] of Object.entries(req.request_details)) {
-            if (key === 'service_title') continue; // ข้ามชื่อบริการเพราะเป็นหัวข้อแล้ว
-            
-            // แปลง Key ให้ดูอ่านง่ายขึ้น (ถ้าต้องการ)
-            const label = key.replace('requester_', 'ผู้').replace('_', ' ');
-            
-            detailHtml += `
-                <div class="flex flex-col border-b border-slate-100 pb-3">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">${label}</span>
-                    <span class="text-slate-800 font-medium">${value || '-'}</span>
-                </div>`;
+        // 3. วนลูปดึงข้อมูลจาก request_details
+        if (req.request_details) {
+            Object.entries(req.request_details).forEach(([key, value]) => {
+                if (key === 'service_title') return; // ข้ามชื่อบริการ
+
+                // ปรับชื่อหัวข้อให้น่าอ่านขึ้น
+                const labels = {
+                    'requester_name': 'ชื่อผู้ติดต่อ',
+                    'requester_phone': 'เบอร์โทรศัพท์',
+                    'location': 'สถานที่',
+                    'date': 'วันที่ต้องการ',
+                    'detail': 'รายละเอียดเพิ่มเติม'
+                };
+
+                const displayLabel = labels[key] || key;
+
+                detailHtml += `
+                    <div class="flex flex-col border-b border-slate-50 pb-2">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${displayLabel}</span>
+                        <span class="text-slate-900 font-medium mt-1">${value || '-'}</span>
+                    </div>`;
+            });
         }
+
         detailHtml += `</div>`;
 
+        // 4. ฉีด HTML และแสดง Modal
         modalBody.innerHTML = detailHtml;
         modal.classList.remove('hidden');
         
         if (window.lucide) lucide.createIcons();
 
     } catch (err) {
-        console.error(err);
-        alert('เกิดข้อผิดพลาดในการโหลดรายละเอียด');
+        console.error('❌ Error rendering modal:', err);
     }
 }
 
