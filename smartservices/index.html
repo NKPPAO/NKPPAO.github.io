@@ -110,8 +110,27 @@
                 </div>
                 <span class="font-bold text-xl tracking-tight text-slate-900">Nakhon Pathom PAO<span class="text-blue-600"> SMART SERVICES PORTAL</span></span>
             </div>
-            <div id="auth-section">
-                <button id="btn-login-trigger" onclick="showLoginModal()" class="btn-animate bg-blue-600 hover:bg-slate-800 text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg shadow-slate-200">
+            <div id="auth-section" class="flex items-center gap-2 md:gap-4">
+                <div id="user-menu" class="hidden flex items-center gap-2">
+                    <button onclick="switchView('user')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-all font-bold text-sm">
+                        <i data-lucide="clock" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">สถานะการจอง</span>
+                    </button>
+            
+                    <button id="admin-menu-btn" onclick="switchView('admin')" class="hidden flex items-center gap-2 px-4 py-2 rounded-xl text-orange-600 hover:bg-orange-50 transition-all font-bold text-sm">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">จัดการระบบ</span>
+                    </button>
+            
+                    <div class="h-6 w-[1px] bg-slate-200 mx-1"></div>
+            
+                    <button onclick="handleLogout()" class="flex items-center gap-2 px-4 py-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-all font-bold text-sm">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">ออกจากระบบ</span>
+                    </button>
+                </div>
+            
+                <button id="btn-login-trigger" onclick="showLoginModal()" class="bg-blue-600 hover:bg-slate-800 text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg transition-all">
                     เข้าสู่ระบบ
                 </button>
             </div>
@@ -539,53 +558,77 @@ function switchView(viewName) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ปรับปรุงฟังก์ชัน checkUser เพื่อสร้างปุ่มสลับหน้า
+// ปรับปรุงฟังก์ชัน checkUser เพื่อสร้างปุ่มสลับหน้าบน Navbar
 async function checkUser() {
     const { data: { user } } = await supabaseClient.auth.getUser();
     currentUser = user;
     const authSection = document.getElementById('auth-section');
-    fetchUserRequests(); // ดึงข้อมูลทันทีที่รู้ว่าเป็นใคร
 
     if (user) {
-        // 1. พยายามดึงข้อมูลจากตาราง profiles
-        const { data: profile, error } = await supabaseClient
+        // 1. ดึงข้อมูล Profile เพื่อเช็คสิทธิ์
+        const { data: profile } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .maybeSingle();
 
-        // 2. ตรวจสอบสถานะ Staff (เช็คจากตาราง profiles หรือ user_metadata)
-        // หมายเหตุ: ถ้ายังไม่ได้ตั้งค่าใน DB คุณสามารถเปลี่ยนเป็น const isStaff = true; เพื่อทดสอบ UI ก่อนได้
+        // เช็คว่าเป็น Admin หรือไม่ (ปรับเงื่อนไขตามที่คุณใช้จริง)
         const isStaff = profile?.role === 'staff' || user.user_metadata?.role === 'staff' || user.email === 'admin@example.com'; 
 
-        console.log("Current User:", user.email);
-        console.log("Profile Role:", profile?.role);
-        console.log("Is Staff:", isStaff);
-
-        // 3. แสดงชื่อ
+        // 2. อัปเดตชื่อผู้ใช้ที่แสดงในหน้า Dashboard
         const displayName = profile?.full_name || user.email;
-        document.getElementById('user-display').innerText = displayName;
+        const userDisplayElem = document.getElementById('user-display');
+        if (userDisplayElem) userDisplayElem.innerText = displayName;
 
-        // 4. สร้าง Navbar
-        let navHtml = `<div class="flex items-center gap-3">`;
-        
+        // 3. สร้าง Navbar ใหม่ที่มีปุ่ม "สถานะการจอง" รวมอยู่ด้วย
+        let navHtml = `<div class="flex items-center gap-2 md:gap-4">`;
+
+        // ปุ่มสถานะการจอง (สำหรับทุกคนที่ Login)
+        navHtml += `
+            <button onclick="switchView('user')" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-all font-bold text-sm">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">สถานะการจอง</span>
+            </button>
+        `;
+
+        // ปุ่มจัดการระบบ (แสดงเฉพาะ Staff/Admin)
         if (isStaff) {
             navHtml += `
-                <button onclick="switchView('admin')" class="btn-animate bg-orange-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-orange-200 flex items-center gap-2">
-                    <i data-lucide="shield-check" class="w-4 h-4"></i> จัดการระบบ
+                <button onclick="switchView('admin')" class="flex items-center gap-2 px-3 py-2 rounded-xl text-orange-600 hover:bg-orange-50 transition-all font-bold text-sm">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">จัดการระบบ</span>
                 </button>
             `;
         }
 
+        // เส้นแบ่งเล็กน้อย
+        navHtml += `<div class="h-6 w-[1px] bg-slate-200 mx-1"></div>`;
+
+        // ปุ่มออกจากระบบ
         navHtml += `
-            <button onclick="handleLogout()" class="btn-animate bg-white text-slate-700 px-5 py-2 rounded-xl text-sm font-bold border border-slate-200">
-                ออกจากระบบ
+            <button onclick="handleLogout()" class="flex items-center gap-2 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-all font-bold text-sm">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">ออกจากระบบ</span>
             </button>
-        </div>`;
+        `;
+
+        navHtml += `</div>`;
         
         authSection.innerHTML = navHtml;
-        lucide.createIcons();
+        
+        // โหลดข้อมูลคำร้องของ User ทันที
+        fetchUserRequests();
+    } else {
+        // ถ้าไม่ได้ Login ให้แสดงปุ่มเข้าสู่ระบบปกติ
+        authSection.innerHTML = `
+            <button id="btn-login-trigger" onclick="showLoginModal()" class="bg-blue-600 hover:bg-slate-800 text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg transition-all">
+                เข้าสู่ระบบ
+            </button>
+        `;
     }
+    
+    // สั่งให้ Lucide วาดไอคอนที่สร้างขึ้นมาใหม่
+    if (window.lucide) lucide.createIcons();
 }
         
 async function loadAdminData() {
