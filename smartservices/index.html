@@ -522,6 +522,7 @@ async function checkUser() {
     const { data: { user } } = await supabaseClient.auth.getUser();
     currentUser = user;
     const authSection = document.getElementById('auth-section');
+    fetchUserRequests(); // ดึงข้อมูลทันทีที่รู้ว่าเป็นใคร
 
     if (user) {
         // 1. พยายามดึงข้อมูลจากตาราง profiles
@@ -953,68 +954,73 @@ function closeDetailModal() {
     document.getElementById('detail-modal').classList.add('hidden');
 }
 
-        async function fetchUserRequests() {
+async function fetchUserRequests() {
+    console.log("🔍 กำลังดึงข้อมูลจองของ User...");
     const container = document.getElementById('user-request-list');
-    if (!container || !currentUser) return;
+    
+    // 1. ตรวจสอบว่ามี Container และ User หรือไม่
+    if (!container) return;
+    
+    if (!currentUser) {
+        console.log("⚠️ ไม่พบข้อมูล User (currentUser is null)");
+        container.innerHTML = `<div class="p-10 text-center text-slate-400">กรุณาเข้าสู่ระบบเพื่อดูสถานะการจอง</div>`;
+        return;
+    }
 
     try {
-        // ดึงข้อมูลเฉพาะของ User ที่ Login อยู่
+        // 2. ดึงข้อมูลจาก Supabase
         const { data: requests, error } = await supabaseClient
             .from('service_requests')
             .select('*')
-            .eq('user_id', currentUser.id) // 🔥 กรองเฉพาะของตัวเอง
+            .eq('user_id', currentUser.id)
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+            console.error("❌ Supabase Error:", error);
+            throw error;
+        }
 
-        // อัปเดตตัวเลข "รอดำเนินการ" ในหน้า User (ถ้ามี ID นี้ใน HTML)
-        const pendingCount = requests.filter(r => r.status === 'Pending').length;
-        const userPendingBadge = document.getElementById('user-pending-count');
-        if (userPendingBadge) userPendingBadge.innerText = pendingCount;
+        console.log("✅ ข้อมูลที่ดึงมาได้:", requests);
 
-        if (requests.length === 0) {
+        // 3. แสดงผลกรณีไม่มีข้อมูล
+        if (!requests || requests.length === 0) {
             container.innerHTML = `
                 <div class="col-span-full p-10 bg-slate-50 rounded-[2rem] text-center border-2 border-dashed border-slate-200">
-                    <p class="text-slate-400 font-medium">ยังไม่มีประวัติการจองบริการ</p>
+                    <p class="text-slate-400 font-medium">ไม่พบประวัติการจองของคุณ</p>
                 </div>`;
             return;
         }
 
+        // 4. วาด Card รายการจอง
         container.innerHTML = requests.map(req => {
             const statusCfg = {
-                'Pending': { color: 'bg-orange-100 text-orange-600', label: 'รอดำเนินการ', icon: 'clock' },
-                'Completed': { color: 'bg-emerald-100 text-emerald-600', label: 'อนุมัติ/เสร็จสิ้น', icon: 'check-circle' },
-                'Rejected': { color: 'bg-rose-100 text-rose-600', label: 'ปฏิเสธ', icon: 'x-circle' }
-            }[req.status] || { color: 'bg-slate-100', label: req.status, icon: 'info' };
+                'Pending': { color: 'bg-orange-100 text-orange-600', label: 'รอดำเนินการ' },
+                'Completed': { color: 'bg-emerald-100 text-emerald-600', label: 'เรียบร้อยแล้ว' },
+                'Rejected': { color: 'bg-rose-100 text-rose-600', label: 'ไม่ผ่านการอนุมัติ' }
+            }[req.status] || { color: 'bg-slate-100', label: req.status };
 
             const serviceName = req.request_details?.service_title || 'บริการทั่วไป';
-            const date = new Date(req.created_at).toLocaleDateString('th-TH', { 
-                day: 'numeric', month: 'short', year: '2-digit' 
-            });
-
+            
             return `
-                <div onclick="viewRequestDetail('${req.id}')" class="glass p-6 rounded-[2rem] border border-white hover:shadow-lg transition-all cursor-pointer group">
+                <div onclick="viewRequestDetail('${req.id}')" class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="bg-blue-50 w-10 h-10 rounded-xl flex items-center justify-center text-blue-600">
-                            <i data-lucide="file-text" class="w-5 h-5"></i>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusCfg.color}">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-bold ${statusCfg.color}">
                             ${statusCfg.label}
                         </span>
+                        <p class="text-[10px] text-slate-400">
+                            ${new Date(req.created_at).toLocaleDateString('th-TH')}
+                        </p>
                     </div>
-                    <h4 class="font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">${serviceName}</h4>
-                    <p class="text-xs text-slate-400 flex items-center gap-1">
-                        <i data-lucide="calendar" class="w-3 h-3"></i> ยื่นเมื่อ: ${date}
-                    </p>
+                    <h4 class="font-bold text-slate-900">${serviceName}</h4>
                 </div>
             `;
         }).join('');
 
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
 
     } catch (err) {
-        console.error('Fetch User Requests Error:', err);
-        container.innerHTML = `<p class="text-rose-500 text-center col-span-full">ไม่สามารถโหลดข้อมูลได้</p>`;
+        console.error('❌ Error in fetchUserRequests:', err);
+        container.innerHTML = `<p class="text-rose-500 text-center col-span-full">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
     }
 }
     </script>
