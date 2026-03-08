@@ -129,44 +129,29 @@ async function handleRegister(e) {
 }
 
 // ฟังก์ชันสลับหน้า View
-// แก้ไขฟังก์ชัน switchView ให้รองรับ Booking View
 function switchView(viewName) {
-const views = {
-'user': document.getElementById('user-view'),
-'admin': document.getElementById('admin-view'),
-'booking': document.getElementById('booking-view')
-};
-const header = document.querySelector('header');
-
-// 1. ซ่อนทุกหน้าก่อน
-Object.values(views).forEach(v => v?.classList.add('hidden'));
-
-// 2. แสดงหน้าที่เลือก
-if (views[viewName]) {
-views[viewName].classList.remove('hidden');
-}
-
-// --- ส่วนที่ต้องเพิ่ม/แก้ไข ---
-if (viewName === 'booking') {
-header.classList.add('hidden');
-const thaiYear = new Date().getFullYear() + 543;
-const yearElem = document.getElementById('current-year-display');
-if (yearElem) yearElem.innerText = thaiYear;
-} 
-else if (viewName === 'admin') { // ⭐ เพิ่มตรงนี้!
-header.classList.remove('hidden');
-loadAdminData(); // สั่งให้โหลดข้อมูลมาโชว์ในตารางทันทีที่เปิดหน้านี้
-} 
-else {
-header.classList.remove('hidden');
-}
-// -------------------------
-if (viewName === 'user') {
-header.classList.remove('hidden');
-fetchUserRequests(); // โหลดรายการจองของ User ทันที
-}
-
-window.scrollTo({ top: 0, behavior: 'smooth' });
+    // รายชื่อ View ทั้งหมดที่มี
+    const views = ['user-view', 'my-bookings-view', 'admin-view', 'booking-view'];
+    
+    // ซ่อนทุกหน้า
+    views.forEach(viewId => {
+        const el = document.getElementById(viewId);
+        if (el) el.classList.add('hidden');
+    });
+    
+    // แสดงเฉพาะหน้าที่เลือก
+    const activeView = document.getElementById(`${viewName}-view`);
+    if (activeView) {
+        activeView.classList.remove('hidden');
+        
+        // ถ้าเป็นหน้าแสดงรายการจอง ให้สั่งโหลดข้อมูลใหม่ทุกครั้งที่เปิด
+        if (viewName === 'my-bookings') {
+            loadUserBookings(); // ฟังก์ชันดึงข้อมูลจาก Supabase โดยใช้ User ID
+        }
+    }
+    
+    // เลื่อนหน้าจอกลับไปด้านบนสุด (ตามที่คุณเคยแก้ไว้ก่อนหน้านี้)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ปรับปรุงฟังก์ชัน checkUser เพื่อสร้างปุ่มสลับหน้าบน Navbar
