@@ -180,7 +180,7 @@ async function loadUserBookings() {
 
     // 2. ดึงข้อมูล (ปรับชื่อ table 'bookings' ให้ตรงกับของคุณ)
     const { data: bookings, error } = await supabase
-        .from('bookings') 
+        .from('service_requests') 
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
