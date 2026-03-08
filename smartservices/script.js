@@ -130,12 +130,15 @@ async function handleRegister(e) {
 
 // ฟังก์ชันสลับหน้า View
 function switchView(viewName) {
-    // รายชื่อ ID ของ Section ทั้งหมดใน HTML (ตรวจดูว่าตรงกับในไฟล์ .html ของคุณไหม)
-    const views = ['user-view', 'my-bookings-view', 'admin-view', 'booking-view'];
-    
-    // กำหนดเป้าหมาย: ถ้าส่งมาแค่ 'user' ให้กลายเป็น 'user-view'
+    // 1. ปรับชื่อ ID ให้ถูกต้อง (ป้องกันการเติม -view ซ้ำซ้อน)
     const targetId = viewName.endsWith('-view') ? viewName : `${viewName}-view`;
     
+    // 2. รายการ View ทั้งหมดที่มีใน HTML ของคุณ
+    const views = ['user-view', 'my-bookings-view', 'admin-view', 'booking-view'];
+    
+    console.log("กำลังสลับไปหน้า:", targetId); // เช็คใน Console (F12)
+
+    // 3. ซ่อนทุกหน้า และแสดงหน้าที่เลือก
     let found = false;
     views.forEach(id => {
         const el = document.getElementById(id);
@@ -150,17 +153,17 @@ function switchView(viewName) {
     });
 
     if (!found) {
-        console.warn(`ไม่พบ Element ที่มี ID: ${targetId} กรุณาเช็คใน HTML`);
+        console.error("ไม่พบหน้า ID:", targetId);
     }
 
-    // ถ้าไปหน้าแสดงรายการจอง ให้โหลดข้อมูลใหม่
-    if (viewName.includes('user') || viewName.includes('booking')) {
-        fetchUserRequests(); 
+    // 4. ถ้าสลับมาหน้า 'my-bookings' ให้โหลดข้อมูลใหม่ทันที
+    if (targetId === 'my-bookings-view') {
+        fetchUserRequests(); // เรียกฟังก์ชันดึงข้อมูลมาโชว์
     }
 
+    // 5. เลื่อนขึ้นบนสุด
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
 async function loadUserBookings() {
     const container = document.getElementById('user-request-list');
     
@@ -240,75 +243,44 @@ async function loadUserBookings() {
 
 // ปรับปรุงฟังก์ชัน checkUser เพื่อสร้างปุ่มสลับหน้าบน Navbar
 async function checkUser() {
-const { data: { user } } = await supabaseClient.auth.getUser();
-currentUser = user;
-const authSection = document.getElementById('auth-section');
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    currentUser = user;
+    const authSection = document.getElementById('auth-section');
+    const userMenu = document.getElementById('user-menu'); // เพิ่มบรรทัดนี้
+    const loginBtn = document.getElementById('btn-login-trigger'); // เพิ่มบรรทัดนี้
 
-if (user) {
-// 1. ดึงข้อมูล Profile เพื่อเช็คสิทธิ์
-const { data: profile } = await supabaseClient
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .maybeSingle();
+    if (user) {
+        // 1. แสดงเมนูผู้ใช้ และซ่อนปุ่ม Login เดิม
+        if (userMenu) userMenu.classList.remove('hidden');
+        if (loginBtn) loginBtn.classList.add('hidden');
+        
+    // 2. เช็คสิทธิ์ Admin/Staff
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
 
-// เช็คว่าเป็น Admin หรือไม่ (ปรับเงื่อนไขตามที่คุณใช้จริง)
-const isStaff = profile?.role === 'staff' || user.user_metadata?.role === 'staff' || user.email === 'admin@example.com'; 
+        const isStaff = profile?.role === 'staff' || user.email === 'admin@example.com';
+        
+        // 3. แสดงปุ่ม Admin ถ้ามีสิทธิ์
+        const adminBtn = document.getElementById('admin-menu-btn');
+        if (adminBtn && isStaff) adminBtn.classList.remove('hidden');
 
-// 2. อัปเดตชื่อผู้ใช้ที่แสดงในหน้า Dashboard
-const displayName = profile?.full_name || user.email;
-const userDisplayElem = document.getElementById('user-display');
-if (userDisplayElem) userDisplayElem.innerText = displayName;
+        // 4. อัปเดตชื่อที่แสดง
+        const userDisplay = document.getElementById('user-display');
+        if (userDisplay) userDisplay.innerText = profile?.full_name || user.email;
 
-// 3. สร้าง Navbar ใหม่ที่มีปุ่ม "สถานะการจอง" รวมอยู่ด้วย
-let navHtml = `<div class="flex items-center gap-2 md:gap-4">`;
-
-// ปุ่มสถานะการจอง (สำหรับทุกคนที่ Login)
-navHtml += `
-    <button onclick="switchView('user')" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-all font-bold text-sm">
-        <i data-lucide="clock" class="w-4 h-4"></i>
-        <span class="hidden sm:inline">สถานะการจอง</span>
-    </button>
-`;
-
-// ปุ่มจัดการระบบ (แสดงเฉพาะ Staff/Admin)
-if (isStaff) {
-    navHtml += `
-        <button onclick="switchView('admin')" class="flex items-center gap-2 px-3 py-2 rounded-xl text-orange-600 hover:bg-orange-50 transition-all font-bold text-sm">
-            <i data-lucide="shield-check" class="w-4 h-4"></i>
-            <span class="hidden sm:inline">จัดการระบบ</span>
-        </button>
-    `;
-}
-
-// เส้นแบ่งเล็กน้อย
-navHtml += `<div class="h-6 w-[1px] bg-slate-200 mx-1"></div>`;
-
-// ปุ่มออกจากระบบ
-navHtml += `
-    <button onclick="handleLogout()" class="flex items-center gap-2 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-all font-bold text-sm">
-        <i data-lucide="log-out" class="w-4 h-4"></i>
-        <span class="hidden sm:inline">ออกจากระบบ</span>
-    </button>
-`;
-
-navHtml += `</div>`;
-
-authSection.innerHTML = navHtml;
-
-// โหลดข้อมูลคำร้องของ User ทันที
-fetchUserRequests();
-} else {
-// ถ้าไม่ได้ Login ให้แสดงปุ่มเข้าสู่ระบบปกติ
-authSection.innerHTML = `
-    <button id="btn-login-trigger" onclick="showLoginModal()" class="bg-blue-600 hover:bg-slate-800 text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg transition-all">
-        เข้าสู่ระบบ
-    </button>
-`;
-}
-
-// สั่งให้ Lucide วาดไอคอนที่สร้างขึ้นมาใหม่
-if (window.lucide) lucide.createIcons();
+        // โหลดข้อมูลเบื้องต้น
+        fetchUserRequests();
+    } else {
+    // ถ้า Logout อยู่ ให้ซ่อนเมนู และแสดงปุ่ม Login
+        if (userMenu) userMenu.classList.add('hidden');
+        if (loginBtn) loginBtn.classList.remove('hidden');
+    }
+    
+    // สั่งให้ Lucide วาดไอคอนที่สร้างขึ้นมาใหม่
+    if (window.lucide) lucide.createIcons();
 }
 
 async function loadAdminData() {
