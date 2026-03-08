@@ -255,10 +255,14 @@
             <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl relative">
                 <i data-lucide="help-circle" class="absolute top-6 right-6 w-8 h-8 opacity-20"></i>
                 <h4 class="font-bold mb-3 text-lg">ต้องการความช่วยเหลือ?</h4>
-                <p class="text-slate-400 text-xs leading-relaxed mb-6">หากพบปัญหาในการกรอกข้อมูล หรือต้องการสอบถามรายละเอียดเพิ่มเติม ติดต่อกองช่าง อบจ.นครปฐม</p>
-                <a href="tel:034-xxx-xxx" class="flex items-center gap-3 text-blue-400 font-bold hover:text-white transition-colors">
+                
+                <p id="help-card-text" class="text-slate-400 text-xs leading-relaxed mb-6">
+                    หากพบปัญหาในการกรอกข้อมูล หรือต้องการสอบถามรายละเอียดเพิ่มเติม
+                </p>
+                
+                <a id="help-card-phone-link" href="#" class="flex items-center gap-3 text-blue-400 font-bold hover:text-white transition-colors">
                     <i data-lucide="phone-call" class="w-5 h-5"></i>
-                    034-XXX-XXXX
+                    <span id="help-card-phone-number">ติดต่อเจ้าหน้าที่</span>
                 </a>
             </div>
         </div>
@@ -670,18 +674,42 @@ async function handleLogout() {
 let activeServiceId = ""; 
 let activeServiceName = "";
 
-function handleServiceClick(id, name) {
+async function handleServiceClick(id, name) {
     if (!currentUser) {
         showAlert('กรุณาเข้าสู่ระบบก่อน', 'error');
         return showLoginModal();
     }
     
-    // เก็บค่าทั้งสองอย่างไว้
-    activeServiceId = id;    // รหัส UUID เช่น '550e8400-e29b...'
-    activeServiceName = name; // ชื่อบริการเช่น 'รถสุขา'
-    
+    activeServiceId = id;
+    activeServiceName = name;
+
+    // --- ส่วนที่เพิ่มใหม่: ดึงข้อมูลหน่วยงานจาก DB ---
+    try {
+        const { data: serviceData, error } = await supabaseClient
+            .from('services')
+            .select('provider_agency, contact_phone') // ดึงชื่อกองและเบอร์โทร
+            .eq('id', id)
+            .single();
+
+        if (!error && serviceData) {
+            const agency = serviceData.provider_agency || "หน่วยงานที่รับผิดชอบ";
+            const phone = serviceData.contact_phone || "034-XXX-XXXX";
+
+            // อัปเดตข้อความใน Card
+            document.getElementById('help-card-text').innerText = 
+                `หากพบปัญหาหรือต้องการสอบถามเพิ่มเติม ติดต่อ${agency}`;
+            
+            // อัปเดตเบอร์โทรและลิงก์สำหรับกดโทรออก
+            document.getElementById('help-card-phone-number').innerText = phone;
+            document.getElementById('help-card-phone-link').href = `tel:${phone.replace(/-/g, '')}`;
+        }
+    } catch (err) {
+        console.error("Error fetching agency info:", err);
+    }
+    // ------------------------------------------
+
     switchView('booking');
-    renderDynamicFields(name); // ใช้ชื่อในการสร้างฟิลด์ f-location, f-date ฯลฯ
+    renderDynamicFields(name);
 }
         
 function renderDynamicFields(name) {
