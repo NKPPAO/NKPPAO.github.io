@@ -341,20 +341,22 @@
     </div>
 </div>
 
-        <div id="detail-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div id="request-detail-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeDetailModal()"></div>
     
-    <div class="glass w-full max-w-lg rounded-[2.5rem] relative z-10 animate-fade-in overflow-hidden">
+    <div class="glass w-full max-w-lg rounded-[2.5rem] relative z-10 animate-fade-in overflow-hidden border border-white">
         <div class="bg-blue-600 p-6 text-white flex justify-between items-center">
-            <h3 id="modal-title" class="font-bold text-lg">รายละเอียดการจอง</h3>
+            <h3 id="req-modal-title" class="font-bold text-lg">รายละเอียดการจอง</h3>
             <button onclick="closeDetailModal()" class="hover:rotate-90 transition-transform">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
         </div>
-        <div id="modal-body" class="p-8 max-h-[70vh] overflow-y-auto">
+        
+        <div id="req-modal-body" class="p-8 max-h-[60vh] overflow-y-auto bg-white/50">
             </div>
-        <div class="p-6 bg-slate-50 flex justify-end">
-            <button onclick="closeDetailModal()" class="px-8 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-100 transition-all">
+
+        <div class="p-6 bg-slate-50/80 backdrop-blur-md flex justify-end border-t border-slate-100">
+            <button onclick="closeDetailModal()" class="px-8 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
                 ปิดหน้าต่าง
             </button>
         </div>
@@ -897,91 +899,77 @@ async function handleGlobalSubmit(event) {
 
 async function viewRequestDetail(id) {
     try {
-        console.log("🔍 กำลังดึงข้อมูล ID:", id);
         const { data: req, error } = await supabaseClient
             .from('service_requests')
             .select('*')
             .eq('id', id)
             .single();
 
-        if (error || !req) {
-            console.error("❌ หาข้อมูลไม่เจอ:", error);
-            return;
-        }
+        if (error || !req) return alert('ไม่พบข้อมูล');
 
-        console.log("📦 ข้อมูลที่ดึงได้:", req);
+        const modal = document.getElementById('request-detail-modal');
+        const modalTitle = document.getElementById('req-modal-title');
+        const modalBody = document.getElementById('req-modal-body');
 
-        const modal = document.getElementById('detail-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalBody = document.getElementById('modal-body');
-
-        // ตรวจสอบว่ามี Element ครบไหม
-        if (!modal || !modalTitle || !modalBody) {
-            console.error("❌ หา Element Modal ไม่เจอใน HTML! กรุณาเช็ค ID");
-            return;
-        }
-
-        // 1. ใส่หัวข้อ
+        // 1. ตั้งหัวข้อ
         modalTitle.innerText = req.request_details?.service_title || 'รายละเอียดคำร้อง';
 
-        // 2. สร้างเนื้อหา
+        // 2. เตรียมเนื้อหา
         let detailHtml = `<div class="space-y-4">`;
-        
-        // ส่วนแสดงสถานะ
-        const statusColors = {
-            'Pending': 'bg-orange-100 text-orange-600',
-            'Completed': 'bg-emerald-100 text-emerald-600',
-            'Rejected': 'bg-rose-100 text-rose-600'
-        };
-        const statusText = req.status === 'Pending' ? 'รอดำเนินการ' : req.status;
 
+        // สถานะ
+        const statusClass = req.status === 'Pending' ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600';
         detailHtml += `
-            <div class="p-4 rounded-2xl ${statusColors[req.status] || 'bg-slate-100'} text-center mb-6">
-                <p class="text-[10px] font-bold uppercase opacity-70 mb-1">สถานะ</p>
-                <p class="text-xl font-bold">${statusText}</p>
+            <div class="p-4 rounded-2xl ${statusClass} text-center mb-4">
+                <p class="text-[10px] font-bold uppercase opacity-70">สถานะคำร้อง</p>
+                <p class="text-lg font-black">${req.status === 'Pending' ? 'รอดำเนินการ' : req.status}</p>
             </div>
         `;
 
-        // 3. วนลูปดึงข้อมูลจาก request_details
+        // วนลูปโชว์ข้อมูลจาก request_details
         if (req.request_details) {
             Object.entries(req.request_details).forEach(([key, value]) => {
-                if (key === 'service_title') return; // ข้ามชื่อบริการ
+                if (key === 'service_title') return;
 
-                // ปรับชื่อหัวข้อให้น่าอ่านขึ้น
+                // แปลงชื่อ Key ให้อ่านง่าย
                 const labels = {
                     'requester_name': 'ชื่อผู้ติดต่อ',
                     'requester_phone': 'เบอร์โทรศัพท์',
-                    'location': 'สถานที่',
-                    'date': 'วันที่ต้องการ',
-                    'detail': 'รายละเอียดเพิ่มเติม'
+                    'date': 'วันที่ขอรับบริการ',
+                    'selected_times': 'ช่วงเวลาที่จอง',
+                    'location': 'สถานที่/ที่อยู่'
                 };
 
-                const displayLabel = labels[key] || key;
+                let displayValue = value;
+                // ถ้าค่าเป็น Array (เช่น selected_times) ให้ Join เป็นสตริง
+                if (Array.isArray(value)) displayValue = value.join(', ');
 
                 detailHtml += `
                     <div class="flex flex-col border-b border-slate-50 pb-2">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${displayLabel}</span>
-                        <span class="text-slate-900 font-medium mt-1">${value || '-'}</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${labels[key] || key}</span>
+                        <span class="text-slate-800 font-bold mt-0.5">${displayValue || '-'}</span>
                     </div>`;
             });
         }
 
         detailHtml += `</div>`;
 
-        // 4. ฉีด HTML และแสดง Modal
+        // 3. แสดง Modal
         modalBody.innerHTML = detailHtml;
         modal.classList.remove('hidden');
-        
+        modal.classList.add('flex'); // มั่นใจว่ามันแสดงผลแบบ Flexbox
+
         if (window.lucide) lucide.createIcons();
 
     } catch (err) {
-        console.error('❌ Error rendering modal:', err);
+        console.error(err);
     }
 }
 
-// ฟังก์ชันปิด Modal
 function closeDetailModal() {
-    document.getElementById('detail-modal').classList.add('hidden');
+    const modal = document.getElementById('request-detail-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
 }
 
 async function fetchUserRequests() {
