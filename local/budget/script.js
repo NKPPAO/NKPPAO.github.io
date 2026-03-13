@@ -10,55 +10,77 @@ let sumBudget = 0;
 let currentUser = null;
 
 async function fetchData() {
-    const tableBody = document.getElementById('mainTable');
-    const from = (currentPage - 1) * itemsPerPage;
-    const to = from + itemsPerPage - 1;
+    const tableBody = document.getElementById('mainTable');
+    const from = (currentPage - 1) * itemsPerPage;
+    const to = from + itemsPerPage - 1;
 
-    try {
-        let query = _supabase.from('projects').select('*', { count: 'exact' });
-        let sumQuery = _supabase.from('projects').select('*').range(0, 9999);
+    try {
+        const fAmp = document.getElementById('sAmphoe').value;
+        const fYear = document.getElementById('sYear').value;
+        const fOpt = document.getElementById('sOpt').value;
+        const fProj = document.getElementById('sProject').value;
+        const fNote = document.getElementById('sNote').value;
 
-        const fAmp = document.getElementById('sAmphoe').value;
-        const fYear = document.getElementById('sYear').value;
-        const fOpt = document.getElementById('sOpt').value;
-        const fProj = document.getElementById('sProject').value;
-        const fNote = document.getElementById('sNote').value;
+        // เช็คว่ามีการใช้ Filter หรือไม่
+        const isFiltered = fAmp || fYear || fOpt || fProj || fNote;
 
-        [query, sumQuery].forEach(q => {
-            if (fAmp) q.eq('amphoe', fAmp);
-            if (fYear) q.eq('fiscal_year', fYear);
-            if (fOpt) q.ilike('tambon', `%${fOpt}%`);
-            if (fProj) q.ilike('project_name', `%${fProj}%`);
-            if (fNote) q.ilike('remark', `%${fNote}%`);
-        });
+        // 1. Query ตารางหลัก (Pagination)
+        let query = _supabase.from('projects').select('*', { count: 'exact' });
+        
+        // ใส่ Filter (ถ้ามี)
+        if (fAmp) query.eq('amphoe', fAmp);
+        if (fYear) query.eq('fiscal_year', fYear);
+        if (fOpt) query.ilike('tambon', `%${fOpt}%`);
+        if (fProj) query.ilike('project_name', `%${fProj}%`);
+        if (fNote) query.ilike('remark', `%${fNote}%`);
 
-        const { data, error, count } = await query
-            .order('fiscal_year', { ascending: false })
-            .range(from, to);
+        const { data, error, count } = await query
+            .order('fiscal_year', { ascending: false })
+            .range(from, to);
 
-        if (error) throw error;
+        if (error) throw error;
 
-        // คำนวณเฉพาะยอดงบประมาณรวม
-        const { data: budgetData } = await sumQuery;
-        window.currentBudgetData = budgetData;
-        sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
-        
-        // อัปเดตตัวเลขบน Card (เฉพาะยอดหลัก)
-        document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString();
+        // 2. จัดการยอดรวม (Summary Logic)
+        let finalSum = 0;
+        let finalCount = 0;
 
-        totalItems = count;
-        renderTable(data, from);
-        updateUI();
-        
-        if (currentPage === 1 && document.getElementById('sAmphoe').options.length <= 1) {
-            setupDropdowns();
-        }
+        if (!isFiltered) {
+            // กรณีไม่มี Filter: ดึงจากตารางสรุป (เร็วและได้ยอดรวมทั้งหมดจริงๆ ทะลุหมื่นแถว)
+            const { data: summaryData } = await _supabase.from('project_summary').select('*').single();
+            if (summaryData) {
+                finalSum = summaryData.total_budget;
+                finalCount = summaryData.total_projects;
+            }
+        } else {
+            // กรณีมี Filter: คำนวณสดจากข้อมูลที่กรอง (ยอดมักจะไม่เกิน 1,000 เลยพอใช้ sumQuery เดิมได้)
+            let sumQuery = _supabase.from('projects').select('budget');
+            if (fAmp) sumQuery.eq('amphoe', fAmp);
+            if (fYear) sumQuery.eq('fiscal_year', fYear);
+            if (fOpt) sumQuery.ilike('tambon', `%${fOpt}%`);
+            if (fProj) sumQuery.ilike('project_name', `%${fProj}%`);
+            if (fNote) sumQuery.ilike('remark', `%${fNote}%`);
 
-    } catch (err) {
-        console.error(err);
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">Error: ${err.message}</td></tr>`;
-    }
+            const { data: budgetData } = await sumQuery;
+            finalSum = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
+            finalCount = budgetData.length;
+        }
+
+        // อัปเดตตัวเลขบน Card
+        document.getElementById('cardTotalBudget').innerText = Number(finalSum).toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('cardTotalProjects').innerText = Number(finalCount).toLocaleString();
+
+        totalItems = count;
+        renderTable(data, from);
+        updateUI();
+        
+        if (currentPage === 1 && document.getElementById('sAmphoe').options.length <= 1) {
+            setupDropdowns();
+        }
+
+    } catch (err) {
+        console.error(err);
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">Error: ${err.message}</td></tr>`;
+    }
 }
 
 function renderTable(data, startNumber) {
