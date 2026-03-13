@@ -46,10 +46,15 @@ async function fetchData() {
 
         if (!isFiltered) {
             // กรณีไม่มี Filter: ดึงจากตารางสรุป (เร็วและได้ยอดรวมทั้งหมดจริงๆ ทะลุหมื่นแถว)
-            const { data: summaryData } = await _supabase.from('project_summary').select('*').single();
-            if (summaryData) {
-                finalSum = summaryData.total_budget;
-                finalCount = summaryData.total_projects;
+            const { data: summaryData, error: sumError } = await _supabase
+                .from('project_summary')
+                .select('*');
+            
+            if (sumError) {
+                console.error("Summary Fetch Error Details:", sumError);
+            } else if (summaryData && summaryData.length > 0) {
+                finalSum = summaryData[0].total_budget;
+                finalCount = summaryData[0].total_projects;
             }
         } else {
             // กรณีมี Filter: คำนวณสดจากข้อมูลที่กรอง (ยอดมักจะไม่เกิน 1,000 เลยพอใช้ sumQuery เดิมได้)
