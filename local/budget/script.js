@@ -15,8 +15,12 @@ async function fetchData() {
     const to = from + itemsPerPage - 1;
 
     try {
+        // 1. Query สำหรับแสดงผลตาราง (มี Pagination)
         let query = _supabase.from('projects').select('*', { count: 'exact' });
-        let sumQuery = _supabase.from('projects').select('*').range(0, 9999);
+        
+        // 2. Query สำหรับคำนวณยอดรวม (ดึงเฉพาะคอลัมน์ budget ของทุกแถวที่ตรงกับ Filter)
+        // **ตัด .range(0, 9999) ออก เพื่อให้ดึงข้อมูลทั้งหมดที่ตรงเงื่อนไข**
+        let sumQuery = _supabase.from('projects').select('budget'); 
 
         const fAmp = document.getElementById('sAmphoe').value;
         const fYear = document.getElementById('sYear').value;
@@ -24,6 +28,7 @@ async function fetchData() {
         const fProj = document.getElementById('sProject').value;
         const fNote = document.getElementById('sNote').value;
 
+        // นำ Filter ไปใช้กับทั้งสอง Query
         [query, sumQuery].forEach(q => {
             if (fAmp) q.eq('amphoe', fAmp);
             if (fYear) q.eq('fiscal_year', fYear);
@@ -32,20 +37,32 @@ async function fetchData() {
             if (fNote) q.ilike('remark', `%${fNote}%`);
         });
 
+        // ดึงข้อมูลตาราง
         const { data, error, count } = await query
             .order('fiscal_year', { ascending: false })
             .range(from, to);
 
         if (error) throw error;
 
-        // คำนวณเฉพาะยอดงบประมาณรวม
-        const { data: budgetData } = await sumQuery;
-        window.currentBudgetData = budgetData;
-        sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
+        // 3. ดึงข้อมูลเพื่อคำนวณยอดรวม (ดึงมาเฉพาะ budget)
+        const { data: allBudgets, error: sumError } = await sumQuery;
+        if (sumError) throw sumError;
+
+        // คำนวณยอดรวมจากข้อมูลที่กรองแล้วทั้งหมด
+        sumBudget = allBudgets.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
         
-        // อัปเดตตัวเลขบน Card (เฉพาะยอดหลัก)
-        document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString();
+        // อัปเดตตัวเลขบน Card
+        document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        document.getElementById('cardTotalProjects').innerText = allBudgets.length.toLocaleString();
+
+        // อัปเดตยอดรวมเหนือตาราง (ถ้ามี id นี้)
+        const budgetText = document.getElementById('totalBudgetInfo');
+        if (budgetText) {
+            budgetText.innerText = `รวมงบประมาณทั้งสิ้น: ${sumBudget.toLocaleString()} บาท`;
+        }
 
         totalItems = count;
         renderTable(data, from);
