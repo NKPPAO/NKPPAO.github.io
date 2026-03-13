@@ -15,54 +15,55 @@ async function fetchData() {
     const to = from + itemsPerPage - 1;
 
     try {
-        // 1. Query สำหรับแสดงผลตาราง (มี Pagination)
-        let query = _supabase.from('projects').select('*', { count: 'exact' });
-        
-        // 2. Query สำหรับคำนวณยอดรวม (ดึงเฉพาะคอลัมน์ budget ของทุกแถวที่ตรงกับ Filter)
-        // **ตัด .range(0, 9999) ออก เพื่อให้ดึงข้อมูลทั้งหมดที่ตรงเงื่อนไข**
-        let sumQuery = _supabase.from('projects').select('budget'); 
-
+        // 1. ดึงค่าจาก Filter
         const fAmp = document.getElementById('sAmphoe').value;
         const fYear = document.getElementById('sYear').value;
         const fOpt = document.getElementById('sOpt').value;
         const fProj = document.getElementById('sProject').value;
         const fNote = document.getElementById('sNote').value;
 
-        // นำ Filter ไปใช้กับทั้งสอง Query
-        [query, sumQuery].forEach(q => {
-            if (fAmp) q.eq('amphoe', fAmp);
-            if (fYear) q.eq('fiscal_year', fYear);
-            if (fOpt) q.ilike('tambon', `%${fOpt}%`);
-            if (fProj) q.ilike('project_name', `%${fProj}%`);
-            if (fNote) q.ilike('remark', `%${fNote}%`);
-        });
+        // 2. Query สำหรับแสดงผลตาราง (Pagination) - เก็บไว้เหมือนเดิม
+        let query = _supabase.from('projects').select('*', { count: 'exact' });
+        
+        if (fAmp) query.eq('amphoe', fAmp);
+        if (fYear) query.eq('fiscal_year', fYear);
+        if (fOpt) query.ilike('tambon', `%${fOpt}%`);
+        if (fProj) query.ilike('project_name', `%${fProj}%`);
+        if (fNote) query.ilike('remark', `%${fNote}%`);
 
-        // ดึงข้อมูลตาราง
         const { data, error, count } = await query
             .order('fiscal_year', { ascending: false })
             .range(from, to);
 
         if (error) throw error;
 
-        // 3. ดึงข้อมูลเพื่อคำนวณยอดรวม (ดึงมาเฉพาะ budget)
-        const { data: allBudgets, error: sumError } = await sumQuery;
-        if (sumError) throw sumError;
+        // --- เริ่มส่วนที่แก้ใหม่: ใช้ RPC คำนวณยอดรวมทั้งหมด (ทะลุ Limit 1,000 แถว) ---
+        const { data: summary, error: rpcError } = await _supabase.rpc('get_total_budget', {
+            f_amphoe: fAmp || null,
+            f_fiscal_year: fYear || null,
+            f_tambon: fOpt || null,
+            f_project_name: fProj || null,
+            f_remark: fNote || null
+        });
 
-        // คำนวณยอดรวมจากข้อมูลที่กรองแล้วทั้งหมด
-        sumBudget = allBudgets.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
-        
-        // อัปเดตตัวเลขบน Card
-        document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {
+        if (rpcError) throw rpcError;
+
+        // ดึงค่าผลลัพธ์จาก RPC (ซึ่งจะคืนค่ามาเป็น Array ของ Object)
+        const totalSum = summary[0].total_sum;
+        const totalCount = summary[0].total_count;
+
+        // อัปเดตตัวเลขบน Card และหน้าจอ
+        document.getElementById('cardTotalBudget').innerText = totalSum.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
-        document.getElementById('cardTotalProjects').innerText = allBudgets.length.toLocaleString();
+        document.getElementById('cardTotalProjects').innerText = Number(totalCount).toLocaleString();
 
-        // อัปเดตยอดรวมเหนือตาราง (ถ้ามี id นี้)
         const budgetText = document.getElementById('totalBudgetInfo');
         if (budgetText) {
-            budgetText.innerText = `รวมงบประมาณทั้งสิ้น: ${sumBudget.toLocaleString()} บาท`;
+            budgetText.innerText = `รวมงบประมาณทั้งสิ้น: ${totalSum.toLocaleString()} บาท`;
         }
+        // --- จบส่วนที่แก้ใหม่ ---
 
         totalItems = count;
         renderTable(data, from);
