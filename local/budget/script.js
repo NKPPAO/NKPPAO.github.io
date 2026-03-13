@@ -36,7 +36,8 @@ async function fetchData() {
             .range(from, to);
 
         if (error) throw error;
-
+        // ลองเพิ่ม log เพื่อเช็คค่า
+console.log("Filtering with:", { fAmp, fYear, fOpt, fProj, fNote });
         // --- เริ่มส่วนที่แก้ใหม่: ใช้ RPC คำนวณยอดรวมทั้งหมด (ทะลุ Limit 1,000 แถว) ---
         const { data: summary, error: rpcError } = await _supabase.rpc('get_total_budget', {
             f_amphoe: fAmp || null,
@@ -46,7 +47,13 @@ async function fetchData() {
             f_remark: fNote || null
         });
 
-        if (rpcError) throw rpcError;
+        if (rpcError) {
+    console.error("RPC Error:", rpcError);
+    throw rpcError;
+}
+
+// ตรวจสอบข้อมูลที่ตีกลับมา
+console.log("Summary Result:", summary);
 
         // ดึงค่าผลลัพธ์จาก RPC (ซึ่งจะคืนค่ามาเป็น Array ของ Object)
         const totalSum = summary[0].total_sum;
