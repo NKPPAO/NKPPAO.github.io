@@ -10,55 +10,55 @@ let sumBudget = 0;
 let currentUser = null;
 
 async function fetchData() {
-    const tableBody = document.getElementById('mainTable');
-    const from = (currentPage - 1) * itemsPerPage;
-    const to = from + itemsPerPage - 1;
+    const tableBody = document.getElementById('mainTable');
+    const from = (currentPage - 1) * itemsPerPage;
+    const to = from + itemsPerPage - 1;
 
-    try {
-        let query = _supabase.from('projects').select('*', { count: 'exact' });
-        let sumQuery = _supabase.from('projects').select('*').range(0, 9999);
+    try {
+        let query = _supabase.from('projects').select('*', { count: 'exact' });
+        let sumQuery = _supabase.from('projects').select('*').range(0, 9999);
 
-        const fAmp = document.getElementById('sAmphoe').value;
-        const fYear = document.getElementById('sYear').value;
-        const fOpt = document.getElementById('sOpt').value;
-        const fProj = document.getElementById('sProject').value;
-        const fNote = document.getElementById('sNote').value;
+        const fAmp = document.getElementById('sAmphoe').value;
+        const fYear = document.getElementById('sYear').value;
+        const fOpt = document.getElementById('sOpt').value;
+        const fProj = document.getElementById('sProject').value;
+        const fNote = document.getElementById('sNote').value;
 
-        [query, sumQuery].forEach(q => {
-            if (fAmp) q.eq('amphoe', fAmp);
-            if (fYear) q.eq('fiscal_year', fYear);
-            if (fOpt) q.ilike('tambon', `%${fOpt}%`);
-            if (fProj) q.ilike('project_name', `%${fProj}%`);
-            if (fNote) q.ilike('remark', `%${fNote}%`);
-        });
+        [query, sumQuery].forEach(q => {
+            if (fAmp) q.eq('amphoe', fAmp);
+            if (fYear) q.eq('fiscal_year', fYear);
+            if (fOpt) q.ilike('tambon', `%${fOpt}%`);
+            if (fProj) q.ilike('project_name', `%${fProj}%`);
+            if (fNote) q.ilike('remark', `%${fNote}%`);
+        });
 
-        const { data, error, count } = await query
-            .order('fiscal_year', { ascending: false })
-            .range(from, to);
+        const { data, error, count } = await query
+            .order('fiscal_year', { ascending: false })
+            .range(from, to);
 
-        if (error) throw error;
+        if (error) throw error;
 
-        // คำนวณเฉพาะยอดงบประมาณรวม
-        const { data: budgetData } = await sumQuery;
-        window.currentBudgetData = budgetData;
-        sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
-        
-        // อัปเดตตัวเลขบน Card (เฉพาะยอดหลัก)
-        document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString();
+        // คำนวณเฉพาะยอดงบประมาณรวม
+        const { data: budgetData } = await sumQuery;
+        window.currentBudgetData = budgetData;
+        sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
+        
+        // อัปเดตตัวเลขบน Card (เฉพาะยอดหลัก)
+        document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString();
 
-        totalItems = count;
-        renderTable(data, from);
-        updateUI();
-        
-        if (currentPage === 1 && document.getElementById('sAmphoe').options.length <= 1) {
-            setupDropdowns();
-        }
+        totalItems = count;
+        renderTable(data, from);
+        updateUI();
+        
+        if (currentPage === 1 && document.getElementById('sAmphoe').options.length <= 1) {
+            setupDropdowns();
+        }
 
-    } catch (err) {
-        console.error(err);
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">Error: ${err.message}</td></tr>`;
-    }
+    } catch (err) {
+        console.error(err);
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">Error: ${err.message}</td></tr>`;
+    }
 }
 
 function renderTable(data, startNumber) {
