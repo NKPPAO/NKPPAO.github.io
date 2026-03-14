@@ -1054,7 +1054,7 @@ async function exportToExcel() {
 // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
 // ✅ แก้ไข: เติม async หน้า ( ) เพื่อให้ใช้ await ข้างในได้
 document.addEventListener('DOMContentLoaded', async () => {
-    
+    await setupDropdowns();
     // 1. เช็คสถานะ Login ก่อน (รอให้เสร็จเพื่ออัปเดตค่า currentUser)
     await checkUserStatus(); 
     
