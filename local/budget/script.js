@@ -9,6 +9,50 @@ let totalItems = 0;
 let sumBudget = 0;
 let currentUser = null;
 
+async function fetchAllFilteredData() {
+    let allData = [];
+    let from = 0;
+    const step = 1000; // ดึงทีละ 1000 ตามขีดจำกัด
+    let keepFetching = true;
+
+    // ดึงค่า Filter ปัจจุบัน
+    const fAmp = document.getElementById('sAmphoe').value;
+    const fYear = document.getElementById('sYear').value;
+    const fOpt = document.getElementById('sOpt').value;
+    const fProj = document.getElementById('sProject').value;
+    const fNote = document.getElementById('sNote').value;
+
+    while (keepFetching) {
+        let query = _supabase.from('projects').select('*');
+
+        // ใส่ Filter เดิมเป๊ะๆ
+        if (fAmp) query.eq('amphoe', fAmp);
+        if (fYear) query.eq('fiscal_year', fYear);
+        if (fOpt) query.ilike('tambon', `%${fOpt}%`);
+        if (fProj) query.ilike('project_name', `%${fProj}%`);
+        if (fNote) query.ilike('remark', `%${fNote}%`);
+
+        const { data, error } = await query
+            .range(from, from + step - 1)
+            .order('fiscal_year', { ascending: false });
+
+        if (error) {
+            console.error("Error fetching all data:", error);
+            break;
+        }
+
+        allData = [...allData, ...data];
+
+        // ถ้า data ที่ได้มาน้อยกว่า step แสดงว่าหมดแล้ว
+        if (data.length < step) {
+            keepFetching = false;
+        } else {
+            from += step;
+        }
+    }
+    return allData;
+}
+
 async function fetchData() {
     const tableBody = document.getElementById('mainTable');
     const from = (currentPage - 1) * itemsPerPage;
@@ -39,9 +83,16 @@ async function fetchData() {
         if (error) throw error;
 
         // คำนวณเฉพาะยอดงบประมาณรวม
-        const { data: budgetData } = await sumQuery;
-        window.currentBudgetData = budgetData;
-        sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
+        //const { data: budgetData } = await sumQuery;
+        //window.currentBudgetData = budgetData;
+        //sumBudget = budgetData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
+        // 2. ดึงข้อมูลทั้งหมดที่ผ่าน Filter มาคำนวณ (ไม่ติด 1000 แถว)
+        const allFilteredData = await fetchAllFilteredData();
+        window.currentBudgetData = allFilteredData; // เก็บไว้ใช้ตอน Export Excel ด้วย
+        
+        // คำนวณยอดรวมจากข้อมูลทั้งหมดจริงๆ
+        sumBudget = allFilteredData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
+        totalItems = count;
         
         // อัปเดตตัวเลขบน Card (เฉพาะยอดหลัก)
         document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2});
@@ -134,7 +185,7 @@ function renderTable(data, startNumber) {
             </div>
             <div class="mb-3">
                 <div class="text-slate-700 font-medium leading-snug">${item.project_name || '-'}</div>
-                <div class="text-slate-400 text-[11px] italic mt-1">${item.remark || ''}</div>
+                <div class="text-red-400 text-[13px] mt-1">${item.remark || ''}</div>
             </div>
             <div class="border-t border-slate-100 pt-3 flex justify-between items-end">
                 <div class="text-right flex-grow">
@@ -831,7 +882,51 @@ async function handleUpdateProject(e) {
     }
 }
 
-function exportToExcel() {
+async function exportToExcel() {
+    // แสดงความคืบหน้า (ถ้าข้อมูลเยอะอาจใช้เวลา)
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> กำลังเตรียมไฟล์...';
+    btn.disabled = true;
+
+    try {
+        // ใช้ข้อมูลที่ fetch มาแล้วใน window.currentBudgetData
+        if (!window.currentBudgetData || window.currentBudgetData.length === 0) {
+            // ถ้าบังเอิญยังไม่มีข้อมูล ให้ fetch ใหม่หน้างาน
+            window.currentBudgetData = await fetchAllFilteredData();
+        }
+
+        const excelData = window.currentBudgetData.map((item, index) => ({
+            'ลำดับ': index + 1,
+            'ปีงบประมาณ': item.fiscal_year || '',
+            'อำเภอ': item.amphoe || '',
+            'อปท./ตำบล': item.tambon || '',
+            'ชื่อโครงการ': item.project_name || '',
+            'งบประมาณ (บาท)': item.budget ? Number(item.budget) : 0,
+            'หมายเหตุ': item.remark || ''
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "รายชื่อโครงการ");
+
+        worksheet['!cols'] = [
+            { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 25 }, { wch: 60 }, { wch: 18 }, { wch: 25 }
+        ];
+
+        const dateNow = new Date().toLocaleDateString('th-TH').replace(/\//g, '-');
+        XLSX.writeFile(workbook, `โครงการ_อบจ_นครปฐม_${dateNow}.xlsx`);
+        
+    } catch (error) {
+        console.error("Export Error:", error);
+        alert('เกิดข้อผิดพลาดในการส่งออก: ' + error.message);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+/*function exportToExcel() {
     // 1. ตรวจสอบข้อมูลจากตัวแปร Global
     if (!window.currentBudgetData || window.currentBudgetData.length === 0) {
         showAlert('info', 'ไม่พบข้อมูล', 'กรุณารอสักครู่หรือลองค้นหาข้อมูลก่อนส่งออก');
@@ -874,7 +969,7 @@ function exportToExcel() {
         console.error("Export Error:", error);
         showAlert('error', 'ส่งออกไม่สำเร็จ', error.message);
     }
-}
+}*/
 
 // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
 // ✅ แก้ไข: เติม async หน้า ( ) เพื่อให้ใช้ await ข้างในได้
