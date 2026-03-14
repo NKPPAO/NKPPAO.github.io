@@ -96,7 +96,8 @@ async function fetchData() {
         
         // อัปเดตตัวเลขบน Card (เฉพาะยอดหลัก)
         document.getElementById('cardTotalBudget').innerText = sumBudget.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString();
+        document.getElementById('cardTotalProjects').innerText = allFilteredData.length.toLocaleString();
+        //document.getElementById('cardTotalProjects').innerText = budgetData.length.toLocaleString();
 
         totalItems = count;
         renderTable(data, from);
