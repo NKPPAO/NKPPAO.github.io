@@ -3,12 +3,12 @@ const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ตัวแปร Global สำหรับเก็บค่าสรุป
-window.allFilteredData = [];
+let sumBudget = 0;
+let totalItems = 0;
+window.currentBudgetData = [];
+
 let currentPage = 1;
 const itemsPerPage = 10;
-let totalItems = 0;
-let sumBudget = 0;
 let currentUser = null;
 
 async function fetchAllFilteredData() {
@@ -81,6 +81,10 @@ async function fetchData() {
             .range(from, to);
 
         if (error) throw error;
+        // ถ้าเป็นการโหลดครั้งแรก หรือเปลี่ยน Filter ให้ totalItems อัปเดตตาม count ของหน้าปัจจุบัน
+        if (!window.currentBudgetData || window.currentBudgetData.length === 0) {
+            totalItems = count || 0;
+        }
 
         totalItems = count; // อัปเดตจำนวนแถวสำหรับการสร้างปุ่มหน้า
         renderTable(data, from);
@@ -243,21 +247,25 @@ function renderTable(data, startNumber) {
 
 async function updateSummaryData() {
     try {
-        // ใช้ fetchAllFilteredData ที่เราทำไว้เพื่อกวาดข้อมูลทุกแถวมา (เกิน 1,000 ก็ได้)
+        // ดึงข้อมูลทั้งหมด (กวาดเกิน 1000 แถว)
         const allData = await fetchAllFilteredData();
         
-        // เก็บใส่ตัวแปร Global ไว้ให้ Excel และส่วนอื่นๆ ใช้
         window.currentBudgetData = allData;
         
-        // คำนวณยอดรวมทั้งหมด
+        // คำนวณยอดรวม
         sumBudget = allData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
+        
+        // อัปเดตยอดจำนวนรายการทั้งหมดจริงๆ จาก Array
         totalItems = allData.length;
 
-        // อัปเดต UI ส่วนของ Card และตัวเลขสรุป
+        // สั่งอัปเดตหน้าจอทันทีที่คำนวณเสร็จ
         updateUI(); 
         
     } catch (err) {
         console.error("Summary Update Error:", err);
+        // หาก Error ให้เซ็ตเป็น 0 เพื่อไม่ให้หน้าเว็บค้าง
+        sumBudget = 0;
+        updateUI();
     }
 }
 
@@ -1052,6 +1060,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 2. โหลดข้อมูลอื่นๆ ต่อตามลำดับ
     fetchSystemInfo();
-    fetchData(); // ฟังก์ชันนี้จะเรียก renderTable ซึ่งจะเห็นค่า currentUser แล้ว
+    await fetchData();        // โชว์ตารางทันที
+    await updateSummaryData(); // คำนวณยอดเงิน (จะตามมาติดๆ)
+    //fetchData(); // ฟังก์ชันนี้จะเรียก renderTable ซึ่งจะเห็นค่า currentUser แล้ว
     updateLastUpdateDisplay();
 });
