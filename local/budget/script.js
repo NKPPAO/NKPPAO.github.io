@@ -3,6 +3,8 @@ const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ตัวแปร Global สำหรับเก็บค่าสรุป
+window.allFilteredData = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 let totalItems = 0;
@@ -60,6 +62,43 @@ async function fetchData() {
 
     try {
         let query = _supabase.from('projects').select('*', { count: 'exact' });
+
+        const fAmp = document.getElementById('sAmphoe').value;
+        const fYear = document.getElementById('sYear').value;
+        const fOpt = document.getElementById('sOpt').value;
+        const fProj = document.getElementById('sProject').value;
+        const fNote = document.getElementById('sNote').value;
+
+        if (fAmp) query.eq('amphoe', fAmp);
+        if (fYear) query.eq('fiscal_year', fYear);
+        if (fOpt) query.ilike('tambon', `%${fOpt}%`);
+        if (fProj) query.ilike('project_name', `%${fProj}%`);
+        if (fNote) query.ilike('remark', `%${fNote}%`);
+
+        // โหลดแค่ 10-20 แถวตาม Pagination
+        const { data, error, count } = await query
+            .order('fiscal_year', { ascending: false })
+            .range(from, to);
+
+        if (error) throw error;
+
+        totalItems = count; // อัปเดตจำนวนแถวสำหรับการสร้างปุ่มหน้า
+        renderTable(data, from);
+        updateUI(); // อัปเดตปุ่ม Pagination
+
+    } catch (err) {
+        console.error(err);
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">Error: ${err.message}</td></tr>`;
+    }
+}
+
+/*async function fetchData() {
+    const tableBody = document.getElementById('mainTable');
+    const from = (currentPage - 1) * itemsPerPage;
+    const to = from + itemsPerPage - 1;
+
+    try {
+        let query = _supabase.from('projects').select('*', { count: 'exact' });
         let sumQuery = _supabase.from('projects').select('*').range(0, 9999);
 
         const fAmp = document.getElementById('sAmphoe').value;
@@ -111,7 +150,7 @@ async function fetchData() {
         console.error(err);
         tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">Error: ${err.message}</td></tr>`;
     }
-}
+}*/
 
 function renderTable(data, startNumber) {
     const tableBody = document.getElementById('mainTable');
@@ -200,6 +239,36 @@ function renderTable(data, startNumber) {
         `;
         mobileContainer.appendChild(card);
     });
+}
+
+async function updateSummaryData() {
+    try {
+        // ใช้ fetchAllFilteredData ที่เราทำไว้เพื่อกวาดข้อมูลทุกแถวมา (เกิน 1,000 ก็ได้)
+        const allData = await fetchAllFilteredData();
+        
+        // เก็บใส่ตัวแปร Global ไว้ให้ Excel และส่วนอื่นๆ ใช้
+        window.currentBudgetData = allData;
+        
+        // คำนวณยอดรวมทั้งหมด
+        sumBudget = allData.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
+        totalItems = allData.length;
+
+        // อัปเดต UI ส่วนของ Card และตัวเลขสรุป
+        updateUI(); 
+        
+    } catch (err) {
+        console.error("Summary Update Error:", err);
+    }
+}
+
+function updatePaginationUI(count) {
+    totalItems = count; 
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const container = document.getElementById('pagination-controls');
+    
+    // ... (โค้ดสร้างปุ่ม Pagination เดิมของคุณทั้งหมด) ...
+    // แสดงสรุปจำนวนรายการ
+    document.getElementById('pInfo').innerHTML = `พบข้อมูลทั้งหมด <span class="text-blue-600 font-bold">${totalItems.toLocaleString()}</span> รายการ`;
 }
 
 function updateUI() {
@@ -298,6 +367,7 @@ function changePage(step) {
 function applyFilter() {
     currentPage = 1;
     fetchData();
+    updateSummaryData();
 }
 
 async function setupDropdowns() {
@@ -351,6 +421,7 @@ function clearSearch() {
     document.getElementById('sNote').value = "";
     currentPage = 1;
     fetchData();
+    updateSummaryData();
 }
 
 async function updateLastUpdateDisplay() {
