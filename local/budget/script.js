@@ -10,7 +10,6 @@ window.currentBudgetData = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 let currentUser = null;
-// --- ระบบ Auto Logout เมื่อไม่มีการเคลื่อนไหว ---
 let inactivityTimeout;
 
 async function fetchAllFilteredData() {
@@ -1071,7 +1070,7 @@ function resetInactivityTimer() {
         sessionStorage.setItem('autoLogout', 'true');
         
         location.reload(); 
-    }, 10 * 60 * 1000); 
+    }, 10 * 1000); 
 }
 
 // 2. ส่วนดักจับเหตุการณ์ (เหมือนเดิม)
