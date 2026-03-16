@@ -1070,7 +1070,7 @@ function resetInactivityTimer() {
         sessionStorage.setItem('autoLogout', 'true');
         
         location.reload(); 
-    }, 10 * 1000); 
+    }, 10 * 60 * 1000); 
 }
 
 // 2. ส่วนดักจับเหตุการณ์ (เหมือนเดิม)
