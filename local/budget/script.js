@@ -10,6 +10,8 @@ window.currentBudgetData = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 let currentUser = null;
+// --- ระบบ Auto Logout เมื่อไม่มีการเคลื่อนไหว ---
+let inactivityTimeout;
 
 async function fetchAllFilteredData() {
     let allData = [];
@@ -1051,17 +1053,51 @@ async function exportToExcel() {
     }
 }*/
 
+function resetInactivityTimer() {
+    // ถ้าไม่ได้ Login อยู่ ก็ไม่ต้องเริ่มนับถอยหลัง
+    if (!currentUser) return; 
+
+    // ล้างตัวนับเวลาเก่า
+    clearTimeout(inactivityTimeout);
+
+    // ตั้งเวลาใหม่ (10 นาที = 600,000 มิลลิวินาที)
+    inactivityTimeout = setTimeout(async () => {
+        console.log("ไม่มีการเคลื่อนไหวเกิน 10 นาที ระบบกำลัง Logout...");
+        
+        // เรียกฟังก์ชัน logout เดิมที่คุณมี
+        if (typeof handleLogout === 'function') {
+            await handleLogout();
+            showAlert('info', 'หมดเวลาการใช้งาน', 'ระบบออกจากระบบอัตโนมัติเนื่องจากไม่มีการเคลื่อนไหว');
+        } else {
+            // กรณีไม่มีฟังก์ชัน handleLogout ให้ใช้คำสั่งพื้นฐาน
+            await _supabase.auth.signOut();
+            location.reload(); 
+        }
+    }, 10 * 60 * 1000); 
+}
+
+// ดักจับเหตุการณ์การเคลื่อนไหวต่างๆ
+const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+
+activityEvents.forEach(event => {
+    document.addEventListener(event, resetInactivityTimer, true);
+});
+
 // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเว็บ
-// ✅ แก้ไข: เติม async หน้า ( ) เพื่อให้ใช้ await ข้างในได้
 document.addEventListener('DOMContentLoaded', async () => {
-    await setupDropdowns();
-    // 1. เช็คสถานะ Login ก่อน (รอให้เสร็จเพื่ออัปเดตค่า currentUser)
+    // 1. เช็คสถานะ Login ก่อนเพื่อให้ได้ค่า currentUser ที่ถูกต้อง
     await checkUserStatus(); 
     
-    // 2. โหลดข้อมูลอื่นๆ ต่อตามลำดับ
+    // 2. เมื่อมีค่า currentUser แล้วค่อยเริ่มนับเวลา Inactivity
+    resetInactivityTimer();
+    
+    // 3. โหลดข้อมูล UI และ Dropdown
+    await setupDropdowns();
+    
+    // 4. โหลดข้อมูลตารางและสรุปผล
     fetchSystemInfo();
-    await fetchData();        // โชว์ตารางทันที
-    await updateSummaryData(); // คำนวณยอดเงิน (จะตามมาติดๆ)
-    //fetchData(); // ฟังก์ชันนี้จะเรียก renderTable ซึ่งจะเห็นค่า currentUser แล้ว
+    await fetchData(); 
+    await updateSummaryData();
+    
     updateLastUpdateDisplay();
 });
