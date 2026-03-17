@@ -128,7 +128,12 @@ function renderTable(data) {
         return;
     }
 
-    data.forEach(item => {
+    // เพิ่ม index เข้ามาใน parameters
+    data.forEach((item, index) => {
+        // คำนวณเลขลำดับ (สมมติว่าใช้ตัวแปร currentPage และ itemsPerPage)
+        // ถ้าคุณไม่ได้ทำ Pagination ให้ใช้แค่ index + 1
+        const rowNumber = ((currentPage - 1) * itemsPerPage) + index + 1;
+
         // ฟังก์ชันสร้างปุ่ม PDF
         const createPdfButton = (doc, pageInBook, themeColor) => {
             if (!doc || !doc.pdf_url || !pageInBook) return '';
@@ -144,51 +149,60 @@ function renderTable(data) {
         const mainBtn = createPdfButton(item.main_doc, item.main_page, 'bg-blue-600');
         const extraBtn = createPdfButton(item.extra_doc, item.extra_page, 'bg-orange-500');
 
-        // ตรวจสอบสิทธิ์ Admin
-const adminTools = currentUser ? `
-    <div class="mt-4 flex gap-4">
-        <button onclick="editProject(${item.id})" class="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-            แก้ไข
-        </button>
-        <button onclick="deleteProject(${item.id})" class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-            ลบ
-        </button>
-    </div>
-` : '';
-        
-        // สร้าง Item แบบ Card (1 Column)
+        const adminTools = currentUser ? `
+            <div class="flex gap-4">
+                <button onclick="editProject(${item.id})" class="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    แก้ไข
+                </button>
+                <button onclick="deleteProject(${item.id})" class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    ลบ
+                </button>
+            </div>
+        ` : '';
+
         const div = document.createElement('div');
-        div.className = "p-5 hover:bg-slate-50 transition-colors";
+        div.className = "p-5 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0";
 
         div.innerHTML = `
-            <div class="flex flex-col gap-3">
-                <div class="flex justify-between items-start">
-                    <div class="text-sm text-slate-400 uppercase tracking-wider">
-                        อ. ${item.district} <span class="mx-1 text-slate-200">/</span> ${item.local_org}
-                    </div>
-                    <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">
-                        ${item.project_status || 'คงเดิม'}
+            <div class="flex gap-4">
+                <div class="flex-none">
+                    <span class="inline-flex items-center justify-center w-7 h-7 bg-slate-100 text-slate-500 text-[11px] font-bold rounded-lg">
+                        ${rowNumber}
                     </span>
                 </div>
 
-                <div class="flex justify-between items-start">
-                    <div class="text-sm text-slate-800 leading-snug">
-                    ${item.project_name}</div>
-                    <span class="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] 
-                    font-black rounded-full border border-green-100">
-                    ${(Number(item.budget_amount) || 0).toLocaleString()} บาท</span>
-                
-                </div>
+                <div class="flex flex-col gap-3 flex-1">
+                    <div class="flex justify-between items-start">
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            อ. ${item.district} <span class="mx-1 text-slate-200">/</span> ${item.local_org}
+                        </div>
+                        <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">
+                            ${item.project_status || 'คงเดิม'}
+                        </span>
+                    </div>
 
-                <div class="flex justify-between items-start">
-                <div class="flex flex-wrap gap-2 py-1">
-                    ${mainBtn} ${extraBtn}
-                    ${(!mainBtn && !extraBtn) ? '<span class="text-[11px] text-slate-300 italic">ไม่มีข้อมูลไฟล์แนบ</span>' : ''}
-                </div>
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="text-sm font-bold text-slate-800 leading-snug flex-1">
+                            ${item.project_name}
+                        </div>
+                        <div class="flex-none text-right">
+                            <span class="block text-[10px] text-slate-400 font-bold uppercase">งบประมาณ</span>
+                            <span class="text-sm font-black text-green-600">
+                                ${(Number(item.budget_amount) || 0).toLocaleString()} <span class="text-[10px]">บาท</span>
+                            </span>
+                        </div>
+                    </div>
 
-                ${adminTools}
+                    <div class="flex justify-between items-center mt-1">
+                        <div class="flex flex-wrap gap-2">
+                            ${mainBtn} ${extraBtn}
+                            ${(!mainBtn && !extraBtn) ? '<span class="text-[11px] text-slate-300 italic">ไม่มีข้อมูลไฟล์แนบ</span>' : ''}
+                        </div>
+                        ${adminTools}
+                    </div>
+                </div>
             </div>
         `;
         tableBody.appendChild(div);
