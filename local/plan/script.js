@@ -634,45 +634,38 @@ async function saveEdit() {
     btn.innerText = "บันทึกการแก้ไข";
 }
 
-// --- Plan Manager Logic ---
-
-function openPlanManager() {
-    document.getElementById('planManagerModal').classList.remove('hidden');
-    renderPlanList();
-}
-
-function closePlanManager() {
-    document.getElementById('planManagerModal').classList.add('hidden');
-}
+// --- Plan Documents Management ---
 
 async function renderPlanList() {
     const container = document.getElementById('planListContainer');
-    container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs">กำลังโหลด...</p>';
+    container.innerHTML = '<div class="text-center py-4 animate-pulse text-slate-400 text-xs">กำลังโหลดข้อมูลเล่มแผน...</div>';
 
-    // ดึงรายชื่อเล่มแผนที่ไม่ซ้ำกันจากตารางโครงการ (หรือจากตารางแยกถ้าคุณมี)
-    // ในที่นี้สมมติว่าดึงจาก column 'plan_doc' ในตารางหลัก
     const { data, error } = await _supabase
-        .from('projects') // เปลี่ยนชื่อตารางให้ตรงกับของคุณ
-        .select('plan_doc')
-        .not('plan_doc', 'is', null);
+        .from('plan_documents')
+        .select('*')
+        .order('created_at', { ascending: false });
 
     if (error) return console.error(error);
 
-    // กรองเอาเฉพาะชื่อที่ไม่ซ้ำ
-    const uniquePlans = [...new Set(data.map(item => item.plan_doc))].sort();
-
     container.innerHTML = '';
-    uniquePlans.forEach(planName => {
+    data.forEach(item => {
         const div = document.createElement('div');
-        div.className = "flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group hover:border-amber-200 transition-all";
+        div.className = "flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-amber-200 transition-all group shadow-sm";
         div.innerHTML = `
-            <span class="text-sm font-medium text-slate-700 truncate mr-2">${planName}</span>
-            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onclick="editPlanName('${planName}')" class="p-1.5 text-blue-500 hover:bg-blue-100 rounded-lg" title="แก้ไข">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500">${item.doc_type}</span>
+                    <span class="text-[10px] text-slate-400">Offset: ${item.page_offset}</span>
+                </div>
+                <h4 class="text-sm font-bold text-slate-700 truncate">${item.doc_name}</h4>
+                <p class="text-[10px] text-blue-500 truncate">${item.pdf_url || 'ไม่มีลิงก์ PDF'}</p>
+            </div>
+            <div class="flex gap-1 ml-4">
+                <button onclick="editPlan(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </button>
-                <button onclick="deletePlan('${planName}')" class="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg" title="ลบ">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <button onclick="deletePlan(${item.id}, '${item.doc_name}')" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
             </div>
         `;
@@ -680,45 +673,62 @@ async function renderPlanList() {
     });
 }
 
-async function addNewPlan() {
-    const input = document.getElementById('newPlanName');
-    const name = input.value.trim();
-    if (!name) return;
+async function savePlan() {
+    const id = document.getElementById('planId').value;
+    const planData = {
+        doc_name: document.getElementById('pDocName').value.trim(),
+        pdf_url: document.getElementById('pPdfUrl').value.trim(),
+        doc_type: document.getElementById('pDocType').value,
+        page_offset: parseInt(document.getElementById('pOffset').value) || 0
+    };
 
-    // การ "เพิ่มเล่มแผน" ในเชิงโครงสร้างแบบตารางเดียว คือการเพิ่มโครงการตัวอย่าง
-    // หรือถ้าคุณมีตาราง 'plans' แยก ก็ให้ Insert ลงตารางนั้น
-    alert('ระบบจะใช้ชื่อเล่มแผนนี้เมื่อคุณอัปโหลดหรือแก้ไขโครงการ');
-    input.value = '';
-    // หลังจากเพิ่มเสร็จ ให้ Refresh Dropdown
-    await loadInitialData(); 
-}
+    if (!planData.doc_name) return alert('กรุณาระบุชื่อเล่มแผน');
 
-async function editPlanName(oldName) {
-    const newName = prompt(`แก้ไขชื่อเล่มแผน "${oldName}" เป็น:`, oldName);
-    if (!newName || newName === oldName) return;
+    let error;
+    if (id) {
+        // อัปเดตข้อมูลเดิม
+        ({ error } = await _supabase.from('plan_documents').update(planData).eq('id', id));
+    } else {
+        // เพิ่มข้อมูลใหม่ (id รันอัตโนมัติ)
+        ({ error } = await _supabase.from('plan_documents').insert([planData]));
+    }
 
-    const { error } = await _supabase
-        .from('projects')
-        .update({ plan_doc: newName })
-        .eq('plan_doc', oldName);
-
-    if (!error) {
-        alert('อัปเดตชื่อเล่มแผนในทุกโครงการเรียบร้อย');
+    if (error) {
+        alert('เกิดข้อผิดพลาด: ' + error.message);
+    } else {
+        resetPlanForm();
         renderPlanList();
-        loadInitialData(); // อัปเดต Dropdown หน้าหลัก
+        // เรียกฟังก์ชันโหลด Dropdown หน้าหลักใหม่ (ถ้าคุณเขียนไว้)
+        if (typeof loadInitialData === "function") loadInitialData(); 
     }
 }
 
-async function deletePlan(planName) {
-    if (!confirm(`ยืนยันการลบเล่มแผน "${planName}"? \n*หมายเหตุ: ชื่อเล่มแผนจะหายไปจากโครงการทั้งหมดที่สังกัดเล่มนี้`)) return;
+function editPlan(item) {
+    document.getElementById('planId').value = item.id;
+    document.getElementById('pDocName').value = item.doc_name;
+    document.getElementById('pPdfUrl').value = item.pdf_url || '';
+    document.getElementById('pDocType').value = item.doc_type;
+    document.getElementById('pOffset').value = item.page_offset;
+    
+    document.getElementById('btnSavePlan').innerText = 'บันทึกการแก้ไข';
+    document.getElementById('btnCancelEdit').classList.remove('hidden');
+}
 
-    const { error } = await _supabase
-        .from('projects')
-        .update({ plan_doc: null })
-        .eq('plan_doc', planName);
+function resetPlanForm() {
+    document.getElementById('planId').value = '';
+    document.getElementById('pDocName').value = '';
+    document.getElementById('pPdfUrl').value = '';
+    document.getElementById('pDocType').value = 'แผนหลัก';
+    document.getElementById('pOffset').value = '0';
+    
+    document.getElementById('btnSavePlan').innerText = 'บันทึกข้อมูล';
+    document.getElementById('btnCancelEdit').classList.add('hidden');
+}
 
-    if (!error) {
-        renderPlanList();
-        loadInitialData();
-    }
+async function deletePlan(id, name) {
+    if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบเล่มแผน: ${name}?`)) return;
+
+    const { error } = await _supabase.from('plan_documents').delete().eq('id', id);
+    if (!error) renderPlanList();
+    else alert('ไม่สามารถลบได้: ' + error.message);
 }
