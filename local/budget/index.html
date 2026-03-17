@@ -194,16 +194,18 @@
     </div>
 </main>
 
-<footer class="bg-white/30 backdrop-blur-md border-t border-slate-100 py-6">
-    <div class="max-w-7xl mx-auto px-4 text-center">
-        <p class="text-sm font-bold text-slate-800 mb-2">© 2026 องค์การบริหารส่วนจังหวัดนครปฐม</p>
-        <p class="sm:text-xs text-slate-400 mb-6">ฝ่ายนโยบายและแผนงาน กองยุทธศาสตร์และงบประมาณ</p>
-        <button id="btnLoginMain" onclick="toggleLoginModal()" class="inline-flex items-center gap-2 text-slate-300 hover:text-blue-600 transition-all font-bold text-xs">
+    <footer class="py-12 relative z-10">
+        <div class="container mx-auto px-8 text-center">
+            <div class="w-20 h-1 bg-gradient-to-r from-blue-600 to-blue-200 mx-auto mb-8 rounded-full opacity-30"></div>
+            <p class="text-gray-800 font-extrabold text-lg mb-1">องค์การบริหารส่วนจังหวัดนครปฐม</p>
+            <p class="text-gray-400 text-xs tracking-[0.2em] uppercase font-medium">ฝ่ายนโนบายและแผนงาน กองยุทธศาสตร์และงบประมาณ</p>
+            <p class="text-gray-400 text-xs tracking-[0.2em] uppercase font-medium">© 2026 | ver. 0.5</p>
+            <button id="btnLoginMain" onclick="toggleLoginModal()" class="inline-flex items-center gap-2 text-slate-300 hover:text-blue-600 transition-all font-bold text-xs">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
             ADMIN LOGIN
         </button>
-    </div>
-</footer>
+        </div>
+    </footer>
 
     <div id="loginModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
     <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden relative animate-in fade-in zoom-in duration-300">
