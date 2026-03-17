@@ -55,12 +55,12 @@ async function loadData() {
 
     // สร้าง Query เชื่อมตาราง (Join กับ plan_documents)
     let query = _supabase
-        .from('plan_projects')
-        .select(`
-            *,
-            main_doc:main_doc_id(doc_name, file_url),
-            extra_doc:extra_doc_id(doc_name, file_url)
-        `);
+    .from('plan_projects')
+    .select(`
+        *,
+        main_doc:main_doc_id(doc_name),
+        extra_doc:extra_doc_id(doc_name)
+    `);
 
     // ใส่เงื่อนไขการกรอง (Filter)
     if (fAmphoe) query = query.eq('district', fAmphoe);
@@ -100,34 +100,33 @@ function updateSummaryCards(data) {
 
 // 4. ฟังก์ชันวาดแถวตาราง
 function renderTable(data) {
+    tableBody.innerHTML = ''; // ล้างตารางก่อนวาดใหม่
+
     if (data.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="4" class="py-20 text-center text-slate-400 font-medium">
-                    ไม่พบข้อมูลที่ค้นหา
-                </td>
-            </tr>`;
+        tableBody.innerHTML = `<tr><td colspan="4" class="py-20 text-center text-slate-400">ไม่พบข้อมูล</td></tr>`;
         return;
     }
 
     data.forEach(item => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-blue-50/30 transition-colors border-b border-slate-50";
+        tr.className = "hover:bg-blue-50/30 transition-colors border-b border-slate-100";
 
-        // ตรวจสอบข้อมูลไฟล์ PDF (ถ้ามี)
-        const pdfLink = item.main_doc?.file_url 
-            ? `<a href="${item.main_doc.file_url}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all">
+        // ตรวจสอบว่ามีชื่อเล่มแผนไหม
+        const docName = item.main_doc?.doc_name || 'ไม่ระบุเล่มแผน';
+        
+        // ตรงนี้ถ้าคุณมีฟิลด์ URL จริงๆ ในอนาคต ค่อยเปลี่ยนจาก '#' เป็น item.main_doc.your_column_name
+        const pdfButton = `
+            <button class="opacity-30 cursor-not-allowed inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs font-bold">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                PDF
-               </a>`
-            : `<span class="text-slate-300 text-[10px] font-bold uppercase">ไม่มีไฟล์</span>`;
+                NO PDF
+            </button>`;
 
         tr.innerHTML = `
             <td class="px-6 py-5">
                 <div class="font-bold text-slate-800 mb-1 leading-snug">${item.project_name}</div>
                 <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase tracking-tighter">
-                        ${item.project_status || 'ไม่ระบุสถานะ'}
+                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase">
+                        ${item.project_status || 'รออัปเดตสถานะ'}
                     </span>
                 </div>
             </td>
@@ -139,9 +138,9 @@ function renderTable(data) {
                 ${(Number(item.budget_amount) || 0).toLocaleString()}
             </td>
             <td class="px-6 py-5 text-center">
-                ${pdfLink}
-                <div class="mt-1 text-[9px] text-slate-400 font-bold truncate max-w-[120px] mx-auto">
-                    ${item.main_doc?.doc_name || ''}
+                ${pdfButton}
+                <div class="mt-1 text-[9px] text-slate-400 font-bold truncate max-w-[150px] mx-auto">
+                    ${docName}
                 </div>
             </td>
         `;
