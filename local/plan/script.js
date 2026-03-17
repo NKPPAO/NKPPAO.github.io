@@ -319,22 +319,58 @@ function handleFileSelect(file) {
 
 // --- 4. ฟังก์ชันดาวน์โหลด Template ---
 function downloadTemplate() {
-    const data = [
-        ["district", "local_org", "project_name", "budget_amount", "project_status", "main_doc_id", "main_page", "extra_doc_id", "extra_page"]
+    if (typeof XLSX === 'undefined') {
+        alert('กรุณารอโหลดระบบสักครู่ครับ...');
+        return;
+    }
+
+    // กำหนดหัวคอลัมน์เป็นภาษาไทย
+    const headers = [
+        ["อำเภอ", "อปท", "ชื่อโครงการ", "งบประมาณ", "สถานะ", "IDเล่มแผนหลัก", "หน้าในเล่มหลัก", "IDเล่มแผนเสริม", "หน้าในเล่มเสริม"]
     ];
-    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    const ws = XLSX.utils.aoa_to_sheet(headers);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Template");
-    XLSX.writeFile(wb, "budget_import_template.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Template_งบประมาณ");
+
+    XLSX.writeFile(wb, "แบบฟอร์มนำเข้าข้อมูล_อบจ_นครปฐม.xlsx");
 }
 
-// --- 5. ปุ่ม Edit/Delete ในตาราง ---
-// ในฟังก์ชัน renderTable ให้เพิ่มส่วนนี้ลงในแต่ละ Card
-/*
-const adminActions = currentUser ? `
-    <div class="mt-4 flex gap-3 border-t pt-3">
-        <button onclick="editProject('${item.id}')" class="text-[10px] font-bold text-blue-600 hover:underline">แก้ไข</button>
-        <button onclick="deleteProject('${item.id}')" class="text-[10px] font-bold text-rose-500 hover:underline">ลบ</button>
-    </div>
-` : '';
-*/
+async function importToSupabase(items) {
+    // 1. ดึง ID ล่าสุดมาเพื่อรันต่อ (Auto Increment Logic)
+    const { data: maxIdData } = await _supabase
+        .from('plan_projects')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1);
+
+    let lastId = maxIdData && maxIdData.length > 0 ? maxIdData[0].id : 0;
+
+    // 2. แปลงข้อมูลจากหัวภาษาไทย เป็นฟิลด์ภาษาอังกฤษ
+    const cleanData = items.map((item) => {
+        lastId++;
+        return {
+            id: lastId,
+            district: item["อำเภอ"] || "",
+            local_org: item["อปท"] || "",
+            project_name: item["ชื่อโครงการ"] || "",
+            budget_amount: Number(item["งบประมาณ"]) || 0,
+            project_status: item["สถานะ"] || "คงเดิม",
+            main_doc_id: item["IDเล่มแผนหลัก"] || null,
+            main_page: item["หน้าในเล่มหลัก"] || null,
+            extra_doc_id: item["IDเล่มแผนเสริม"] || null,
+            extra_page: item["หน้าในเล่มเสริม"] || null
+        };
+    });
+
+    // 3. Insert ลง Supabase
+    const { error } = await _supabase.from('plan_projects').insert(cleanData);
+
+    if (error) {
+        alert("เกิดข้อผิดพลาด: " + error.message);
+    } else {
+        alert(`นำเข้าข้อมูลสำเร็จ ${cleanData.length} รายการ`);
+        toggleUploadModal();
+        loadData();
+    }
+}
