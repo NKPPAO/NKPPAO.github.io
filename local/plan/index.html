@@ -250,22 +250,48 @@
     </div>
 </div>
     <div id="planManagerModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[120] p-4">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in duration-300">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in duration-300">
         <div class="p-8">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-black text-slate-800">จัดการเล่มแผน</h3>
+                <h3 class="text-xl font-black text-slate-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                    จัดการฐานข้อมูลเล่มแผน
+                </h3>
                 <button onclick="closePlanManager()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
             </div>
 
-            <div class="flex gap-2 mb-6">
-                <input type="text" id="newPlanName" placeholder="ชื่อเล่มแผนใหม่..." class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 text-sm">
-                <button onclick="addNewPlan()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all">เพิ่ม</button>
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 mb-6">
+                <input type="hidden" id="planId">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ชื่อเล่มแผน (DOC_NAME)</label>
+                        <input type="text" id="pDocName" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ลิงก์ PDF (URL)</label>
+                        <input type="text" id="pPdfUrl" class="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 text-sm" placeholder="https://...">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">ประเภท</label>
+                            <select id="pDocType" class="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                                <option value="แผนหลัก">แผนหลัก</option>
+                                <option value="แผนเพิ่มเติม">แผนเพิ่มเติม</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Offset หน้า</label>
+                            <input type="number" id="pOffset" class="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 text-sm" value="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button id="btnSavePlan" onclick="savePlan()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-100">บันทึกข้อมูล</button>
+                    <button id="btnCancelEdit" onclick="resetPlanForm()" class="hidden px-4 py-2 text-slate-400 font-bold text-sm">ยกเลิก</button>
+                </div>
             </div>
 
-            <div class="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar" id="planListContainer">
-                </div>
-            
-            <p class="text-[10px] text-slate-400 mt-4 italic text-center">* การลบเล่มแผนจะไม่ลบโครงการที่อยู่ในเล่มนั้น แต่จะทำให้โครงการไม่มีเล่มสังกัด</p>
+            <div class="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar" id="planListContainer"></div>
         </div>
     </div>
 </div>
