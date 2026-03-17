@@ -100,6 +100,7 @@ function updateSummaryCards(data) {
 
 // 4. ฟังก์ชันวาดแถวตาราง
 function renderTable(data) {
+    console.log("Raw Data from Supabase:", data);
     tableBody.innerHTML = ''; // ล้างตารางก่อนวาดใหม่
 
     if (data.length === 0) {
