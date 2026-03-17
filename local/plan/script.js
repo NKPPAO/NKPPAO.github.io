@@ -145,7 +145,7 @@ function renderTable(data) {
                 <a href="${doc.pdf_url}#page=${actualPdfPage}" target="_blank" 
                    class="inline-flex items-center gap-2 px-3 py-2 ${themeColor} text-white rounded-xl text-[11px] font-bold shadow-sm transition-all hover:brightness-110 active:scale-95">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                    เล่มแผน หน้า ${pageInBook}
+                    ${doc.doc_name} หน้า ${pageInBook}
                 </a>`;
         };
 
@@ -170,42 +170,42 @@ function renderTable(data) {
 
         div.innerHTML = `
             <div class="flex gap-4">
-                <div class="flex-none">
-                    <span class="inline-flex items-center justify-center w-7 h-7 bg-slate-100 text-slate-500 text-[11px] font-bold rounded-lg">
-                        ${rowNumber}
-                    </span>
-                </div>
-
-                <div class="flex flex-col gap-3 flex-1">
-                    <div class="flex justify-between items-start">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                            อ. ${item.district} <span class="mx-1 text-slate-200">/</span> ${item.local_org}
-                        </div>
-                        <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">
-                            ${item.project_status || 'คงเดิม'}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between items-start gap-4">
-                        <div class="text-sm font-bold text-slate-800 leading-snug flex-1">
-                            ${item.project_name}
-                        </div>
-                        <div class="flex-none text-right">
-                            <span class="block text-[10px] text-slate-400 font-bold uppercase">งบประมาณ</span>
-                            <span class="text-sm font-black text-green-600">
-                                ${(Number(item.budget_amount) || 0).toLocaleString()} <span class="text-[10px]">บาท</span>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center mt-1">
-                        <div class="flex flex-wrap gap-2">
-                            ${mainBtn} ${extraBtn}
-                            ${(!mainBtn && !extraBtn) ? '<span class="text-[11px] text-slate-300 italic">ไม่มีข้อมูลไฟล์แนบ</span>' : ''}
-                        </div>
-                        ${adminTools}
-                    </div>
-                </div>
+              <div class="flex-none">
+                  <span class="inline-flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-600 text-lg font-bold rounded-lg">
+                      ${rowNumber}
+                  </span>
+              </div>
+            
+              <div class="flex flex-col gap-3 flex-1">
+                  <div class="flex justify-between items-start">
+                      <div class="text-base font-bold text-blue-600 uppercase tracking-wider">
+                          อ. ${item.district} <span class="mx-1 text-slate-200">/</span> ${item.local_org}
+                      </div>
+                      <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">
+                          ${item.project_status || 'คงเดิม'}
+                      </span>
+                  </div>
+            
+                  <div class="flex justify-between items-start gap-4">
+                      <div class="text-sm font-bold text-slate-600 leading-snug flex-1">
+                          ${item.project_name}
+                      </div>
+                      <!--<div class="flex-none text-right">
+                          <span class="block text-[10px] text-slate-400 font-bold uppercase">งบประมาณ</span>
+                          <span class="text-sm font-black text-green-600">
+                              ${(Number(item.budget_amount) || 0).toLocaleString()} <span class="text-[10px]">บาท</span>
+                          </span>
+                      </div>-->
+                  </div>
+            
+                  <div class="flex justify-between items-center mt-1">
+                      <div class="flex flex-wrap gap-2">
+                          ${mainBtn} ${extraBtn}
+                          ${(!mainBtn && !extraBtn) ? '<span class="text-xs text-slate-300 italic">ไม่มีข้อมูลไฟล์แนบ</span>' : ''}
+                      </div>
+                      ${adminTools}
+                  </div>
+              </div>
             </div>
         `;
         tableBody.appendChild(div);
