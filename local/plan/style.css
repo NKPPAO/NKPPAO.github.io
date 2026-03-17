@@ -1,25 +1,29 @@
 body {
     font-family: 'Sarabun', sans-serif;
-    -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Table Styling */
-thead th {
-    letter-spacing: 0.05em;
+/* ปรับแต่งตารางให้ดูเบาบางแต่แข็งแรง */
+table thead th {
+    background-color: #f1f5f9;
 }
 
-/* Row Animation */
+/* Effect สำหรับแถวตาราง */
 tbody tr {
-    animation: fadeInUp 0.4s ease-out forwards;
+    animation: fadeIn 0.4s ease-out;
 }
 
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(10px); }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
+/* ปรับแต่ง Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #003366; }
+
+/* Focus ของช่องค้นหา */
+input:focus {
+    box-shadow: 0 0 0 4px rgba(0, 51, 102, 0.1);
+}
