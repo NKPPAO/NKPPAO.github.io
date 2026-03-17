@@ -633,3 +633,92 @@ async function saveEdit() {
     btn.disabled = false;
     btn.innerText = "บันทึกการแก้ไข";
 }
+
+// --- Plan Manager Logic ---
+
+function openPlanManager() {
+    document.getElementById('planManagerModal').classList.remove('hidden');
+    renderPlanList();
+}
+
+function closePlanManager() {
+    document.getElementById('planManagerModal').classList.add('hidden');
+}
+
+async function renderPlanList() {
+    const container = document.getElementById('planListContainer');
+    container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs">กำลังโหลด...</p>';
+
+    // ดึงรายชื่อเล่มแผนที่ไม่ซ้ำกันจากตารางโครงการ (หรือจากตารางแยกถ้าคุณมี)
+    // ในที่นี้สมมติว่าดึงจาก column 'plan_doc' ในตารางหลัก
+    const { data, error } = await _supabase
+        .from('projects') // เปลี่ยนชื่อตารางให้ตรงกับของคุณ
+        .select('plan_doc')
+        .not('plan_doc', 'is', null);
+
+    if (error) return console.error(error);
+
+    // กรองเอาเฉพาะชื่อที่ไม่ซ้ำ
+    const uniquePlans = [...new Set(data.map(item => item.plan_doc))].sort();
+
+    container.innerHTML = '';
+    uniquePlans.forEach(planName => {
+        const div = document.createElement('div');
+        div.className = "flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group hover:border-amber-200 transition-all";
+        div.innerHTML = `
+            <span class="text-sm font-medium text-slate-700 truncate mr-2">${planName}</span>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="editPlanName('${planName}')" class="p-1.5 text-blue-500 hover:bg-blue-100 rounded-lg" title="แก้ไข">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                </button>
+                <button onclick="deletePlan('${planName}')" class="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg" title="ลบ">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+async function addNewPlan() {
+    const input = document.getElementById('newPlanName');
+    const name = input.value.trim();
+    if (!name) return;
+
+    // การ "เพิ่มเล่มแผน" ในเชิงโครงสร้างแบบตารางเดียว คือการเพิ่มโครงการตัวอย่าง
+    // หรือถ้าคุณมีตาราง 'plans' แยก ก็ให้ Insert ลงตารางนั้น
+    alert('ระบบจะใช้ชื่อเล่มแผนนี้เมื่อคุณอัปโหลดหรือแก้ไขโครงการ');
+    input.value = '';
+    // หลังจากเพิ่มเสร็จ ให้ Refresh Dropdown
+    await loadInitialData(); 
+}
+
+async function editPlanName(oldName) {
+    const newName = prompt(`แก้ไขชื่อเล่มแผน "${oldName}" เป็น:`, oldName);
+    if (!newName || newName === oldName) return;
+
+    const { error } = await _supabase
+        .from('projects')
+        .update({ plan_doc: newName })
+        .eq('plan_doc', oldName);
+
+    if (!error) {
+        alert('อัปเดตชื่อเล่มแผนในทุกโครงการเรียบร้อย');
+        renderPlanList();
+        loadInitialData(); // อัปเดต Dropdown หน้าหลัก
+    }
+}
+
+async function deletePlan(planName) {
+    if (!confirm(`ยืนยันการลบเล่มแผน "${planName}"? \n*หมายเหตุ: ชื่อเล่มแผนจะหายไปจากโครงการทั้งหมดที่สังกัดเล่มนี้`)) return;
+
+    const { error } = await _supabase
+        .from('projects')
+        .update({ plan_doc: null })
+        .eq('plan_doc', planName);
+
+    if (!error) {
+        renderPlanList();
+        loadInitialData();
+    }
+}
