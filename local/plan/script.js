@@ -396,3 +396,116 @@ async function importToSupabase(items) {
         loadData();
     }
 }
+
+// --- ส่วนเชื่อมต่อปุ่มกับฟังก์ชันอ่านไฟล์ ---
+function processUpload() {
+    if (!selectedExcelFile) {
+        alert("กรุณาเลือกไฟล์ก่อนครับ");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // อ่านข้อมูลเป็น JSON โดยใช้หัวตารางภาษาไทย
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        if (jsonData.length === 0) {
+            alert("ไฟล์ว่างเปล่าหรือหัวตารางไม่ถูกต้อง");
+            return;
+        }
+
+        // ส่งต่อไปยังฟังก์ชันที่คุณเขียนไว้
+        importToSupabase(jsonData);
+    };
+    reader.readAsArrayBuffer(selectedExcelFile);
+}
+
+// ฟังก์ชัน importToSupabase (ใช้ตัวเดิมที่คุณส่งมาได้เลย แต่ปรับ budget เล็กน้อยเผื่อมีลูกน้ำ)
+async function importToSupabase(items) {
+    const { data: maxIdData } = await _supabase
+        .from('plan_projects')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1);
+
+    let lastId = maxIdData && maxIdData.length > 0 ? maxIdData[0].id : 0;
+
+    const cleanData = items.map((item) => {
+        lastId++;
+        return {
+            id: lastId,
+            district: item["อำเภอ"] || "",
+            local_org: item["อปท"] || "",
+            project_name: item["ชื่อโครงการ"] || "",
+            // ปรับตรงนี้: กำจัดเครื่องหมายคอมมาก่อนแปลงเป็นตัวเลข
+            budget_amount: Number(String(item["งบประมาณ"]).replace(/,/g, '')) || 0,
+            project_status: item["สถานะ"] || "คงเดิม",
+            main_doc_id: item["IDเล่มแผนหลัก"] || null,
+            main_page: item["หน้าในเล่มหลัก"] || null,
+            extra_doc_id: item["IDเล่มแผนเสริม"] || null,
+            extra_page: item["หน้าในเล่มเสริม"] || null
+        };
+    });
+
+    const { error } = await _supabase.from('plan_projects').insert(cleanData);
+
+    if (error) {
+        alert("เกิดข้อผิดพลาด: " + error.message);
+    } else {
+        alert(`นำเข้าข้อมูลสำเร็จ ${cleanData.length} รายการ`);
+        toggleUploadModal();
+        loadData();
+        // ล้างค่าไฟล์เดิมออก
+        selectedExcelFile = null;
+        document.getElementById('dropZone').innerHTML = `<p class="text-sm font-bold text-slate-600">ลากไฟล์ Excel มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>`;
+    }
+}
+
+// --- ฟังก์ชันลบ ---
+async function deleteProject(id) {
+    if (!confirm("ยืนยันการลบโครงการนี้?")) return;
+
+    const { error } = await _supabase
+        .from('plan_projects')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        alert("ลบไม่สำเร็จ: " + error.message);
+    } else {
+        alert("ลบข้อมูลสำเร็จ");
+        loadData();
+    }
+}
+
+// --- ฟังก์ชันแก้ไข (ฉบับรวดเร็ว) ---
+async function editProject(id) {
+    const project = allData.find(item => item.id === id);
+    if (!project) return;
+
+    // ใช้ prompt รับค่าใหม่ (หรือจะสร้าง Modal ก็ได้ตามสะดวกครับ)
+    const newName = prompt("แก้ไขชื่อโครงการ:", project.project_name);
+    if (newName === null) return; // กดยกเลิก
+
+    const newBudget = prompt("แก้ไขงบประมาณ:", project.budget_amount);
+
+    const { error } = await _supabase
+        .from('plan_projects')
+        .update({ 
+            project_name: newName,
+            budget_amount: Number(newBudget) || 0 
+        })
+        .eq('id', id);
+
+    if (error) {
+        alert("แก้ไขไม่สำเร็จ: " + error.message);
+    } else {
+        alert("อัปเดตข้อมูลแล้ว");
+        loadData();
+    }
+}
