@@ -42,31 +42,28 @@ async function initDropdowns() {
 
 // 2. ฟังก์ชันโหลดข้อมูลหลัก
 async function loadData() {
-    // แสดงสถานะ Loading
     tableBody.innerHTML = '';
     loading.classList.remove('hidden');
 
-    // รับค่าจาก Filter ต่างๆ
+    // ดึงค่า Filter จากหน้าเว็บ
     const fAmphoe = document.getElementById('sAmphoe').value;
     const fPlanDocId = document.getElementById('sPlanDoc').value;
     const fOpt = document.getElementById('sOpt').value.trim();
     const fProject = document.getElementById('sProject').value.trim();
     const fStatus = document.getElementById('sStatus').value.trim();
 
-    // สร้าง Query เชื่อมตาราง (Join กับ plan_documents)
+    // Query ดึงข้อมูลโครงการ พร้อมข้อมูลเล่มแผน (ทั้งหลักและเสริม)
     let query = _supabase
-    .from('plan_projects')
-    .select(`
-        *,
-        main_doc:main_doc_id(doc_name, pdf_url), 
-        extra_doc:extra_doc_id(doc_name, pdf_url)
-    `);
+        .from('plan_projects')
+        .select(`
+            *,
+            main_doc:main_doc_id(doc_name, pdf_url, page_offset),
+            extra_doc:extra_doc_id(doc_name, pdf_url, page_offset)
+        `);
 
-    // ใส่เงื่อนไขการกรอง (Filter)
+    // ใส่เงื่อนไขการกรอง
     if (fAmphoe) query = query.eq('district', fAmphoe);
-    if (fPlanDocId) {
-        query = query.or(`main_doc_id.eq.${fPlanDocId},extra_doc_id.eq.${fPlanDocId}`);
-    }
+    if (fPlanDocId) query = query.or(`main_doc_id.eq.${fPlanDocId},extra_doc_id.eq.${fPlanDocId}`);
     if (fOpt) query = query.ilike('local_org', `%${fOpt}%`);
     if (fProject) query = query.ilike('project_name', `%${fProject}%`);
     if (fStatus) query = query.ilike('project_status', `%${fStatus}%`);
@@ -74,14 +71,10 @@ async function loadData() {
     const { data, error } = await query.order('id', { ascending: false });
 
     loading.classList.add('hidden');
+    if (error) { console.error(error); return; }
 
-    if (error) {
-        console.error('Error fetching data:', error);
-        return;
-    }
-
-    updateSummaryCards(data); // อัปเดตตัวเลขสรุป
-    renderTable(data);        // วาดตารางข้อมูล
+    updateSummaryCards(data);
+    renderTable(data);
 }
 
 // 3. ฟังก์ชันอัปเดต Card สรุปผล
@@ -100,11 +93,8 @@ function updateSummaryCards(data) {
 
 // 4. ฟังก์ชันวาดแถวตาราง
 function renderTable(data) {
-    console.log("Raw Data from Supabase:", data);
-    tableBody.innerHTML = ''; // ล้างตารางก่อนวาดใหม่
-
     if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="py-20 text-center text-slate-400">ไม่พบข้อมูล</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="4" class="py-20 text-center text-slate-400">ไม่พบข้อมูลโครงการ</td></tr>`;
         return;
     }
 
@@ -112,27 +102,37 @@ function renderTable(data) {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-blue-50/30 transition-colors border-b border-slate-100";
 
-        // ตรวจสอบว่ามีชื่อเล่มแผนไหม
-        const docName = item.main_doc?.doc_name || 'ไม่ระบุเล่มแผน';
-        
-        // ตรงนี้ถ้าคุณมีฟิลด์ URL จริงๆ ในอนาคต ค่อยเปลี่ยนจาก '#' เป็น item.main_doc.your_column_name
-        const fileUrl = item.main_doc?.pdf_url; // ใช้ชื่อคอลัมน์ที่เช็กมา
+        // --- ฟังก์ชันสร้างปุ่ม PDF อัจฉริยะ ---
+        const createPdfButton = (doc, pageInBook, themeColor) => {
+            if (!doc || !doc.pdf_url || !pageInBook) return '';
 
-        const pdfButton = fileUrl 
-            ? `<a href="${fileUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                เปิดเอกสาร
-               </a>`
-            : `<span class="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-300 rounded-xl text-xs font-bold cursor-not-allowed">
-                NO PDF
-               </span>`;
+            // คำนวณหน้า PDF จริง: เลขหน้าในเล่ม + ค่า offset
+            const actualPdfPage = Number(pageInBook) + (Number(doc.page_offset) || 0);
+            const finalUrl = `${doc.pdf_url}#page=${actualPdfPage}`;
+
+            return `
+                <div class="mb-3 last:mb-0 group">
+                    <a href="${finalUrl}" target="_blank" 
+                       class="inline-flex items-center gap-2 px-3 py-1.5 ${themeColor} text-white rounded-lg text-[11px] font-bold transition-all hover:shadow-md active:scale-95 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                        เปิดหน้า ${pageInBook}
+                    </a>
+                    <div class="mt-1 text-[10px] text-slate-500 font-medium leading-tight max-w-[160px]">
+                        <span class="text-slate-400 font-bold uppercase">เล่ม:</span> ${doc.doc_name}
+                    </div>
+                </div>`;
+        };
+
+        // สร้างปุ่มสำหรับแผนหลัก (สีน้ำเงิน) และแผนเสริม (สีส้ม)
+        const mainBtn = createPdfButton(item.main_doc, item.main_page, 'bg-[#0056b3] hover:bg-blue-700');
+        const extraBtn = createPdfButton(item.extra_doc, item.extra_page, 'bg-orange-500 hover:bg-orange-600');
 
         tr.innerHTML = `
             <td class="px-6 py-5">
                 <div class="font-bold text-slate-800 mb-1 leading-snug">${item.project_name}</div>
                 <div class="flex items-center gap-2">
                     <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase">
-                        ${item.project_status || 'รออัปเดตสถานะ'}
+                        ${item.project_status || 'คงเดิม'}
                     </span>
                 </div>
             </td>
@@ -143,17 +143,17 @@ function renderTable(data) {
             <td class="px-6 py-5 text-right font-black text-blue-600 text-base">
                 ${(Number(item.budget_amount) || 0).toLocaleString()}
             </td>
-            <td class="px-6 py-5 text-center">
-                ${pdfButton}
-                <div class="mt-1 text-[9px] text-slate-400 font-bold truncate max-w-[150px] mx-auto">
-                    ${docName}
+            <td class="px-6 py-5">
+                <div class="flex flex-col min-w-[170px]">
+                    ${mainBtn}
+                    ${extraBtn}
+                    ${(!mainBtn && !extraBtn) ? '<span class="text-slate-300 text-[10px] font-bold italic">ไม่พบไฟล์เอกสาร</span>' : ''}
                 </div>
             </td>
         `;
         tableBody.appendChild(tr);
     });
 }
-
 // 5. ฟังก์ชันล้างการค้นหา
 function clearSearch() {
     document.getElementById('sAmphoe').value = "";
