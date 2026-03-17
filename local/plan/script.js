@@ -89,8 +89,10 @@ function updateSummaryCards(data) {
 
 // 4. ฟังก์ชันวาดแถวตาราง
 function renderTable(data) {
-    const tableBody = document.getElementById('dataTableBody');
+    const tableBody = document.getElementById('dataTableBody'); // ดึงมาใหม่ในนี้เพื่อความชัวร์
     if (!tableBody) return;
+
+    tableBody.innerHTML = ''; // ล้างค่าเก่าก่อน
 
     if (data.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="3" class="py-20 text-center text-slate-400">ไม่พบข้อมูลโครงการ</td></tr>`;
