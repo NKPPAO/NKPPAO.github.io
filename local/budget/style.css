@@ -1,7 +1,11 @@
 /* --- ส่วนโครงสร้างป้องกันหน้าจอไถซ้ายขวา --- */
+html {
+    overflow-x: hidden; /* ย้ายมาไว้ที่นี่แทน */
+}
+
 html, body {
     max-width: 100%;
-    overflow-x: hidden;
+    /*overflow-x: hidden;*/
     position: relative;
     background-color: #f8fafc;
 }
