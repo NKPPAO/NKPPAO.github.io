@@ -93,61 +93,68 @@ function renderTable(data) {
     if (!tableBody) return;
     tableBody.innerHTML = '';
 
-    data.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-blue-50/40 transition-colors border-b border-slate-100";
+    if (data.length === 0) {
+        tableBody.innerHTML = `<div class="py-20 text-center text-slate-400">ไม่พบข้อมูลโครงการ</div>`;
+        return;
+    }
 
+    data.forEach(item => {
         // ฟังก์ชันสร้างปุ่ม PDF
         const createPdfButton = (doc, pageInBook, themeColor) => {
             if (!doc || !doc.pdf_url || !pageInBook) return '';
             const actualPdfPage = Number(pageInBook) + (Number(doc.page_offset) || 0);
             return `
                 <a href="${doc.pdf_url}#page=${actualPdfPage}" target="_blank" 
-                   class="inline-flex items-center gap-1 px-2 py-1 ${themeColor} text-white rounded-md text-[10px] font-bold shadow-sm transition-transform hover:scale-105">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                    หน้า ${pageInBook}
+                   class="inline-flex items-center gap-2 px-3 py-2 ${themeColor} text-white rounded-xl text-[11px] font-bold shadow-sm transition-all hover:brightness-110 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                    เล่มแผน หน้า ${pageInBook}
                 </a>`;
         };
 
-        const mainBtn = createPdfButton(item.main_doc, item.main_page, 'bg-blue-700');
+        const mainBtn = createPdfButton(item.main_doc, item.main_page, 'bg-blue-600');
         const extraBtn = createPdfButton(item.extra_doc, item.extra_page, 'bg-orange-500');
 
-        // ตรวจสอบสถานะ Admin (สมมติว่าเช็กจากตัวแปร isAdmin)
-        const isAdmin = false; // เปลี่ยนเป็นเงื่อนไขเช็ก Login ของคุณ
+        // ตรวจสอบสิทธิ์ Admin
+        const isAdmin = false; 
         const adminTools = isAdmin ? `
-            <div class="mt-3 flex justify-end gap-2">
-                <button onclick="editProject('${item.id}')" class="text-[10px] font-bold text-blue-500 hover:text-blue-700 underline">แก้ไข</button>
-                <button onclick="deleteProject('${item.id}')" class="text-[10px] font-bold text-red-500 hover:text-red-700 underline">ลบ</button>
+            <div class="flex gap-4 pt-3 border-t border-slate-50">
+                <button onclick="editProject('${item.id}')" class="text-xs font-bold text-blue-600 hover:text-blue-800">⚙️ แก้ไขข้อมูล</button>
+                <button onclick="deleteProject('${item.id}')" class="text-xs font-bold text-red-500 hover:text-red-700">🗑️ ลบโครงการ</button>
             </div>` : '';
 
-        tr.innerHTML = `
-            <td class="px-4 py-5 align-top">
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-tight mb-1">
-                    อ. ${item.district} <span class="mx-1 text-slate-300">»</span> ${item.local_org}
-                </div>
-                <div class="text-[14px] font-bold text-slate-800 leading-snug mb-3">
-                    ${item.project_name}
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">เอกสารแนบ:</span>
-                    ${mainBtn} ${extraBtn}
-                    ${(!mainBtn && !extraBtn) ? '<span class="text-[10px] text-slate-300 italic">ไม่มีข้อมูลไฟล์</span>' : ''}
-                </div>
-            </td>
+        // สร้าง Item แบบ Card (1 Column)
+        const div = document.createElement('div');
+        div.className = "p-5 hover:bg-slate-50 transition-colors";
 
-            <td class="px-4 py-5 align-top text-right">
-                <div class="mb-1">
-                    <span class="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-full border border-blue-100">
+        div.innerHTML = `
+            <div class="flex flex-col gap-3">
+                <div class="flex justify-between items-start">
+                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        อ. ${item.district} <span class="mx-1 text-slate-200">/</span> ${item.local_org}
+                    </div>
+                    <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">
                         ${item.project_status || 'คงเดิม'}
                     </span>
                 </div>
-                <div class="text-[16px] font-black text-slate-900">
-                    ${(Number(item.budget_amount) || 0).toLocaleString()}
+
+                <div class="text-15px md:text-16px font-bold text-slate-800 leading-snug">
+                    ${item.project_name}
                 </div>
+
+                <div class="text-lg font-black text-[#003366]">
+                    <span class="text-xs font-bold text-slate-400 mr-1 text-sm">งบประมาณ:</span>
+                    ${(Number(item.budget_amount) || 0).toLocaleString()} <span class="text-[10px] font-bold text-slate-400 ml-1">บาท</span>
+                </div>
+
+                <div class="flex flex-wrap gap-2 py-1">
+                    ${mainBtn} ${extraBtn}
+                    ${(!mainBtn && !extraBtn) ? '<span class="text-[11px] text-slate-300 italic">ไม่มีข้อมูลไฟล์แนบ</span>' : ''}
+                </div>
+
                 ${adminTools}
-            </td>
+            </div>
         `;
-        tableBody.appendChild(tr);
+        tableBody.appendChild(div);
     });
 }
 // 5. ฟังก์ชันล้างการค้นหา
