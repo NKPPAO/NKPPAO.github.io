@@ -192,9 +192,10 @@ function renderTable(data) {
                       <div class="text-base font-bold text-blue-600 uppercase tracking-wider">
                           อ. ${item.district} <span class="mx-1 text-slate-200">/</span> ${item.local_org}
                       </div>
-                      <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">
+                      <!--<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">
                           ${item.project_status || 'คงเดิม'}
-                      </span>
+                      </span>-->
+                      ${adminTools}
                   </div>
             
                   <div class="flex justify-between items-start gap-4">
@@ -214,7 +215,7 @@ function renderTable(data) {
                           ${mainBtn} ${extraBtn}
                           ${(!mainBtn && !extraBtn) ? '<span class="text-xs text-slate-300 italic">ไม่มีข้อมูลไฟล์แนบ</span>' : ''}
                       </div>
-                      ${adminTools}
+                      
                   </div>
               </div>
             </div>
