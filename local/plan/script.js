@@ -78,7 +78,7 @@ async function loadData() {
     // เก็บข้อมูลลงตัวแปรหลักและรีเซ็ตหน้าไปที่หน้า 1
     allData = data;
     currentPage = 1;
-
+    console.log("Data received:", data);
     updateSummaryCards(data);
     //renderTable(data);
     displayPage(1);
