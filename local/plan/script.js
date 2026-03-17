@@ -2,57 +2,54 @@ const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- DOM ELEMENTS ---
-const tableBody = document.getElementById('dataTableBody');
-const loading = document.getElementById('loading');
-
 // --- INITIAL LOAD ---
 window.onload = async () => {
-    await initDropdowns(); // สร้าง Dropdown อำเภอ และ เล่มแผน
-    await loadData();      // โหลดข้อมูลลงตาราง
+    // ย้ายการตรวจสอบ DOM มาไว้ที่นี่เพื่อให้แน่ใจว่า HTML โหลดเสร็จแล้ว
+    await initDropdowns(); 
+    await loadData();      
 };
 
-// 1. ฟังก์ชันสร้าง Dropdown อัตโนมัติ (Dynamic Options)
+// 1. ฟังก์ชันสร้าง Dropdown
 async function initDropdowns() {
-    // ดึงรายชื่ออำเภอที่มีในโครงการ และรายชื่อเล่มแผนทั้งหมด
     const [districtsRes, docsRes] = await Promise.all([
         _supabase.from('plan_projects').select('district'),
         _supabase.from('plan_documents').select('id, doc_name')
     ]);
 
-    // สร้าง Dropdown อำเภอ
     const sAmphoe = document.getElementById('sAmphoe');
-    if (districtsRes.data) {
+    const sPlanDoc = document.getElementById('sPlanDoc');
+    const cardTotalDocs = document.getElementById('cardTotalDocs');
+
+    if (districtsRes.data && sAmphoe) {
         const uniqueDistricts = [...new Set(districtsRes.data.map(item => item.district))].filter(Boolean).sort();
         sAmphoe.innerHTML = '<option value="">ทั้งหมด</option>' + 
             uniqueDistricts.map(d => `<option value="${d}">${d}</option>`).join('');
     }
 
-    // สร้าง Dropdown เล่มแผน และนับจำนวนเล่มแผนเพื่อแสดงใน Card
-    const sPlanDoc = document.getElementById('sPlanDoc');
-    if (docsRes.data) {
+    if (docsRes.data && sPlanDoc) {
         sPlanDoc.innerHTML = '<option value="">ทั้งหมด</option>' + 
             docsRes.data.map(doc => `<option value="${doc.id}">${doc.doc_name}</option>`).join('');
-        
-        // อัปเดต Card จำนวนเล่มแผน
-        const cardTotalDocs = document.getElementById('cardTotalDocs');
         if (cardTotalDocs) cardTotalDocs.innerText = docsRes.data.length.toLocaleString();
     }
 }
 
-// 2. ฟังก์ชันโหลดข้อมูลหลัก
 async function loadData() {
+    // ดึง Element ข้างในฟังก์ชันเพื่อป้องกันค่า null
+    const tableBody = document.getElementById('dataTableBody');
+    const loading = document.getElementById('loading');
+
+    if (!tableBody || !loading) return; // Safety check
+
     tableBody.innerHTML = '';
     loading.classList.remove('hidden');
 
-    // ดึงค่า Filter จากหน้าเว็บ
+    // ... ส่วนของ Filter และ Query เหมือนเดิมที่คุณเขียนไว้ ...
     const fAmphoe = document.getElementById('sAmphoe').value;
     const fPlanDocId = document.getElementById('sPlanDoc').value;
     const fOpt = document.getElementById('sOpt').value.trim();
     const fProject = document.getElementById('sProject').value.trim();
     const fStatus = document.getElementById('sStatus').value.trim();
 
-    // Query ดึงข้อมูลโครงการ พร้อมข้อมูลเล่มแผน (ทั้งหลักและเสริม)
     let query = _supabase
         .from('plan_projects')
         .select(`
@@ -61,7 +58,6 @@ async function loadData() {
             extra_doc:extra_doc_id(doc_name, pdf_url, page_offset)
         `);
 
-    // ใส่เงื่อนไขการกรอง
     if (fAmphoe) query = query.eq('district', fAmphoe);
     if (fPlanDocId) query = query.or(`main_doc_id.eq.${fPlanDocId},extra_doc_id.eq.${fPlanDocId}`);
     if (fOpt) query = query.ilike('local_org', `%${fOpt}%`);
@@ -93,6 +89,9 @@ function updateSummaryCards(data) {
 
 // 4. ฟังก์ชันวาดแถวตาราง
 function renderTable(data) {
+    const tableBody = document.getElementById('dataTableBody');
+    if (!tableBody) return;
+
     if (data.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="3" class="py-20 text-center text-slate-400">ไม่พบข้อมูลโครงการ</td></tr>`;
         return;
