@@ -732,3 +732,16 @@ async function deletePlan(id, name) {
     if (!error) renderPlanList();
     else alert('ไม่สามารถลบได้: ' + error.message);
 }
+
+async function openPlanManager() {
+    const modal = document.getElementById('planManagerModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        await renderPlanList(); // โหลดรายการเล่มแผนมาโชว์
+    }
+}
+
+function closePlanManager() {
+    const modal = document.getElementById('planManagerModal');
+    if (modal) modal.classList.add('hidden');
+}
