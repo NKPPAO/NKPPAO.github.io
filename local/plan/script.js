@@ -116,7 +116,7 @@ function renderTable(data) {
         const docName = item.main_doc?.doc_name || 'ไม่ระบุเล่มแผน';
         
         // ตรงนี้ถ้าคุณมีฟิลด์ URL จริงๆ ในอนาคต ค่อยเปลี่ยนจาก '#' เป็น item.main_doc.your_column_name
-        const fileUrl = item.main_doc?.file_path; // ใช้ชื่อคอลัมน์ที่เช็กมา
+        const fileUrl = item.main_doc?.pdf_url; // ใช้ชื่อคอลัมน์ที่เช็กมา
 
         const pdfButton = fileUrl 
             ? `<a href="${fileUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm">
