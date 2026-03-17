@@ -89,61 +89,62 @@ function updateSummaryCards(data) {
 
 // 4. ฟังก์ชันวาดแถวตาราง
 function renderTable(data) {
-    const tableBody = document.getElementById('dataTableBody'); // ดึงมาใหม่ในนี้เพื่อความชัวร์
+    const tableBody = document.getElementById('dataTableBody');
     if (!tableBody) return;
-
-    tableBody.innerHTML = ''; // ล้างค่าเก่าก่อน
-
-    if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="3" class="py-20 text-center text-slate-400">ไม่พบข้อมูลโครงการ</td></tr>`;
-        return;
-    }
+    tableBody.innerHTML = '';
 
     data.forEach(item => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-blue-50/40 transition-colors border-b border-slate-100";
 
-        // ฟังก์ชันสร้างปุ่ม PDF แบบกะทัดรัด (Compact)
+        // ฟังก์ชันสร้างปุ่ม PDF
         const createPdfButton = (doc, pageInBook, themeColor) => {
             if (!doc || !doc.pdf_url || !pageInBook) return '';
             const actualPdfPage = Number(pageInBook) + (Number(doc.page_offset) || 0);
-            const finalUrl = `${doc.pdf_url}#page=${actualPdfPage}`;
-
             return `
-                <a href="${finalUrl}" target="_blank" 
-                   class="inline-flex items-center gap-1 px-2 py-1 ${themeColor} text-white rounded-md text-[10px] font-bold transition-all shadow-sm mb-1 mr-1">
+                <a href="${doc.pdf_url}#page=${actualPdfPage}" target="_blank" 
+                   class="inline-flex items-center gap-1 px-2 py-1 ${themeColor} text-white rounded-md text-[10px] font-bold shadow-sm transition-transform hover:scale-105">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                     หน้า ${pageInBook}
                 </a>`;
         };
 
-        const mainBtn = createPdfButton(item.main_doc, item.main_page, 'bg-[#0056b3]');
+        const mainBtn = createPdfButton(item.main_doc, item.main_page, 'bg-blue-700');
         const extraBtn = createPdfButton(item.extra_doc, item.extra_page, 'bg-orange-500');
 
+        // ตรวจสอบสถานะ Admin (สมมติว่าเช็กจากตัวแปร isAdmin)
+        const isAdmin = false; // เปลี่ยนเป็นเงื่อนไขเช็ก Login ของคุณ
+        const adminTools = isAdmin ? `
+            <div class="mt-3 flex justify-end gap-2">
+                <button onclick="editProject('${item.id}')" class="text-[10px] font-bold text-blue-500 hover:text-blue-700 underline">แก้ไข</button>
+                <button onclick="deleteProject('${item.id}')" class="text-[10px] font-bold text-red-500 hover:text-red-700 underline">ลบ</button>
+            </div>` : '';
+
         tr.innerHTML = `
-            <td class="px-4 py-4 vertical-top">
-                <div class="text-[13px] font-black text-slate-800">อ. ${item.district || '-'}</div>
-                <div class="text-[11px] text-blue-600 font-bold mt-0.5">${item.local_org || '-'}</div>
-            </td>
-
-            <td class="px-4 py-4">
-                <div class="text-[14px] font-bold text-slate-800 leading-snug mb-2">${item.project_name}</div>
-                <div class="flex flex-wrap items-center gap-1">
-                    <span class="text-[10px] font-bold text-slate-400 mr-1 uppercase">เล่มแผน:</span>
+            <td class="px-4 py-5 align-top">
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-tight mb-1">
+                    อ. ${item.district} <span class="mx-1 text-slate-300">»</span> ${item.local_org}
+                </div>
+                <div class="text-[14px] font-bold text-slate-800 leading-snug mb-3">
+                    ${item.project_name}
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">เอกสารแนบ:</span>
                     ${mainBtn} ${extraBtn}
-                    ${(!mainBtn && !extraBtn) ? '<span class="text-[10px] text-slate-300">ไม่มีไฟล์</span>' : ''}
+                    ${(!mainBtn && !extraBtn) ? '<span class="text-[10px] text-slate-300 italic">ไม่มีข้อมูลไฟล์</span>' : ''}
                 </div>
             </td>
 
-            <td class="px-4 py-4 text-right">
-                <div class="text-[15px] font-black text-blue-700">
-                    ${(Number(item.budget_amount) || 0).toLocaleString()}
-                </div>
-                <div class="mt-1">
-                    <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded">
+            <td class="px-4 py-5 align-top text-right">
+                <div class="mb-1">
+                    <span class="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-full border border-blue-100">
                         ${item.project_status || 'คงเดิม'}
                     </span>
                 </div>
+                <div class="text-[16px] font-black text-slate-900">
+                    ${(Number(item.budget_amount) || 0).toLocaleString()}
+                </div>
+                ${adminTools}
             </td>
         `;
         tableBody.appendChild(tr);
