@@ -130,9 +130,7 @@ function renderTable(data) {
 
     // เพิ่ม index เข้ามาใน parameters
     data.forEach((item, index) => {
-        // คำนวณเลขลำดับ (สมมติว่าใช้ตัวแปร currentPage และ itemsPerPage)
-        // ถ้าคุณไม่ได้ทำ Pagination ให้ใช้แค่ index + 1
-        const rowNumber = ((currentPage - 1) * itemsPerPage) + index + 1;
+        const rowNumber = ((currentPage - 1) * rowsPerPage) + index + 1;
 
         // ฟังก์ชันสร้างปุ่ม PDF
         const createPdfButton = (doc, pageInBook, themeColor) => {
