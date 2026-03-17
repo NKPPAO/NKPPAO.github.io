@@ -57,18 +57,19 @@ async function loadData() {
     const fStatus = document.getElementById('sStatus').value.trim();
 
     let query = _supabase
-        .from('plan_projects')
-        .select(`
-            *,
-            main_doc:main_doc_id(doc_name, pdf_url, page_offset),
-            extra_doc:extra_doc_id(doc_name, pdf_url, page_offset)
-        `);
+    .from('plan_projects')
+    .select(`
+        *,
+        main_doc:main_doc_id(doc_name, pdf_url, page_offset),
+        extra_doc:extra_doc_id(doc_name, pdf_url, page_offset)
+    `);
 
-    if (fAmphoe) query = query.eq('district', fAmphoe);
-    if (fPlanDocId) query = query.or(`main_doc_id.eq.${fPlanDocId},extra_doc_id.eq.${fPlanDocId}`);
-    if (fOpt) query = query.ilike('local_org', `%${fOpt}%`);
-    if (fProject) query = query.ilike('project_name', `%${fProject}%`);
-    if (fStatus) query = query.ilike('project_status', `%${fStatus}%`);
+    // เช็คว่าต้องมีค่าจริงๆ ถึงจะกรอง
+    if (fAmphoe && fAmphoe !== "") query = query.eq('district', fAmphoe);
+    if (fPlanDocId && fPlanDocId !== "") query = query.or(`main_doc_id.eq.${fPlanDocId},extra_doc_id.eq.${fPlanDocId}`);
+    if (fOpt && fOpt !== "") query = query.ilike('local_org', `%${fOpt}%`);
+    if (fProject && fProject !== "") query = query.ilike('project_name', `%${fProject}%`);
+    if (fStatus && fStatus !== "") query = query.ilike('project_status', `%${fStatus}%`);
 
     const { data, error } = await query.order('id', { ascending: false });
 
