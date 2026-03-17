@@ -119,6 +119,12 @@ function updateSummaryCards(data) {
 
 // 4. ฟังก์ชันวาดแถวตาราง
 function renderTable(data) {
+    const projectCountEl = document.getElementById('projectCount');
+    if (projectCountEl) {
+        // ใช้ data.length เพื่อแสดงจำนวนที่ "กรองแล้ว" หรือใช้ allData.length ถ้าต้องการยอดรวมทั้งหมด
+        projectCountEl.innerText = data.length.toLocaleString();
+    }
+    
     const tableBody = document.getElementById('dataTableBody');
     if (!tableBody) return;
     tableBody.innerHTML = '';
