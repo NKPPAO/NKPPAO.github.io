@@ -2,94 +2,165 @@ const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// DOM
+// --- DOM ELEMENTS ---
 const tableBody = document.getElementById('dataTableBody');
 const loading = document.getElementById('loading');
-const countProjects = document.getElementById('countProjects');
-const totalBudget = document.getElementById('totalBudget');
-const countDocs = document.getElementById('countDocs');
 
+// --- INITIAL LOAD ---
+window.onload = async () => {
+    await initDropdowns(); // สร้าง Dropdown อำเภอ และ เล่มแผน
+    await loadData();      // โหลดข้อมูลลงตาราง
+};
+
+// 1. ฟังก์ชันสร้าง Dropdown อัตโนมัติ (Dynamic Options)
+async function initDropdowns() {
+    // ดึงรายชื่ออำเภอที่มีในโครงการ และรายชื่อเล่มแผนทั้งหมด
+    const [districtsRes, docsRes] = await Promise.all([
+        _supabase.from('plan_projects').select('district'),
+        _supabase.from('plan_documents').select('id, doc_name')
+    ]);
+
+    // สร้าง Dropdown อำเภอ
+    const sAmphoe = document.getElementById('sAmphoe');
+    if (districtsRes.data) {
+        const uniqueDistricts = [...new Set(districtsRes.data.map(item => item.district))].filter(Boolean).sort();
+        sAmphoe.innerHTML = '<option value="">ทั้งหมด</option>' + 
+            uniqueDistricts.map(d => `<option value="${d}">${d}</option>`).join('');
+    }
+
+    // สร้าง Dropdown เล่มแผน และนับจำนวนเล่มแผนเพื่อแสดงใน Card
+    const sPlanDoc = document.getElementById('sPlanDoc');
+    if (docsRes.data) {
+        sPlanDoc.innerHTML = '<option value="">ทั้งหมด</option>' + 
+            docsRes.data.map(doc => `<option value="${doc.id}">${doc.doc_name}</option>`).join('');
+        
+        // อัปเดต Card จำนวนเล่มแผน
+        const cardTotalDocs = document.getElementById('cardTotalDocs');
+        if (cardTotalDocs) cardTotalDocs.innerText = docsRes.data.length.toLocaleString();
+    }
+}
+
+// 2. ฟังก์ชันโหลดข้อมูลหลัก
 async function loadData() {
+    // แสดงสถานะ Loading
     tableBody.innerHTML = '';
     loading.classList.remove('hidden');
 
-    // ดึงข้อมูลทั้งโครงการและจำนวนเล่มแผน
-    const [projectsRes, docsRes] = await Promise.all([
-        _supabase.from('plan_projects').select('*, main_doc:main_doc_id(*), extra_doc:extra_doc_id(*)'),
-        _supabase.from('plan_documents').select('id', { count: 'exact' })
-    ]);
+    // รับค่าจาก Filter ต่างๆ
+    const fAmphoe = document.getElementById('sAmphoe').value;
+    const fPlanDocId = document.getElementById('sPlanDoc').value;
+    const fOpt = document.getElementById('sOpt').value.trim();
+    const fProject = document.getElementById('sProject').value.trim();
+    const fStatus = document.getElementById('sStatus').value.trim();
+
+    // สร้าง Query เชื่อมตาราง (Join กับ plan_documents)
+    let query = _supabase
+        .from('plan_projects')
+        .select(`
+            *,
+            main_doc:main_doc_id(doc_name, file_url),
+            extra_doc:extra_doc_id(doc_name, file_url)
+        `);
+
+    // ใส่เงื่อนไขการกรอง (Filter)
+    if (fAmphoe) query = query.eq('district', fAmphoe);
+    if (fPlanDocId) {
+        query = query.or(`main_doc_id.eq.${fPlanDocId},extra_doc_id.eq.${fPlanDocId}`);
+    }
+    if (fOpt) query = query.ilike('local_org', `%${fOpt}%`);
+    if (fProject) query = query.ilike('project_name', `%${fProject}%`);
+    if (fStatus) query = query.ilike('project_status', `%${fStatus}%`);
+
+    const { data, error } = await query.order('id', { ascending: false });
 
     loading.classList.add('hidden');
 
-    if (projectsRes.error) return console.error(projectsRes.error);
-
-    let data = projectsRes.data;
-    const keyword = document.getElementById('searchInput').value.trim();
-
-    if (keyword) {
-        data = data.filter(item => 
-            item.project_name.includes(keyword) || 
-            item.district.includes(keyword) || 
-            item.local_org.includes(keyword)
-        );
+    if (error) {
+        console.error('Error fetching data:', error);
+        return;
     }
 
-    // อัปเดต Summary Cards
-    countProjects.innerText = data.length.toLocaleString();
-    countDocs.innerText = docsRes.count || 0;
-    const total = data.reduce((sum, item) => sum + (Number(item.budget_amount) || 0), 0);
-    totalBudget.innerText = total.toLocaleString(undefined, { minimumFractionDigits: 2 });
-
-    renderTable(data);
+    updateSummaryCards(data); // อัปเดตตัวเลขสรุป
+    renderTable(data);        // วาดตารางข้อมูล
 }
 
+// 3. ฟังก์ชันอัปเดต Card สรุปผล
+function updateSummaryCards(data) {
+    const totalBudget = data.reduce((sum, item) => sum + (Number(item.budget_amount) || 0), 0);
+    
+    // อัปเดตงบประมาณรวม
+    document.getElementById('cardTotalBudget').innerText = totalBudget.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    // อัปเดตจำนวนโครงการ
+    document.getElementById('cardTotalProjects').innerText = data.length.toLocaleString();
+}
+
+// 4. ฟังก์ชันวาดแถวตาราง
 function renderTable(data) {
     if (data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="py-20 text-center text-slate-400 font-light">ไม่พบข้อมูลที่ต้องการค้นหา</td></tr>';
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="py-20 text-center text-slate-400 font-medium">
+                    ไม่พบข้อมูลที่ค้นหา
+                </td>
+            </tr>`;
         return;
     }
 
     data.forEach(item => {
-        const row = `
-            <tr class="group hover:bg-blue-50/40 transition-all duration-200">
-                <td class="px-6 py-5">
-                    <div class="text-[15px] font-bold text-slate-800 group-hover:text-blue-700 transition-colors">${item.project_name}</div>
-                    <div class="mt-1">
-                        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold uppercase tracking-tighter border border-slate-200">
-                            ${item.project_status}
-                        </span>
-                    </div>
-                </td>
-                <td class="px-6 py-5">
-                    <div class="text-sm font-semibold text-slate-700">${item.local_org}</div>
-                    <div class="text-xs text-slate-400">อ. ${item.district}</div>
-                </td>
-                <td class="px-6 py-5 text-right font-mono font-bold text-blue-600 text-base">
-                    ${Number(item.budget_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </td>
-                <td class="px-6 py-5">
-                    <div class="flex flex-col gap-2 min-w-[150px]">
-                        ${renderBadge(item.main_doc, item.main_page, 'เล่มหลัก', 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-600')}
-                        ${renderBadge(item.extra_doc, item.extra_page, 'เล่มเสริม', 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-600')}
-                    </div>
-                </td>
-            </tr>
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-blue-50/30 transition-colors border-b border-slate-50";
+
+        // ตรวจสอบข้อมูลไฟล์ PDF (ถ้ามี)
+        const pdfLink = item.main_doc?.file_url 
+            ? `<a href="${item.main_doc.file_url}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                PDF
+               </a>`
+            : `<span class="text-slate-300 text-[10px] font-bold uppercase">ไม่มีไฟล์</span>`;
+
+        tr.innerHTML = `
+            <td class="px-6 py-5">
+                <div class="font-bold text-slate-800 mb-1 leading-snug">${item.project_name}</div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase tracking-tighter">
+                        ${item.project_status || 'ไม่ระบุสถานะ'}
+                    </span>
+                </div>
+            </td>
+            <td class="px-6 py-5">
+                <div class="text-sm font-bold text-slate-700">${item.local_org || '-'}</div>
+                <div class="text-xs text-slate-400">อ. ${item.district || '-'}</div>
+            </td>
+            <td class="px-6 py-5 text-right font-black text-blue-600 text-base">
+                ${(Number(item.budget_amount) || 0).toLocaleString()}
+            </td>
+            <td class="px-6 py-5 text-center">
+                ${pdfLink}
+                <div class="mt-1 text-[9px] text-slate-400 font-bold truncate max-w-[120px] mx-auto">
+                    ${item.main_doc?.doc_name || ''}
+                </div>
+            </td>
         `;
-        tableBody.insertAdjacentHTML('beforeend', row);
+        tableBody.appendChild(tr);
     });
 }
 
-function renderBadge(doc, page, label, styles) {
-    if (!doc) return '';
-    const finalPage = page + (doc.page_offset || 0);
-    return `
-        <a href="${doc.pdf_url}#page=${finalPage}" target="_blank" 
-           class="flex items-center justify-between px-3 py-1.5 border rounded-lg text-[10px] font-bold transition-all hover:text-white ${styles}">
-            <span>${label} น.${page}</span>
-            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path></svg>
-        </a>
-    `;
+// 5. ฟังก์ชันล้างการค้นหา
+function clearSearch() {
+    document.getElementById('sAmphoe').value = "";
+    document.getElementById('sPlanDoc').value = "";
+    document.getElementById('sOpt').value = "";
+    document.getElementById('sProject').value = "";
+    document.getElementById('sStatus').value = "";
+    loadData();
 }
 
-document.getElementById('searchBtn').addEventListener('click', loadData);
-window.onload = loadData;
+// 6. ฟังก์ชันส่งออก Excel (เบื้องต้น)
+function exportToExcel() {
+    // คุณสามารถเพิ่ม Library SheetJS เพื่อทำงานส่วนนี้ต่อได้
+    alert('ระบบกำลังเตรียมไฟล์ข้อมูล...');
+}
