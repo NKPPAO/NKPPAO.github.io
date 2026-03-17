@@ -121,8 +121,7 @@ function updateSummaryCards(data) {
 function renderTable(data) {
     const projectCountEl = document.getElementById('projectCount');
     if (projectCountEl) {
-        // ใช้ data.length เพื่อแสดงจำนวนที่ "กรองแล้ว" หรือใช้ allData.length ถ้าต้องการยอดรวมทั้งหมด
-        projectCountEl.innerText = data.length.toLocaleString();
+        projectCountEl.innerText = allData.length.toLocaleString();
     }
     
     const tableBody = document.getElementById('dataTableBody');
