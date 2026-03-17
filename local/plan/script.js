@@ -17,6 +17,8 @@ async function loadData() {
             main_doc:main_doc_id (doc_name, pdf_url, page_offset),
             extra_doc:extra_doc_id (doc_name, pdf_url, page_offset)
         `);
+    console.log("Data from Supabase:", data); // <-- เพิ่มบรรทัดนี้เพื่อเช็คข้อมูลใน Console (F12)
+    console.log("Error if any:", error);      // <-- เช็คว่า Error เรื่อง Permission (RLS) หรือไม่
 
     if (error) {
         console.error('Error:', error);
