@@ -2,6 +2,10 @@ const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+let allData = []; // เก็บข้อมูลทั้งหมดที่โหลดมา
+let currentPage = 1;
+const rowsPerPage = 10; // กำหนดจำนวนรายการต่อหน้า
+
 // --- INITIAL LOAD ---
 window.onload = async () => {
     // ย้ายการตรวจสอบ DOM มาไว้ที่นี่เพื่อให้แน่ใจว่า HTML โหลดเสร็จแล้ว
@@ -68,6 +72,10 @@ async function loadData() {
 
     loading.classList.add('hidden');
     if (error) { console.error(error); return; }
+
+    // เก็บข้อมูลลงตัวแปรหลักและรีเซ็ตหน้าไปที่หน้า 1
+    allData = data;
+    currentPage = 1;
 
     updateSummaryCards(data);
     renderTable(data);
@@ -165,6 +173,54 @@ function clearSearch() {
     document.getElementById('sProject').value = "";
     document.getElementById('sStatus').value = "";
     loadData();
+}
+
+function displayPage(page) {
+    const tableBody = document.getElementById('dataTableBody');
+    tableBody.innerHTML = '';
+    
+    // คำนวณจุดเริ่มต้นและจุดสิ้นสุดของข้อมูลในหน้านั้นๆ
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const paginatedItems = allData.slice(start, end);
+
+    // ส่งข้อมูลที่ตัดแล้วไปวาด Card (ฟังก์ชัน renderTable เดิมของคุณ)
+    renderTable(paginatedItems); 
+
+    // สร้างปุ่มเปลี่ยนหน้า
+    renderPagination();
+}
+
+function renderPagination() {
+    const paginationContainer = document.getElementById('pagination'); // ต้องเพิ่ม ID นี้ใน HTML
+    if (!paginationContainer) return;
+    
+    paginationContainer.innerHTML = '';
+    const pageCount = Math.ceil(allData.length / rowsPerPage);
+
+    if (pageCount <= 1) return; // ถ้ามีหน้าเดียวไม่ต้องโชว์ปุ่ม
+
+    // สร้างปุ่ม "ก่อนหน้า"
+    const prevBtn = document.createElement('button');
+    prevBtn.innerText = 'ก่อนหน้า';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.className = `px-4 py-2 rounded-lg text-xs font-bold ${currentPage === 1 ? 'bg-slate-100 text-slate-400' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`;
+    prevBtn.onclick = () => { currentPage--; displayPage(currentPage); window.scrollTo(0,0); };
+    paginationContainer.appendChild(prevBtn);
+
+    // แสดงข้อความ "หน้า X จาก Y"
+    const pageInfo = document.createElement('span');
+    pageInfo.innerText = `หน้า ${currentPage} / ${pageCount}`;
+    pageInfo.className = 'text-xs font-bold text-slate-500 px-4';
+    paginationContainer.appendChild(pageInfo);
+
+    // สร้างปุ่ม "ถัดไป"
+    const nextBtn = document.createElement('button');
+    nextBtn.innerText = 'ถัดไป';
+    nextBtn.disabled = currentPage === pageCount;
+    nextBtn.className = `px-4 py-2 rounded-lg text-xs font-bold ${currentPage === pageCount ? 'bg-slate-100 text-slate-400' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`;
+    nextBtn.onclick = () => { currentPage++; displayPage(currentPage); window.scrollTo(0,0); };
+    paginationContainer.appendChild(nextBtn);
 }
 
 // 6. ฟังก์ชันส่งออก Excel (เบื้องต้น)
