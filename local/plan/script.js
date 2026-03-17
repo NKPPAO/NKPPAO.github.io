@@ -2,6 +2,8 @@ const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+let currentUser = null;
+let inactivityTimer;
 let allData = []; // เก็บข้อมูลทั้งหมดที่โหลดมา
 let currentPage = 1;
 const rowsPerPage = 10; // กำหนดจำนวนรายการต่อหน้า
@@ -228,3 +230,111 @@ function exportToExcel() {
     // คุณสามารถเพิ่ม Library SheetJS เพื่อทำงานส่วนนี้ต่อได้
     alert('ระบบกำลังเตรียมไฟล์ข้อมูล...');
 }
+
+// --- 1. ระบบ Login/Logout (Supabase Auth) ---
+async function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        alert("เข้าสู่ระบบไม่สำเร็จ: " + error.message);
+    } else {
+        currentUser = data.user;
+        toggleLoginModal();
+        checkAuthState();
+        alert("ยินดีต้อนรับ ผู้ดูแลระบบ");
+    }
+}
+
+async function handleLogout() {
+    await _supabase.auth.signOut();
+    currentUser = null;
+    checkAuthState();
+    alert("ออกจากระบบแล้ว");
+}
+
+function checkAuthState() {
+    const adminControls = document.getElementById('adminControls');
+    const btnLoginMain = document.getElementById('btnLoginMain');
+
+    if (currentUser) {
+        adminControls.classList.remove('hidden');
+        btnLoginMain.classList.add('hidden'); // ซ่อนปุ่มล็อคอินเดิม
+        resetInactivityTimer(); // เริ่มนับเวลาถอยหลัง
+    } else {
+        adminControls.classList.add('hidden');
+        btnLoginMain.classList.remove('hidden');
+        clearTimeout(inactivityTimer);
+    }
+    loadData(); // รีโหลดตารางเพื่อซ่อน/แสดงปุ่ม Edit
+}
+
+// --- 2. ระบบ Auto Logout (10 นาที) ---
+function resetInactivityTimer() {
+    if (!currentUser) return;
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        alert("คุณไม่มีการเคลื่อนไหวนานเกิน 10 นาที ระบบจะออกจากระบบอัตโนมัติเพื่อความปลอดภัย");
+        handleLogout();
+    }, 10 * 60 * 1000); // 10 นาที
+}
+
+// ตรวจจับการเคลื่อนไหว
+['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(evt => {
+    window.addEventListener(evt, resetInactivityTimer);
+});
+
+// --- 3. Drag & Drop Upload ---
+function toggleUploadModal() { document.getElementById('uploadModal').classList.toggle('hidden'); }
+function toggleLoginModal() { document.getElementById('loginModal').classList.toggle('hidden'); }
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('excelFileInput');
+
+dropZone.onclick = () => fileInput.click();
+
+dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500', 'bg-blue-50'); };
+dropZone.ondragleave = () => { dropZone.classList.remove('border-blue-500', 'bg-blue-50'); };
+dropZone.ondrop = (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+    const file = e.dataTransfer.files[0];
+    handleFileSelect(file);
+};
+
+fileInput.onchange = (e) => handleFileSelect(e.target.files[0]);
+
+let selectedExcelFile = null;
+function handleFileSelect(file) {
+    if (file && file.name.endsWith('.xlsx')) {
+        selectedExcelFile = file;
+        dropZone.innerHTML = `<p class="text-blue-600 font-bold">เตรียมพร้อม: ${file.name}</p>`;
+        document.getElementById('btnProcessUpload').classList.remove('hidden');
+    } else {
+        alert("กรุณาเลือกไฟล์ .xlsx เท่านั้น");
+    }
+}
+
+// --- 4. ฟังก์ชันดาวน์โหลด Template ---
+function downloadTemplate() {
+    const data = [
+        ["district", "local_org", "project_name", "budget_amount", "project_status", "main_doc_id", "main_page", "extra_doc_id", "extra_page"]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "budget_import_template.xlsx");
+}
+
+// --- 5. ปุ่ม Edit/Delete ในตาราง ---
+// ในฟังก์ชัน renderTable ให้เพิ่มส่วนนี้ลงในแต่ละ Card
+/*
+const adminActions = currentUser ? `
+    <div class="mt-4 flex gap-3 border-t pt-3">
+        <button onclick="editProject('${item.id}')" class="text-[10px] font-bold text-blue-600 hover:underline">แก้ไข</button>
+        <button onclick="deleteProject('${item.id}')" class="text-[10px] font-bold text-rose-500 hover:underline">ลบ</button>
+    </div>
+` : '';
+*/
