@@ -105,13 +105,13 @@ async function loadData() {
 }
 // 3. ฟังก์ชันอัปเดต Card สรุปผล
 function updateSummaryCards(data) {
-    const totalBudget = data.reduce((sum, item) => sum + (Number(item.budget_amount) || 0), 0);
+    //const totalBudget = data.reduce((sum, item) => sum + (Number(item.budget_amount) || 0), 0);
     
     // อัปเดตงบประมาณรวม
-    document.getElementById('cardTotalBudget').innerText = totalBudget.toLocaleString(undefined, {
+    /*document.getElementById('cardTotalBudget').innerText = totalBudget.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-    });
+    });*/
     
     // อัปเดตจำนวนโครงการ
     document.getElementById('cardTotalProjects').innerText = data.length.toLocaleString();
