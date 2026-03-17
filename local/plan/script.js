@@ -80,7 +80,8 @@ async function loadData() {
     currentPage = 1;
 
     updateSummaryCards(data);
-    renderTable(data);
+    //renderTable(data);
+    displayPage(1);
 }
 
 // 3. ฟังก์ชันอัปเดต Card สรุปผล
@@ -174,6 +175,8 @@ function clearSearch() {
     document.getElementById('sOpt').value = "";
     document.getElementById('sProject').value = "";
     document.getElementById('sStatus').value = "";
+    
+    currentPage = 1; // เพิ่มบรรทัดนี้
     loadData();
 }
 
