@@ -132,20 +132,15 @@
 </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-[#003366] text-xs font-bold uppercase tracking-wider">
-                            <th class="px-6 py-5">ข้อมูลโครงการ / สถานะ</th>
-                            <th class="px-6 py-5">อปท. / อำเภอ</th>
-                            <th class="px-6 py-5 text-right">งบประมาณ</th>
-                            <th class="px-6 py-5 text-center">อ้างอิงเล่มแผน PDF</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dataTableBody" class="divide-y divide-slate-100">
-                        </tbody>
-                </table>
-            </div>
+            <thead class="bg-slate-50 border-b border-slate-200 text-[#003366] text-xs font-bold uppercase tracking-wider">
+                <tr>
+                    <th class="px-4 py-5 w-1/4 md:w-1/6">อำเภอ / อปท.</th>
+                    <th class="px-4 py-5 w-2/4 md:w-auto">รายละเอียดโครงการ / แผน</th>
+                    <th class="px-4 py-5 w-1/4 text-right">งบประมาณ / สถานะ</th>
+                </tr>
+            </thead>
+            <tbody id="dataTableBody" class="divide-y divide-slate-100">
+                </tbody>
             <div id="loading" class="hidden py-20 text-center">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
                 <p class="mt-4 text-slate-500 font-medium">กำลังรวบรวมข้อมูลแผนพัฒนา...</p>
