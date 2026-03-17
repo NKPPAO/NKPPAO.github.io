@@ -10,12 +10,11 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-[#f8fafc] text-slate-800">
-
-    <nav class="bg-gradient-to-r from-[#003366] to-[#004a99] text-white py-5 px-6 shadow-lg border-b-4 border-amber-400">
+<nav class=" bg-white/80 backdrop-blur-md text-[#0056b3] py-5 px-6 shadow-lg border-b-4 border-[#0056b3]">
     <div class="container mx-auto">
         <div class="flex items-center space-x-4">
-            <div class="p-2 bg-white rounded-full shadow-inner flex items-center justify-center w-12 h-12">
-                <img src="https://nkppao.github.io/local/budget/img/logo.png" alt="Logo" class="w-10 h-10 object-contain">
+            <div class="bg-white rounded-full flex items-center justify-center w-12 h-12">
+                <img src="https://nkppao.github.io/logonkp.png" alt="Logo" class="w-10 h-10 object-contain">
             </div>
             <div>
                 <h1 class="text-xl md:text-2xl font-bold leading-tight">ระบบค้นหาโครงการแผนพัฒนาท้องถิ่น</h1>
@@ -24,54 +23,113 @@
         </div>
     </div>
 </nav>
-
-    <main class="container mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-8 border-blue-600 flex justify-between items-center">
-                <div>
-                    <p class="text-sm font-medium text-slate-500 uppercase">โครงการทั้งหมด</p>
-                    <h2 id="countProjects" class="text-3xl font-bold text-slate-800">0</h2>
-                </div>
-                <div class="bg-blue-50 p-3 rounded-full text-blue-600">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                </div>
+ <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mb-10">
+    
+    <div class="relative overflow-hidden bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/60 hover:shadow-[0_30px_60px_rgba(0,0,0,0.1)] transition-all duration-500 group">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors"></div>
+        <div class="relative flex items-center gap-6">
+            <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-8 border-emerald-500 flex justify-between items-center">
-                <div>
-                    <p class="text-sm font-medium text-slate-500 uppercase">งบประมาณรวม</p>
-                    <h2 id="totalBudget" class="text-2xl font-bold text-slate-800">0.00</h2>
-                </div>
-                <div class="bg-emerald-50 p-3 rounded-full text-emerald-600">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-8 border-amber-500 flex justify-between items-center">
-                <div>
-                    <p class="text-sm font-medium text-slate-500 uppercase">จำนวนเล่มแผน</p>
-                    <h2 id="countDocs" class="text-3xl font-bold text-slate-800">0</h2>
-                </div>
-                <div class="bg-amber-50 p-3 rounded-full text-amber-600">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            <div>
+                <p class="text-slate-500 text-[15px] font-bold uppercase tracking-[0.15em] mb-1">งบประมาณรวมทั้งสิ้น</p>
+                <div class="flex items-baseline gap-2">
+                    <h2 id="cardTotalBudget" class="text-2xl font-black text-slate-800 tracking-tight transition-all">0.00</h2>
+                    <span class="text-slate-400 text-xs font-bold">บาท</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-3">
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </span>
-                        <input type="text" id="searchInput" placeholder="พิมพ์ชื่อโครงการ, อปท. หรือ อำเภอ เพื่อค้นหา..." 
-                            class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
-                    </div>
+    <div class="relative overflow-hidden bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/60 hover:shadow-[0_30px_60px_rgba(0,0,0,0.1)] transition-all duration-500 group">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-colors"></div>
+        <div class="relative flex items-center gap-6">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+            </div>
+            <div>
+                <p class="text-slate-500 text-[15px] font-bold uppercase tracking-[0.15em] mb-1">จำนวนโครงการ</p>
+                <div class="flex items-baseline gap-2">
+                    <h2 id="cardTotalProjects" class="text-2xl font-black text-slate-800 tracking-tight transition-all">0</h2>
+                    <span class="text-slate-400 text-xs font-bold">โครงการ</span>
                 </div>
-                <button id="searchBtn" class="bg-[#003366] hover:bg-[#002244] text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md flex items-center justify-center space-x-2">
-                    <span>ค้นหาข้อมูล</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="relative overflow-hidden bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/60 hover:shadow-[0_30px_60px_rgba(0,0,0,0.1)] transition-all duration-500 group">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-colors"></div>
+        <div class="relative flex items-center gap-6">
+            <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <div>
+                <p class="text-slate-500 text-[15px] font-bold uppercase tracking-[0.15em] mb-1">จำนวนเล่มแผน</p>
+                <div class="flex items-baseline gap-2">
+                    <h2 id="cardTotalDocs" class="text-2xl font-black text-slate-800 tracking-tight transition-all">0</h2>
+                    <span class="text-slate-400 text-xs font-bold">เล่ม</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+        <div class="bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm p-4 md:p-8 mb-12 border border-slate-100">
+    <div class="flex flex-col xl:flex-row items-end gap-4">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 flex-grow w-full">
+            <div class="space-y-1">
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">อำเภอ</label>
+                <select id="sAmphoe" onchange="loadData()" class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] font-medium appearance-none shadow-sm cursor-pointer">
+                    <option value="">กำลังโหลด...</option>
+                </select>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">เล่มแผน</label>
+                <select id="sPlanDoc" onchange="loadData()" class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] font-medium appearance-none shadow-sm cursor-pointer">
+                    <option value="">ทั้งหมด</option>
+                </select>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">อปท.</label>
+                <input type="text" id="sOpt" onkeyup="loadData()" placeholder="ระบุ อบต./เทศบาล..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
+            </div>
+
+            <div class="space-y-1 lg:col-span-1">
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">ชื่อโครงการ</label>
+                <input type="text" id="sProject" onkeyup="loadData()" placeholder="พิมพ์ชื่อโครงการ..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">สถานะ</label>
+                <input type="text" id="sStatus" onkeyup="loadData()" placeholder="สถานะโครงการ..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2 pb-0.5 w-full xl:w-auto justify-end border-t xl:border-t-0 pt-4 xl:pt-0">
+            <div class="relative group inline-block">
+                <button onclick="exportToExcel()" class="w-11 h-11 flex items-center justify-center bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white rounded-xl transition-all duration-300 border border-emerald-100 active:scale-95 shadow-sm group/btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </button>
+            </div>
+            <div class="relative group inline-block">
+                <button onclick="clearSearch()" class="w-11 h-11 flex items-center justify-center bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-xl transition-all duration-300 border border-slate-100 active:scale-90 group-hover:rotate-180">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 </button>
             </div>
         </div>
+    </div>
+</div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="overflow-x-auto">
@@ -94,6 +152,17 @@
             </div>
         </div>
     </main>
+
+    <footer class="bg-white/30 backdrop-blur-md border-t border-slate-100 py-6">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <p class="text-sm font-bold text-slate-800 mb-2">© 2026 องค์การบริหารส่วนจังหวัดนครปฐม</p>
+        <p class="text-xs text-slate-400 mb-6">ฝ่ายนโยบายและแผนงาน กองยุทธศาสตร์และงบประมาณ</p>
+        <button id="btnLoginMain" onclick="toggleLoginModal()" class="inline-flex items-center gap-2 text-slate-300 hover:text-blue-600 transition-all font-bold text-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+            ADMIN LOGIN
+        </button>
+    </div>
+</footer>
 
     <script src="script.js"></script>
 </body>
