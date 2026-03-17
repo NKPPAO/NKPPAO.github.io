@@ -483,29 +483,44 @@ async function deleteProject(id) {
     }
 }
 
-// --- ฟังก์ชันแก้ไข (ฉบับรวดเร็ว) ---
+// --- ฟังก์ชันควบคุม Edit Modal ---
+function toggleEditModal() {
+    document.getElementById('editModal').classList.toggle('hidden');
+}
+
+// 1. ฟังก์ชันเปิด Modal พร้อมดึงข้อมูลเดิมมาใส่
 async function editProject(id) {
     const project = allData.find(item => item.id === id);
     if (!project) return;
 
-    // ใช้ prompt รับค่าใหม่ (หรือจะสร้าง Modal ก็ได้ตามสะดวกครับ)
-    const newName = prompt("แก้ไขชื่อโครงการ:", project.project_name);
-    if (newName === null) return; // กดยกเลิก
+    // ใส่ข้อมูลเดิมลงใน Form
+    document.getElementById('editId').value = project.id;
+    document.getElementById('editProjectName').value = project.project_name;
+    document.getElementById('editBudget').value = project.budget_amount;
+    document.getElementById('editStatus').value = project.project_status || "คงเดิม";
 
-    const newBudget = prompt("แก้ไขงบประมาณ:", project.budget_amount);
+    toggleEditModal();
+}
+
+// 2. ฟังก์ชันบันทึกข้อมูลที่แก้ไขลง Supabase
+async function saveEdit() {
+    const id = document.getElementById('editId').value;
+    const updatedData = {
+        project_name: document.getElementById('editProjectName').value,
+        budget_amount: parseFloat(document.getElementById('editBudget').value) || 0,
+        project_status: document.getElementById('editStatus').value
+    };
 
     const { error } = await _supabase
         .from('plan_projects')
-        .update({ 
-            project_name: newName,
-            budget_amount: Number(newBudget) || 0 
-        })
+        .update(updatedData)
         .eq('id', id);
 
     if (error) {
         alert("แก้ไขไม่สำเร็จ: " + error.message);
     } else {
-        alert("อัปเดตข้อมูลแล้ว");
-        loadData();
+        alert("อัปเดตข้อมูลสำเร็จ ✨");
+        toggleEditModal(); // ปิด Modal
+        loadData(); // รีโหลดตารางใหม่
     }
 }
