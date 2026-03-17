@@ -125,13 +125,13 @@ function renderTable(data) {
         const extraBtn = createPdfButton(item.extra_doc, item.extra_page, 'bg-orange-500');
 
         // ตรวจสอบสิทธิ์ Admin
-        const isAdmin = false; 
-        const adminTools = isAdmin ? `
-            <div class="flex gap-4 pt-3 border-t border-slate-50">
-                <button onclick="editProject('${item.id}')" class="text-xs font-bold text-blue-600 hover:text-blue-800">⚙️ แก้ไขข้อมูล</button>
-                <button onclick="deleteProject('${item.id}')" class="text-xs font-bold text-red-500 hover:text-red-700">🗑️ ลบโครงการ</button>
-            </div>` : '';
-
+        const adminTools = currentUser ? `
+    <div class="mt-4 flex gap-3 border-t pt-3">
+        <button onclick="editProject('${item.id}')" class="text-[10px] font-bold text-blue-600 hover:underline">แก้ไข</button>
+        <button onclick="deleteProject('${item.id}')" class="text-[10px] font-bold text-rose-500 hover:underline">ลบ</button>
+    </div>
+` : '';
+        
         // สร้าง Item แบบ Card (1 Column)
         const div = document.createElement('div');
         div.className = "p-5 hover:bg-slate-50 transition-colors";
