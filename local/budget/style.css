@@ -172,3 +172,9 @@ body {
 #pagination-controls button:active {
     transform: scale(0.9);
 }
+
+/* ปรับแต่ง Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #003366; }
