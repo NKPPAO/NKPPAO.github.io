@@ -40,51 +40,69 @@ async function initDropdowns() {
 }
 
 async function loadData() {
-    // ดึง Element ข้างในฟังก์ชันเพื่อป้องกันค่า null
     const tableBody = document.getElementById('dataTableBody');
     const loading = document.getElementById('loading');
 
-    if (!tableBody || !loading) return; // Safety check
+    if (!tableBody || !loading) return;
 
     tableBody.innerHTML = '';
     loading.classList.remove('hidden');
 
-    // ... ส่วนของ Filter และ Query เหมือนเดิมที่คุณเขียนไว้ ...
+    // 1. ดึงค่าจาก Filter และตัดช่องว่างออก
     const fAmphoe = document.getElementById('sAmphoe').value;
     const fPlanDocId = document.getElementById('sPlanDoc').value;
     const fOpt = document.getElementById('sOpt').value.trim();
     const fProject = document.getElementById('sProject').value.trim();
     const fStatus = document.getElementById('sStatus').value.trim();
 
+    // 2. เริ่มต้น Query แบบดึงทั้งหมด
     let query = _supabase
-    .from('plan_projects')
-    .select(`
-        *,
-        main_doc:main_doc_id(doc_name, pdf_url, page_offset),
-        extra_doc:extra_doc_id(doc_name, pdf_url, page_offset)
-    `);
+        .from('plan_projects')
+        .select(`
+            *,
+            main_doc:main_doc_id(doc_name, pdf_url, page_offset),
+            extra_doc:extra_doc_id(doc_name, pdf_url, page_offset)
+        `);
 
-    // เช็คว่าต้องมีค่าจริงๆ ถึงจะกรอง
-    if (fAmphoe && fAmphoe !== "") query = query.eq('district', fAmphoe);
-    if (fPlanDocId && fPlanDocId !== "") query = query.or(`main_doc_id.eq.${fPlanDocId},extra_doc_id.eq.${fPlanDocId}`);
-    if (fOpt && fOpt !== "") query = query.ilike('local_org', `%${fOpt}%`);
-    if (fProject && fProject !== "") query = query.ilike('project_name', `%${fProject}%`);
-    if (fStatus && fStatus !== "") query = query.ilike('project_status', `%${fStatus}%`);
+    // 3. ตรวจสอบว่า "มีค่าจริงๆ" ถึงจะใส่ Filter (สำคัญมาก!)
+    if (fAmphoe && fAmphoe !== "") {
+        query = query.eq('district', fAmphoe);
+    }
+    
+    if (fPlanDocId && fPlanDocId !== "") {
+        query = query.or(`main_doc_id.eq.${fPlanDocId},extra_doc_id.eq.${fPlanDocId}`);
+    }
 
+    if (fOpt !== "") {
+        query = query.ilike('local_org', `%${fOpt}%`);
+    }
+
+    if (fProject !== "") {
+        query = query.ilike('project_name', `%${fProject}%`);
+    }
+
+    if (fStatus !== "") {
+        query = query.ilike('project_status', `%${fStatus}%`);
+    }
+
+    // 4. สั่ง Execution
     const { data, error } = await query.order('id', { ascending: false });
 
     loading.classList.add('hidden');
-    if (error) { console.error(error); return; }
+    
+    if (error) { 
+        console.error("Supabase Error:", error); 
+        return; 
+    }
 
-    // เก็บข้อมูลลงตัวแปรหลักและรีเซ็ตหน้าไปที่หน้า 1
-    allData = data;
+    console.log("Data received:", data); // ตรวจสอบอีกครั้ง
+
+    allData = data || [];
     currentPage = 1;
-    console.log("Data received:", data);
-    updateSummaryCards(data);
-    //renderTable(data);
-    displayPage(1);
-}
 
+    updateSummaryCards(allData);
+    displayPage(1); 
+}
 // 3. ฟังก์ชันอัปเดต Card สรุปผล
 function updateSummaryCards(data) {
     const totalBudget = data.reduce((sum, item) => sum + (Number(item.budget_amount) || 0), 0);
