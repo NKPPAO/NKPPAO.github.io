@@ -58,8 +58,8 @@ async function loadData() {
     .from('plan_projects')
     .select(`
         *,
-        main_doc:main_doc_id(doc_name),
-        extra_doc:extra_doc_id(doc_name)
+        main_doc:main_doc_id(doc_name, pdf_url), 
+        extra_doc:extra_doc_id(doc_name, pdf_url)
     `);
 
     // ใส่เงื่อนไขการกรอง (Filter)
@@ -115,11 +115,16 @@ function renderTable(data) {
         const docName = item.main_doc?.doc_name || 'ไม่ระบุเล่มแผน';
         
         // ตรงนี้ถ้าคุณมีฟิลด์ URL จริงๆ ในอนาคต ค่อยเปลี่ยนจาก '#' เป็น item.main_doc.your_column_name
-        const pdfButton = `
-            <button class="opacity-30 cursor-not-allowed inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs font-bold">
+        const fileUrl = item.main_doc?.file_path; // ใช้ชื่อคอลัมน์ที่เช็กมา
+
+        const pdfButton = fileUrl 
+            ? `<a href="${fileUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                เปิดเอกสาร
+               </a>`
+            : `<span class="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-300 rounded-xl text-xs font-bold cursor-not-allowed">
                 NO PDF
-            </button>`;
+               </span>`;
 
         tr.innerHTML = `
             <td class="px-6 py-5">
