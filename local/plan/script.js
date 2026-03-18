@@ -394,8 +394,80 @@ function renderPagination() {
 
 // 6. ฟังก์ชันส่งออก Excel (เบื้องต้น)
 function exportToExcel() {
-    // คุณสามารถเพิ่ม Library SheetJS เพื่อทำงานส่วนนี้ต่อได้
-    alert('ระบบกำลังเตรียมไฟล์ข้อมูล...');
+    // 1. ตรวจสอบก่อนว่ามีข้อมูลใน allData ไหม (allData คือตัวแปร Global ที่เก็บผลลัพธ์การ Search/Filter)
+    if (!allData || allData.length === 0) {
+        alert('ไม่พบข้อมูลตามเงื่อนไขที่ระบุ กรุณาลองค้นหาใหม่อีกครั้ง');
+        return;
+    }
+
+    // แจ้งเตือนผู้ใช้เล็กน้อยกรณีข้อมูลเยอะ
+    console.log(`Exporting ${allData.length} rows...`);
+
+    // 2. Mapping ข้อมูลจาก allData เป็นภาษาไทยสำหรับหัวตาราง Excel
+    const excelData = allData.map((item, index) => {
+        
+        // จัดการข้อมูลแผนเสริม (ใช้ Logic เดียวกับที่แสดงในตารางหน้าเว็บ)
+        let extraDocsStr = '-';
+        if (item.extra_doc_id) {
+            const ids = String(item.extra_doc_id).split(',');
+            const pages = String(item.extra_page || '').split(',');
+            
+            extraDocsStr = ids.map((id, i) => {
+                const doc = allPlanDocs.find(d => d.id == id.trim());
+                const p = (pages[i] || pages[0] || '').trim();
+                return doc ? `${doc.doc_name} (น.${p})` : `เล่ม ID:${id} (น.${p})`;
+            }).join(', ');
+        }
+
+        const mainDocName = allPlanDocs.find(d => d.id == item.main_doc_id)?.doc_name || '-';
+
+        return {
+            "ลำดับ": index + 1,
+            "อำเภอ": item.district || '-',
+            "องค์กรปกครองส่วนท้องถิ่น": item.local_org || '-',
+            "ชื่อโครงการ": item.project_name || '-',
+            "งบประมาณ (บาท)": Number(item.budget_amount) || 0,
+            "สถานะ": item.project_status || "คงเดิม",
+            "แผนหลัก": mainDocName,
+            "หน้า (แผนหลัก)": item.main_page || '-',
+            "แผนเสริม/หมายเหตุ": extraDocsStr
+        };
+    });
+
+    // 3. สร้างกระบวนการ Excel
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+    // 4. ตั้งค่าความกว้างคอลัมน์ (หน่วยเป็นตัวอักษร)
+    worksheet['!cols'] = [
+        { wch: 8 },  // ลำดับ
+        { wch: 15 }, // อำเภอ
+        { wch: 25 }, // อปท.
+        { wch: 50 }, // ชื่อโครงการ
+        { wch: 18 }, // งบประมาณ
+        { wch: 15 }, // สถานะ
+        { wch: 25 }, // แผนหลัก
+        { wch: 10 }, // หน้า
+        { wch: 45 }  // แผนเสริม
+    ];
+
+    // 5. บันทึกไฟล์
+    try {
+        const date = new Date();
+        const timestamp = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}_${date.getHours()}${date.getMinutes()}`;
+        
+        // ถ้ามีการกรองอำเภอ ให้เอาชื่ออำเภอมาตั้งชื่อไฟล์ด้วย (Optional)
+        const filterAmphoe = document.getElementById('sAmphoe')?.value || "ทั้งหมด";
+        const fileName = `โครงการแผนฯ_อบจ_นครปฐม_${filterAmphoe}_${timestamp}.xlsx`;
+
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const finalData = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+        
+        saveAs(finalData, fileName);
+    } catch (err) {
+        alert("เกิดข้อผิดพลาด: " + err.message);
+    }
 }
 
 // --- 1. ระบบ Login/Logout (Supabase Auth) ---
