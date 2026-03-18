@@ -610,60 +610,135 @@ async function deleteProject(id) {
     }
 }
 
-// 1. ฟังก์ชันเปิด/ปิด Modal
+// --- ส่วนควบคุม Modal แก้ไขโครงการ ---
+
+// 1. เปิด/ปิด Modal
 function toggleEditModal() {
     const modal = document.getElementById('editModal');
-    if (modal) {
-        modal.classList.toggle('hidden');
-    }
+    if (modal) modal.classList.toggle('hidden');
 }
 
-// 2. ฟังก์ชันโหลดข้อมูลใส่ Modal
-async function editProject(id) {
-    // แปลง id เป็น Number เพื่อความชัวร์ในการหาใน Array
-    const targetId = Number(id);
-    const project = allData.find(item => Number(item.id) === targetId);
+// 2. ฟังก์ชันสร้างแถวแผนเสริม (ใช้ซ้ำได้ทั้งตอนโหลดข้อมูลเดิมและตอนกดเพิ่มใหม่)
+function createExtraDocRow(selectedId = "", pageValue = "") {
+    const container = document.getElementById('extraDocsContainer');
+    const rowId = 'row_' + Math.random().toString(36).substr(2, 9);
     
-    if (!project) {
-        console.error("ไม่พบข้อมูลโครงการ ID:", targetId);
-        return;
-    }
+    const div = document.createElement('div');
+    div.id = rowId;
+    div.className = "flex gap-2 items-end p-2 bg-white/60 rounded-xl border border-orange-100 animate-in fade-in slide-in-from-top-2 duration-200";
+    
+    // สร้าง Option จาก Cache ของเล่มแผนทั้งหมด (allPlanDocs)
+    const options = allPlanDocs.map(doc => 
+        `<option value="${doc.id}" ${doc.id == selectedId ? 'selected' : ''}>${doc.doc_name}</option>`
+    ).join('');
 
-    // ใส่ข้อมูลลง Form
+    div.innerHTML = `
+        <div class="flex-1">
+            <select class="extra-doc-select w-full px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-orange-400 bg-white">
+                <option value="">-- เลือกเล่มแผนเสริม --</option>
+                ${options}
+            </select>
+        </div>
+        <div class="w-20">
+            <input type="number" value="${pageValue}" placeholder="หน้า" class="extra-page-input w-full px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-orange-400">
+        </div>
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+// 3. ฟังก์ชันปุ่ม "เพิ่มแผนเสริม"
+function addExtraDocRow() {
+    createExtraDocRow();
+}
+
+// 4. ฟังก์ชันโหลดข้อมูลใส่ Modal (เมื่อกดปุ่มแก้ไขในตาราง)
+async function editProject(id) {
+    const project = allData.find(item => item.id == id);
+    if (!project) return alert("ไม่พบข้อมูลโครงการ");
+
+    // เคลียร์ค่าเดิมในตู้คอนเทนเนอร์แผนเสริม
+    document.getElementById('extraDocsContainer').innerHTML = '';
+    
+    // ใส่ข้อมูลพื้นฐาน
     document.getElementById('editId').value = project.id;
     document.getElementById('editProjectName').value = project.project_name;
     document.getElementById('editBudget').value = project.budget_amount;
     document.getElementById('editStatus').value = project.project_status || "คงเดิม";
 
-    // สั่งเปิด Modal
+    // จัดการแผนหลัก (Dropdown)
+    const mainSelect = document.getElementById('editMainDocId');
+    mainSelect.innerHTML = '<option value="">-- เลือกเล่มแผนหลัก --</option>' + 
+        allPlanDocs.map(doc => `<option value="${doc.id}" ${doc.id == project.main_doc_id ? 'selected' : ''}>${doc.doc_name}</option>`).join('');
+    document.getElementById('editMainPage').value = project.main_page || "";
+
+    // จัดการแผนเสริม (ถ้ามีข้อมูลคั่นด้วยคอมม่า ให้แตกออกมาเป็นแถว)
+    if (project.extra_doc_id) {
+        const extraIds = String(project.extra_doc_id).split(',');
+        const extraPages = String(project.extra_page || '').split(',');
+        
+        extraIds.forEach((docId, index) => {
+            const cleanId = docId.trim();
+            if (cleanId) {
+                const pageVal = (extraPages[index] || '').trim();
+                createExtraDocRow(cleanId, pageVal);
+            }
+        });
+    }
+
     toggleEditModal();
 }
 
-// 3. ฟังก์ชันบันทึก
+// 5. ฟังก์ชันบันทึกการแก้ไข
 async function saveEdit() {
     const id = document.getElementById('editId').value;
-    const btn = event.target; // ปุ่มที่กด
-    btn.disabled = true;
-    btn.innerText = "กำลังบันทึก...";
+    const btnSave = document.getElementById('btnSaveEdit');
+    
+    // รวบรวมข้อมูลแผนเสริมจาก UI
+    const docSelects = document.querySelectorAll('.extra-doc-select');
+    const pageInputs = document.querySelectorAll('.extra-page-input');
+    
+    let extraIdsArr = [];
+    let extraPagesArr = [];
+    
+    docSelects.forEach((select, i) => {
+        if (select.value) { // เก็บเฉพาะแถวที่เลือกเล่มแผน
+            extraIdsArr.push(select.value);
+            extraPagesArr.push(pageInputs[i].value || "0");
+        }
+    });
+
+    const updateData = {
+        project_name: document.getElementById('editProjectName').value,
+        budget_amount: Number(document.getElementById('editBudget').value) || 0,
+        project_status: document.getElementById('editStatus').value,
+        main_doc_id: document.getElementById('editMainDocId').value || null,
+        main_page: document.getElementById('editMainPage').value || null,
+        // รวมอาเรย์กลับเป็น String คั่นด้วยคอมม่าเพื่อลง Database
+        extra_doc_id: extraIdsArr.join(','), 
+        extra_page: extraPagesArr.join(',')
+    };
+
+    btnSave.disabled = true;
+    btnSave.innerText = "กำลังบันทึกข้อมูล...";
 
     const { error } = await _supabase
         .from('plan_projects')
-        .update({
-            project_name: document.getElementById('editProjectName').value,
-            budget_amount: Number(document.getElementById('editBudget').value) || 0,
-            project_status: document.getElementById('editStatus').value
-        })
+        .update(updateData)
         .eq('id', id);
 
     if (error) {
-        alert("เกิดข้อผิดพลาด: " + error.message);
+        alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
     } else {
-        alert("แก้ไขข้อมูลเรียบร้อยแล้ว ✨");
+        alert("บันทึกข้อมูลเรียบร้อยแล้ว ✨");
         toggleEditModal();
-        loadData(); // รีโหลดตาราง
+        loadData(); // รีโหลดตารางโครงการใหม่
     }
-    btn.disabled = false;
-    btn.innerText = "บันทึกการแก้ไข";
+    
+    btnSave.disabled = false;
+    btnSave.innerText = "บันทึกการแก้ไข";
 }
 
 // --- Plan Documents Management ---
