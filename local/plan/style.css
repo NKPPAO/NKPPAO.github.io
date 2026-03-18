@@ -10,7 +10,7 @@ body {
     color: #444;
     margin: 0;
     min-height: 100vh;
-    overflow-x: hidden;
+    /*overflow-x: hidden;*/
 
     /* ตั้งค่าพื้นหลัง */
     background-color: #f8f9fa; /* สีพื้นหลัก */
