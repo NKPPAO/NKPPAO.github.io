@@ -70,13 +70,14 @@ async function loadData() {
     const fStatus = document.getElementById('sStatus').value.trim();
 
     // 2. เริ่มต้น Query แบบดึงทั้งหมด
-    let query = _supabase
+    /*let query = _supabase
         .from('plan_projects')
         .select(`
             *,
             main_doc:main_doc_id(doc_name, pdf_url, page_offset),
             extra_doc:extra_doc_id(doc_name, pdf_url, page_offset)
-        `);
+        `);*/
+    let query = _supabase.from('plan_projects').select('*');
 
     // 3. ตรวจสอบว่า "มีค่าจริงๆ" ถึงจะใส่ Filter (สำคัญมาก!)
     if (fAmphoe && fAmphoe !== "") {
@@ -102,15 +103,14 @@ async function loadData() {
     // 4. สั่ง Execution
     const { data, error } = await query.order('id', { ascending: false });
 
-    loading.classList.add('hidden');
-    
     if (error) { 
         console.error("Supabase Error:", error); 
+        loading.classList.add('hidden');
         return; 
     }
 
     console.log("Data received:", data); // ตรวจสอบอีกครั้ง
-
+    loading.classList.add('hidden');
     allData = data || [];
     currentPage = 1;
 
@@ -165,11 +165,11 @@ function renderTable(data) {
 
         const mainBtn = createPdfButton(item.main_doc, item.main_page, 'bg-blue-600');
         const extraBtn = createPdfButton(item.extra_doc, item.extra_page, 'bg-orange-500');*/
-        // --- ฟังก์ชันภายในสำหรับสร้างปุ่ม PDF ---
-        const createPdfButton = (docId, pageInBook, themeColor) => {
+        // --- ฟังก์ชันสร้างปุ่ม PDF ใหม่ที่ดึงข้อมูลจาก Cache ---
+        const createPdfButtonFromCache = (docId, pageInBook, themeColor) => {
             if (!docId || !pageInBook) return '';
             
-            // ค้นหาข้อมูลเล่มแผนจาก Cache (allPlanDocs)
+            // หาข้อมูลเล่มจาก Cache ที่เรามีอยู่ (allPlanDocs จาก initDropdowns)
             const doc = allPlanDocs.find(d => d.id == docId);
             if (!doc || !doc.pdf_url) return '';
 
@@ -182,18 +182,16 @@ function renderTable(data) {
                 </a>`;
         };
 
-        // 1. จัดการแผนหลัก (ปกติมี 1 ค่า)
-        const mainBtn = createPdfButton(item.main_doc_id, item.main_page, 'bg-blue-600');
+        // สร้างปุ่มแผนหลัก
+        const mainBtn = createPdfButtonFromCache(item.main_doc_id, item.main_page, 'bg-blue-600');
 
-        // 2. จัดการแผนเสริม (รองรับหลายค่าคั่นด้วย ,)
+        // สร้างปุ่มแผนเสริม (รองรับหลายค่าคั่นด้วยคอมม่า)
         let extraBtns = '';
         if (item.extra_doc_id) {
-            const extraIds = String(item.extra_doc_id).split(',');
-            const extraPages = String(item.extra_page || '').split(',');
-            
-            extraBtns = extraIds.map((id, i) => {
-                const p = (extraPages[i] || extraPages[0] || '').trim(); // ใช้หน้าลำดับที่ i หรือถ้าไม่มีให้ใช้ตัวแรก
-                return createPdfButton(id.trim(), p, 'bg-orange-500');
+            const ids = String(item.extra_doc_id).split(',');
+            const pages = String(item.extra_page || '').split(',');
+            extraBtns = ids.map((id, i) => {
+                return createPdfButtonFromCache(id.trim(), (pages[i] || pages[0] || '').trim(), 'bg-orange-500');
             }).join('');
         }
 
