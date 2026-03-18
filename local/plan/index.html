@@ -110,8 +110,19 @@
 
             <div class="space-y-1">
                 <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">สถานะ</label>
-                <input type="text" id="sStatus" onkeyup="loadData()" placeholder="สถานะโครงการ..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
+                <select id="sStatus" onchange="loadData()" class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] font-medium appearance-none shadow-sm cursor-pointer">
+                    <option value="">ทั้งหมด</option>
+                    <option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ</option>
+                    <option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option>
+                    <option value="ดำเนินการแล้วเสร็จ">ดำเนินการแล้วเสร็จ</option>
+                    <option value="ยกเลิก">ยกเลิก</option>
+                </select>
             </div>
+
+            <!--<div class="space-y-1">
+                <label class="text-[13px] font-bold text-slate-600 ml-1 uppercase tracking-wider">สถานะ</label>
+                <input type="text" id="sStatus" onkeyup="loadData()" placeholder="สถานะโครงการ..." class="w-full bg-slate-50 border-none rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-[13px] placeholder:text-slate-300 shadow-sm">
+            </div>-->
         </div>
         
         <div class="flex items-center gap-2 pb-0.5 w-full xl:w-auto justify-end border-t xl:border-t-0 pt-4 xl:pt-0">
@@ -239,9 +250,10 @@
                     <div class="md:col-span-2">
                         <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest">สถานะโครงการ</label>
                         <select id="editStatus" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold">
-                            <option value="คงเดิม">คงเดิม (ตามแผนฯ)</option>
-                            <option value="เปลี่ยนแปลง">เปลี่ยนแปลง</option>
-                            <option value="เพิ่มเติม">เพิ่มเติม</option>
+                            <option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ</option>
+                            <option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option>
+                            <option value="ดำเนินการแล้วเสร็จ">ดำเนินการแล้วเสร็จ</option>
+                            <option value="ยกเลิก">ยกเลิก</option>
                         </select>
                     </div>
                 </div>
