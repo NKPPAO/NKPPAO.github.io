@@ -244,8 +244,8 @@ function renderTable(data) {
             
                   <div class="flex justify-between items-center mt-1">
                       <div class="flex flex-wrap gap-2">
-                          ${mainBtn} ${extraBtn}
-                          ${(!mainBtn && !extraBtn) ? '<span class="text-xs text-slate-300 italic">ไม่มีข้อมูลไฟล์แนบ</span>' : ''}
+                          ${mainBtn} ${extraBtns}
+                          ${(!mainBtn && !extraBtns) ? '<span class="text-xs text-slate-300 italic">ไม่มีข้อมูลไฟล์แนบ</span>' : ''}
                       </div>
                       
                   </div>
