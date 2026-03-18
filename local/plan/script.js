@@ -252,7 +252,7 @@ function renderTable(data) {
                           อ. ${item.district} <span class="mx-1 text-slate-200">/</span> ${item.local_org}
                       </div>
                       <!--<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">
-                          ${item.project_status || 'คงเดิม'}
+                          ${item.project_status || '-'}
                       </span>-->
                       ${adminTools}
                   </div>
@@ -425,7 +425,7 @@ function exportToExcel() {
             "องค์กรปกครองส่วนท้องถิ่น": item.local_org || '-',
             "ชื่อโครงการ": item.project_name || '-',
             "งบประมาณ (บาท)": Number(item.budget_amount) || 0,
-            "สถานะ": item.project_status || "คงเดิม",
+            "สถานะ": item.project_status || "-",
             "แผนฯ": mainDocFull, // ✅ ยุบรวมเหลือคอลัมน์เดียวแล้ว
             "เปลี่ยนแปลง/เพิ่มเติม/แก้ไข": extraDocsStr
         };
@@ -637,7 +637,7 @@ async function importToSupabase(items) {
             local_org: item["อปท"] || "",
             project_name: item["ชื่อโครงการ"] || "",
             budget_amount: Number(item["งบประมาณ"]) || 0,
-            project_status: item["สถานะ"] || "คงเดิม",
+            project_status: item["สถานะ"] || "-",
             main_doc_id: item["IDเล่มแผนหลัก"] || null,
             main_page: item["หน้าในเล่มหลัก"] || null,
             extra_doc_id: item["IDเล่มแผนเสริม"] || null,
@@ -704,7 +704,7 @@ async function importToSupabase(items) {
             project_name: item["ชื่อโครงการ"] || "",
             // ปรับตรงนี้: กำจัดเครื่องหมายคอมมาก่อนแปลงเป็นตัวเลข
             budget_amount: Number(String(item["งบประมาณ"]).replace(/,/g, '')) || 0,
-            project_status: item["สถานะ"] || "คงเดิม",
+            project_status: item["สถานะ"] || "-",
             main_doc_id: item["IDเล่มแผนหลัก"] || null,
             main_page: item["หน้าในเล่มหลัก"] || null,
             extra_doc_id: item["IDเล่มแผนเสริม"] || null,
@@ -799,7 +799,7 @@ async function editProject(id) {
     document.getElementById('editId').value = project.id;
     document.getElementById('editProjectName').value = project.project_name;
     document.getElementById('editBudget').value = project.budget_amount;
-    document.getElementById('editStatus').value = project.project_status || "คงเดิม";
+    document.getElementById('editStatus').value = project.project_status || "-";
 
     // จัดการแผนหลัก (Dropdown)
     const mainSelect = document.getElementById('editMainDocId');
