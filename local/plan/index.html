@@ -213,37 +213,75 @@
 </div>
 
     <div id="editModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in duration-300">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in duration-300">
         <div class="p-8">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-black text-slate-800">แก้ไขข้อมูลโครงการ</h3>
-                <button onclick="toggleEditModal()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                <h3 class="text-xl font-black text-slate-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    แก้ไขรายละเอียดโครงการ
+                </h3>
+                <button onclick="toggleEditModal()" class="text-slate-400 hover:text-slate-600 text-2xl transition-transform hover:rotate-90">&times;</button>
             </div>
-            
-            <form id="editForm" class="space-y-4">
+
+            <form id="editForm" class="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                 <input type="hidden" id="editId">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ชื่อโครงการ</label>
-                    <textarea id="editProjectName" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">งบประมาณ (บาท)</label>
-                        <input type="number" id="editBudget" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-3">
+                        <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest">ชื่อโครงการ</label>
+                        <textarea id="editProjectName" rows="2" class="w-full px-4 py-3 rounded-2xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-700"></textarea>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">สถานะ</label>
-                        <select id="editStatus" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            <option value="คงเดิม">คงเดิม</option>
+                        <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest">งบประมาณ (บาท)</label>
+                        <input type="number" id="editBudget" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest">สถานะโครงการ</label>
+                        <select id="editStatus" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold">
+                            <option value="คงเดิม">คงเดิม (ตามแผนฯ)</option>
                             <option value="เปลี่ยนแปลง">เปลี่ยนแปลง</option>
                             <option value="เพิ่มเติม">เพิ่มเติม</option>
                         </select>
                     </div>
                 </div>
-                
-                <div class="flex gap-3 mt-8">
-                    <button type="button" onclick="saveEdit()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100">บันทึกการแก้ไข</button>
-                    <button type="button" onclick="toggleEditModal()" class="px-6 py-3 rounded-xl font-bold text-slate-400 hover:bg-slate-50 transition-all">ยกเลิก</button>
+
+                <div class="space-y-4 pt-4 border-t border-slate-100">
+                    
+                    <div class="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+                        <h4 class="text-[11px] font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <span class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span> แผนหลัก (Main Document)
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="md:col-span-2">
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1">เลือกเล่มแผนหลัก</label>
+                                <select id="editMainDocId" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white font-medium"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1">หน้าในเล่ม</label>
+                                <input type="number" id="editMainPage" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-orange-50/50 rounded-2xl border border-orange-100">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-[11px] font-black text-orange-600 uppercase tracking-widest flex items-center gap-2">
+                                <span class="w-2 h-2 bg-orange-600 rounded-full"></span> แผนเสริม (Extra Documents)
+                            </h4>
+                            <button type="button" onclick="addExtraDocRow()" class="text-[10px] bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg font-bold transition-all active:scale-95 flex items-center gap-1 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                                เพิ่มแผนเสริม
+                            </button>
+                        </div>
+                        
+                        <div id="extraDocsContainer" class="space-y-2">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="saveEdit()" id="btnSaveEdit" class="flex-1 bg-slate-800 hover:bg-black text-white py-4 rounded-2xl font-black transition-all shadow-xl shadow-slate-200 active:scale-[0.98]">บันทึกการแก้ไข</button>
+                    <button type="button" onclick="toggleEditModal()" class="px-8 py-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 transition-all uppercase text-xs">ยกเลิก</button>
                 </div>
             </form>
         </div>
