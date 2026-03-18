@@ -1,6 +1,14 @@
 const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+//const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    storage: window.sessionStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
 
 let currentUser = null;
 let inactivityTimer;
@@ -10,7 +18,7 @@ let currentPage = 1;
 const rowsPerPage = 10; // กำหนดจำนวนรายการต่อหน้า
 
 // --- INITIAL LOAD ---
-window.onload = async () => {
+/*window.onload = async () => {
     // 1. ตรวจสอบ Session ก่อนว่าล็อกอินค้างไว้ไหม
     await checkUserSession(); 
     _supabase.auth.onAuthStateChange((event, session) => {
@@ -25,6 +33,25 @@ window.onload = async () => {
     // ย้ายการตรวจสอบ DOM มาไว้ที่นี่เพื่อให้แน่ใจว่า HTML โหลดเสร็จแล้ว
     await initDropdowns(); 
     await loadData();      
+};*/
+window.onload = async () => {
+    // 1. โหลดข้อมูลพื้นฐานและตารางขึ้นมาโชว์ก่อน (เพื่อให้คนทั่วไปดูได้ทันที)
+    await initDropdowns(); 
+    await loadData();      
+
+    // 2. ตรวจสอบ Session และดักฟังการเปลี่ยนแปลงสิทธิ์
+    // เมื่อใช้ sessionStorage ร่วมกับ onAuthStateChange ระบบจะจัดการ currentUser ให้เองอัตโนมัติ
+    _supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth State Changed:", event);
+        if (session && session.user) {
+            currentUser = session.user;
+            resetInactivityTimer(); // เริ่มนับถอยหลัง 10 นาทีถ้าเจอ Session
+        } else {
+            currentUser = null;
+            clearTimeout(inactivityTimer); // หยุดนับถ้า Logout
+        }
+        checkAuthState(); // อัปเดต UI (ปุ่มแก้ไข/ปุ่มเพิ่มแผน)
+    });
 };
 
 // 1. ฟังก์ชันสร้าง Dropdown
@@ -411,13 +438,28 @@ function checkAuthState() {
 }
 
 // --- 2. ระบบ Auto Logout (10 นาที) ---
-function resetInactivityTimer() {
+/*function resetInactivityTimer() {
     if (!currentUser) return;
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(() => {
         alert("คุณไม่มีการเคลื่อนไหวนานเกิน 10 นาที ระบบจะออกจากระบบอัตโนมัติเพื่อความปลอดภัย");
         handleLogout();
     }, 10 * 60 * 1000); // 10 นาที
+}*/
+function resetInactivityTimer() {
+    if (!currentUser) return;
+    
+    // บันทึกเวลาที่มีการเคลื่อนไหวลง localStorage
+    localStorage.setItem('lastActiveTime', Date.now());
+
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        // เช็คอีกครั้งว่าหน้าจอยังเปิดอยู่ไหม
+        if (currentUser) {
+            alert("คุณไม่มีการเคลื่อนไหวนานเกิน 10 นาที ระบบจะออกจากระบบอัตโนมัติ");
+            handleLogout();
+        }
+    }, 10 * 60 * 1000);
 }
 
 // ตรวจจับการเคลื่อนไหว
@@ -425,7 +467,7 @@ function resetInactivityTimer() {
     window.addEventListener(evt, resetInactivityTimer);
 });
 
-async function checkUserSession() {
+/*async function checkUserSession() {
     const { data: { session }, error } = await _supabase.auth.getSession();
     if (session && session.user) {
         currentUser = session.user;
@@ -433,6 +475,34 @@ async function checkUserSession() {
         currentUser = null;
     }
     checkAuthState(); 
+}*/
+async function checkUserSession() {
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    if (session) {
+        // ดึงเวลาล่าสุดที่มีการใช้งาน (ที่เราบันทึกไว้เอง)
+        const lastActive = localStorage.getItem('lastActiveTime');
+        const now = Date.now();
+        const tenMinutes = 10 * 60 * 1000;
+        const oneHour = 60 * 60 * 1000; // 60 นาที (3,600,000 มิลลิวินาที)
+        const oneDay = 24 * 60 * 60 * 1000; // หรือตั้งค่าตามต้องการ
+
+        // ตรวจสอบว่ามีเวลาบันทึกไว้ไหม และห่างจากปัจจุบันเกิน 60 นาทีหรือเปล่า
+        if (lastActive && (now - lastActive > oneHour)) {
+            // 🚨 เกิน 60 นาทีแล้ว ให้บังคับ Logout
+            await _supabase.auth.signOut();
+            localStorage.removeItem('lastActiveTime');
+            currentUser = null;
+            console.log("Session expired: Over 60 minutes");
+        } else {
+            // ✅ ยังไม่เกิน 60 นาที ให้ใช้งานต่อได้
+            currentUser = session.user;
+            localStorage.setItem('lastActiveTime', now); // อัปเดตเวลาล่าสุด
+        }
+    } else {
+        currentUser = null;
+    }
+    checkAuthState();
 }
 
 // --- 3. Drag & Drop Upload ---
