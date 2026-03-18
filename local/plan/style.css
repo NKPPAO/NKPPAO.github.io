@@ -1,16 +1,27 @@
-html {
-    overflow-x: hidden; /* กันเหนียวไว้ */
-}
 html, body {
-    max-width: 100vw;
-    position: relative;
+    /* 🛑 แก้ปัญหาเลื่อนซ้ายขวา */
+    max-width: 100%; 
+    overflow-x: hidden; 
+    margin: 0;
+    padding: 0;
+    width: 100%;
 }
+
+/* --- ส่วนของ Navigation (สมมติว่าใช้ Tag <nav>) --- */
+nav {
+    position: sticky; /* หรือ fixed ถ้าต้องการให้ทับเนื้อหาตลอด */
+    top: 0;
+    z-index: 100; /* ให้ลอยอยู่เหนือเนื้อหาอื่น */
+    width: 100%;
+    //background-color: white; /* ใส่สีพื้นหลังกันเนื้อหาข้างล่างทะลุขึ้นมา */
+    //box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* เพิ่มเงาให้ดูมีมิติ */
+}
+
 body { 
     font-family: 'Sarabun', sans-serif; 
     color: #444;
     margin: 0;
     min-height: 100vh;
-    /*overflow-x: hidden;*/
 
     /* ตั้งค่าพื้นหลัง */
     background-color: #f8f9fa; /* สีพื้นหลัก */
@@ -24,6 +35,9 @@ body {
     /* ทำให้พื้นหลังอยู่กับที่ */
     background-attachment: fixed;
     background-repeat: no-repeat;
+    /* 🛑 สำคัญมาก: ป้องกันเนื้อหาดันจอออก */
+    display: flex;
+    flex-direction: column;
 }
 
 /* ปรับแต่งตารางให้ดูเบาบางแต่แข็งแรง */
@@ -39,6 +53,7 @@ tbody tr {
 * {
     box-sizing: border-box; /* ป้องกันเนื้อหาบวมออกด้านข้าง */
 }
+
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(5px); }
