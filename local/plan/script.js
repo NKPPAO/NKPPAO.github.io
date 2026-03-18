@@ -5,6 +5,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let inactivityTimer;
 let allData = []; // เก็บข้อมูลทั้งหมดที่โหลดมา
+let allPlanDocs = [];
 let currentPage = 1;
 const rowsPerPage = 10; // กำหนดจำนวนรายการต่อหน้า
 
@@ -30,12 +31,14 @@ window.onload = async () => {
 async function initDropdowns() {
     const [districtsRes, docsRes] = await Promise.all([
         _supabase.from('plan_projects').select('district'),
-        _supabase.from('plan_documents').select('id, doc_name')
+        _supabase.from('plan_documents').select('id, doc_name, pdf_url, page_offset')
     ]);
 
     const sAmphoe = document.getElementById('sAmphoe');
     const sPlanDoc = document.getElementById('sPlanDoc');
     const cardTotalDocs = document.getElementById('cardTotalDocs');
+
+    allPlanDocs = docsRes.data || [];
 
     if (districtsRes.data && sAmphoe) {
         const uniqueDistricts = [...new Set(districtsRes.data.map(item => item.district))].filter(Boolean).sort();
@@ -149,7 +152,7 @@ function renderTable(data) {
         const rowNumber = ((currentPage - 1) * rowsPerPage) + index + 1;
 
         // ฟังก์ชันสร้างปุ่ม PDF
-        const createPdfButton = (doc, pageInBook, themeColor) => {
+        /*const createPdfButton = (doc, pageInBook, themeColor) => {
             if (!doc || !doc.pdf_url || !pageInBook) return '';
             const actualPdfPage = Number(pageInBook) + (Number(doc.page_offset) || 0);
             return `
@@ -161,7 +164,38 @@ function renderTable(data) {
         };
 
         const mainBtn = createPdfButton(item.main_doc, item.main_page, 'bg-blue-600');
-        const extraBtn = createPdfButton(item.extra_doc, item.extra_page, 'bg-orange-500');
+        const extraBtn = createPdfButton(item.extra_doc, item.extra_page, 'bg-orange-500');*/
+        // --- ฟังก์ชันภายในสำหรับสร้างปุ่ม PDF ---
+        const createPdfButton = (docId, pageInBook, themeColor) => {
+            if (!docId || !pageInBook) return '';
+            
+            // ค้นหาข้อมูลเล่มแผนจาก Cache (allPlanDocs)
+            const doc = allPlanDocs.find(d => d.id == docId);
+            if (!doc || !doc.pdf_url) return '';
+
+            const actualPdfPage = Number(pageInBook) + (Number(doc.page_offset) || 0);
+            return `
+                <a href="${doc.pdf_url}#page=${actualPdfPage}" target="_blank" 
+                   class="inline-flex items-center gap-2 px-3 py-2 ${themeColor} text-white rounded-xl text-[11px] font-bold shadow-sm transition-all hover:brightness-110 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                    ${doc.doc_name} หน้า ${pageInBook}
+                </a>`;
+        };
+
+        // 1. จัดการแผนหลัก (ปกติมี 1 ค่า)
+        const mainBtn = createPdfButton(item.main_doc_id, item.main_page, 'bg-blue-600');
+
+        // 2. จัดการแผนเสริม (รองรับหลายค่าคั่นด้วย ,)
+        let extraBtns = '';
+        if (item.extra_doc_id) {
+            const extraIds = String(item.extra_doc_id).split(',');
+            const extraPages = String(item.extra_page || '').split(',');
+            
+            extraBtns = extraIds.map((id, i) => {
+                const p = (extraPages[i] || extraPages[0] || '').trim(); // ใช้หน้าลำดับที่ i หรือถ้าไม่มีให้ใช้ตัวแรก
+                return createPdfButton(id.trim(), p, 'bg-orange-500');
+            }).join('');
+        }
 
         const adminTools = currentUser ? `
             <div class="flex gap-4">
