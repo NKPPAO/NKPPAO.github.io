@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบข้อมูลแผนและงบประมาณ | องค์การบริหารส่วนจังหวัดนครปฐม</title>
+    <title>องค์การบริหารส่วนจังหวัดนครปฐม</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -80,6 +80,30 @@
             width: 25px !important;
             border-radius: 5px !important;
         }
+
+
+    .logo-container {
+        perspective: 1000px; /* สร้างมิติความลึก */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .logo-rotate {
+        width: 150px; /* ปรับขนาดโลโก้ตามต้องการ */
+        height: auto;
+        animation: flip-3d 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+    }
+
+    @keyframes flip-3d {
+        0% { transform: rotateY(0deg); }
+        20% { transform: rotateY(0deg); } /* หยุดพักด้านหน้านิดนึง */
+        50% { transform: rotateY(180deg); } /* หมุนไปด้านหลัง */
+        70% { transform: rotateY(180deg); } /* หยุดพักด้านหลังนิดนึง */
+        100% { transform: rotateY(360deg); } /* หมุนกลับมาที่เดิม */
+    }
     </style>
 </head>
 <body class="flex flex-col">
@@ -118,60 +142,8 @@
     </section>
 
     <main class="container mx-auto px-8 py-16 flex-grow">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10">
-            
-            <div class="system-card p-10 rounded-[3.5rem] text-center relative group">
-                <div class="absolute top-8 right-10 flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full status-online mr-2 animate-pulse"></span>
-                    <span class="text-[10px] font-bold text-green-600 tracking-widest">ONLINE</span>
-                </div>
-                <div class="w-24 h-24 bg-gradient-to-br from-blue-50 to-indigo-50 text-indigo-600 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-8 transition-transform group-hover:rotate-6">
-                    <i class="fas fa-chart-pie"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">โครงการขอรับการสนับสนุนงบประมาณ</h3>
-                <p class="text-gray-500 text-sm mb-10 leading-relaxed">ระบบสืบค้นโครงการขอรับการสนับสนุนงบประมาณ </br>องค์การบริหารส่วนจังหวัดนครปฐม</br>(ข้อมูลโครงการตั้งแต่ปีงบประมาณ พ.ศ. 2547 เป็นต้นไป)</p>
-                <a href="local/budget/" class="block w-full py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-100/50">เปิดระบบ</a>
-            </div>
-
-            <div class="system-card p-10 rounded-[3.5rem] text-center relative group">
-                <div class="absolute top-8 right-10 flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-2"></span>
-                    <span class="text-[10px] font-bold text-red-600 tracking-widest uppercase">Maintenance</span>
-                </div>
-                <div class="w-24 h-24 bg-gradient-to-br from-purple-50 to-pink-50 text-purple-600 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-8 transition-transform group-hover:rotate-6">
-                    <i class="fa-solid fa-book-bookmark"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">โครงการตามแผนพัฒนาท้องถิ่น</h3>
-                <p class="text-gray-500 text-sm mb-10 leading-relaxed">แผนพัฒนาท้องถิ่น (พ.ศ. 2571 - 2575) องค์การบริหารส่วนจังหวัดนครปฐม (กำลังอัปเดตฐานข้อมูลใหม่)</p>
-                <button disabled class="w-full py-4 bg-gray-200 text-gray-400 rounded-2xl font-bold cursor-not-allowed">ปิดปรับปรุง</button>
-            </div>
-            <!--
-            <div class="system-card p-10 rounded-[3.5rem] text-center relative opacity-60 grayscale-[0.8]">
-                <div class="absolute top-8 right-10 flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-2"></span>
-                    <span class="text-[10px] font-bold text-red-600 tracking-widest uppercase">Maintenance</span>
-                </div>
-                <div class="w-24 h-24 bg-gray-100 text-gray-400 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-8">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-400 mb-3">ระบบบุคลากร</h3>
-                <p class="text-gray-400 text-sm mb-10 leading-relaxed">กำลังอัปเดตฐานข้อมูลใหม่</p>
-                <button disabled class="w-full py-4 bg-gray-200 text-gray-400 rounded-2xl font-bold cursor-not-allowed">ปิดปรับปรุง</button>
-            </div>
-
-            <div class="system-card p-10 rounded-[3.5rem] text-center relative group">
-                <div class="absolute top-8 right-10 flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full status-online mr-2 animate-pulse"></span>
-                    <span class="text-[10px] font-bold text-green-600 tracking-widest">ONLINE</span>
-                </div>
-                <div class="w-24 h-24 bg-gradient-to-br from-cyan-50 to-blue-50 text-cyan-600 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-8 transition-transform group-hover:rotate-6">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">จัดซื้อจัดจ้าง</h3>
-                <p class="text-gray-500 text-sm mb-10 leading-relaxed">ติดตามพัสดุและกระบวนการจัดซื้อจัดจ้าง</p>
-                <a href="#" class="block w-full py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-cyan-600 transition-all shadow-xl shadow-cyan-100/50">เปิดระบบ</a>
-            </div>
-            -->
+        <div class="logo-container">
+            <img src="https://nkppao.github.io/logonkp.png" alt="อบจ.นครปฐม" class="logo-rotate">
         </div>
     </main>
 
