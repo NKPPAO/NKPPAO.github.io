@@ -35,23 +35,27 @@
     </div>
 </header>-->
     <nav class="bg-white/30 backdrop-blur-lg sticky top-0 z-50 py-3 border-b border-white/20">
-        <div class="container mx-auto px-8 flex items-center">
-            <img src="https://nkppao.github.io/logonkp.png" alt="Logo" class="h-14 w-auto mr-5">
-            <div class="border-l-2 border-indigo-200/50 pl-5">
-                <h2 id="main-header" class="text-lg font-bold text-gray-800 leading-tight tracking-tight">ระบบสืบค้นข้อมูล</h2>
-                <p id="sub-header" class="text-xs text-indigo-600 font-semibold tracking-widest uppercase opacity-80">Strategy and Budget Services</p>
+    <div class="container mx-auto px-4 sm:px-8 flex items-center justify-between">
+        
+        <div class="flex items-center min-w-0"> <img src="https://nkppao.github.io/logonkp.png" alt="Logo" class="h-10 sm:h-14 w-auto mr-3 sm:mr-5 flex-none">
+            <div class="border-l-2 border-indigo-200/50 pl-3 sm:pl-5 overflow-hidden">
+                <h2 id="main-header" class="text-sm sm:text-lg font-bold text-gray-800 leading-tight tracking-tight truncate">ระบบสืบค้นข้อมูล</h2>
+                <p id="sub-header" class="text-[10px] sm:text-xs text-indigo-600 font-semibold tracking-widest uppercase opacity-80 truncate">Strategy and Budget</p>
             </div>
         </div>
-        <div class="absolute top-4 right-4 sm:top-6 sm:right-8 flex items-center gap-2 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/50 shadow-sm">
-        <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-        </span>
-        <p class="text-[10px] sm:text-xs text-slate-600 whitespace-nowrap">
-            อัปเดตล่าสุด: <span id="nav-last-update" class="font-bold text-slate-800"></span>
-        </p>
+
+        <div class="flex items-center gap-2 bg-white/50 backdrop-blur-sm px-2 sm:px-3 py-1.5 rounded-full border border-white/50 shadow-sm flex-none ml-2">
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <p class="text-[9px] sm:text-xs text-slate-600 whitespace-nowrap">
+                <span class="hidden xs:inline">อัปเดตล่าสุด:</span> <span id="nav-last-update" class="font-bold text-slate-800"></span>
+            </p>
+        </div>
+
     </div>
-    </nav>
+</nav>
 
 <div class="max-w-7xl mx-auto px-4 mb-8 py-8">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
