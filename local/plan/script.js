@@ -473,7 +473,7 @@ function exportToExcel() {
 }
 
 // --- 1. ระบบ Login/Logout (Supabase Auth) ---
-async function handleLogin() {
+/*async function handleLogin() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
@@ -489,7 +489,53 @@ async function handleLogin() {
         //alert("ยินดีต้อนรับ ผู้ดูแลระบบ");
         showAlert('success', 'ยินดีต้อนรับ', 'เข้าสู่ระบบในฐานะผู้ดูแลระบบเรียบร้อยแล้ว');
     }
+}*/
+// --- ฟังก์ชันควบคุม Modal ---
+function toggleLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.classList.toggle('hidden');
+    if (modal) modal.classList.toggle('flex'); // เพิ่ม flex เพื่อให้ items-center ทำงาน
 }
+
+// --- ฟังก์ชันจัดการการ Login ---
+async function handleLogin(e) {
+    if (e) e.preventDefault(); // 🛑 ป้องกัน Form Submit แล้วหน้าเว็บรีเฟรช
+
+    const email = document.getElementById('adminEmail').value;
+    const password = document.getElementById('adminPassword').value;
+    const btnSubmit = document.getElementById('btnLoginSubmit');
+
+    // เปลี่ยนสถานะปุ่มขณะกำลังโหลด
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = "กำลังตรวจสอบ...";
+
+    try {
+        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            // ใช้ Universal Modal ที่เราเพิ่งทำไปแจ้งเตือน
+            showAlert('error', 'เข้าสู่ระบบไม่สำเร็จ', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง');
+        } else {
+            currentUser = data.user;
+            
+            // ปิด Modal และแจ้งเตือนสำเร็จ
+            toggleLoginModal();
+            showAlert('success', 'เข้าสู่ระบบสำเร็จ', 'ยินดีต้อนรับเข้าสู่ระบบจัดการข้อมูล อบจ.นครปฐม');
+            
+            // ล้างฟอร์ม
+            document.getElementById('loginForm').reset();
+            
+            // อัปเดต UI (แสดงปุ่มแก้ไข/ลบ)
+            checkAuthState();
+        }
+    } catch (err) {
+        showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "เข้าสู่ระบบ";
+    }
+}
+
 
 async function handleLogout() {
     await _supabase.auth.signOut();
