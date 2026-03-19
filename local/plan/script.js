@@ -210,7 +210,7 @@ function renderTable(data) {
                 </a>`;*/
             return `
                 <a href="${doc.pdf_url}#page=${actualPdfPage}" target="_blank" 
-                 class="inline-flex items-center gap-1 text-slate-500 text-[11px] ${themeColor} font-bold transition-all group">      
+                 class="inline-flex items-center gap-1 text-slate-500 text-xs ${themeColor} transition-all group">      
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-400 group-${themeColor} transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
                   </svg>
@@ -238,11 +238,11 @@ function renderTable(data) {
                     แก้ไข
                 </button>
                 <button onclick="confirmDelete('${item.id}', '${item.project_name.replace(/'/g, "\\'")}')" 
-                      class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 transition-colors">
+                      class="flex items-center gap-1 text-xs font-bold text-rose-500 hover:text-rose-700 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     ลบ
               </button>
-                <!--<button onclick="deleteProject(${item.id})" class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 transition-colors">
+                <!--<button onclick="deleteProject(${item.id})" class="flex items-center gap-1 text-xs font-bold text-rose-500 hover:text-rose-700 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     ลบ
                 </button>-->
@@ -278,7 +278,7 @@ function renderTable(data) {
         </div>
 
         <div class="flex flex-col gap-2 py-1">
-            <div class="text-sm font-bold text-slate-700 leading-snug">
+            <div class="text-sm text-slate-700 leading-snug">
                 ${item.project_name}
             </div>
              <!--<div class="flex-none text-right">
@@ -288,7 +288,7 @@ function renderTable(data) {
                 </span>
             </div>-->
 
-            <div class="flex flex-col gap-1.5 items-start mt-2">
+            <div class="flex flex-col gap-1.5 items-start">
               ${mainBtn ? mainBtn : ''}
               ${extraBtns ? extraBtns : ''}  
               ${(!mainBtn && !extraBtns) ? '<span class="text-[11px] text-slate-300">ไม่พบเล่มแผนฯ</span>' : ''}
