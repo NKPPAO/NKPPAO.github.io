@@ -52,6 +52,7 @@ window.onload = async () => {
         }
         checkAuthState(); // อัปเดต UI (ปุ่มแก้ไข/ปุ่มเพิ่มแผน)
     });
+  document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
 };
 
 // 1. ฟังก์ชันสร้าง Dropdown
@@ -498,43 +499,54 @@ function toggleLoginModal() {
 }
 
 // --- ฟังก์ชันจัดการการ Login ---
+// --- ฟังก์ชันจัดการการ Login (ปรับเข้ากับ Modal ใหม่) ---
 async function handleLogin(e) {
-    if (e) e.preventDefault(); // 🛑 ป้องกัน Form Submit แล้วหน้าเว็บรีเฟรช
+    // 1. ป้องกันฟอร์มรีเฟรชหน้าจอ (สำคัญมากสำหรับ <form>)
+    if (e) e.preventDefault(); 
 
+    // 2. ดึงค่าจาก ID ใหม่ (adminEmail / adminPassword)
     const email = document.getElementById('adminEmail').value;
     const password = document.getElementById('adminPassword').value;
     const btnSubmit = document.getElementById('btnLoginSubmit');
 
-    // เปลี่ยนสถานะปุ่มขณะกำลังโหลด
+    // 3. แสดงสถานะกำลังโหลดที่ปุ่ม
     btnSubmit.disabled = true;
-    btnSubmit.innerText = "กำลังตรวจสอบ...";
+    btnSubmit.innerHTML = `
+        <span class="flex items-center justify-center gap-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            กำลังตรวจสอบ...
+        </span>
+    `;
 
     try {
         const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
-            // ใช้ Universal Modal ที่เราเพิ่งทำไปแจ้งเตือน
-            showAlert('error', 'เข้าสู่ระบบไม่สำเร็จ', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง');
+            // ใช้ Universal Modal แจ้งเตือนข้อผิดพลาด
+            showAlert('error', 'เข้าสู่ระบบไม่สำเร็จ', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
         } else {
             currentUser = data.user;
             
-            // ปิด Modal และแจ้งเตือนสำเร็จ
+            // ปิด Login Modal และแสดง Success Modal
             toggleLoginModal();
             showAlert('success', 'เข้าสู่ระบบสำเร็จ', 'ยินดีต้อนรับเข้าสู่ระบบจัดการข้อมูล อบจ.นครปฐม');
             
-            // ล้างฟอร์ม
+            // ล้างข้อมูลในฟอร์ม
             document.getElementById('loginForm').reset();
             
-            // อัปเดต UI (แสดงปุ่มแก้ไข/ลบ)
+            // อัปเดตเมนู Admin และระบบ Auto Logout
             checkAuthState();
+            resetInactivityTimer(); // เริ่มนับถอยหลัง 10 นาที
         }
     } catch (err) {
-        showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+        showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้');
     } finally {
+        // คืนค่าปุ่มกลับมาเป็นปกติ
         btnSubmit.disabled = false;
         btnSubmit.innerText = "เข้าสู่ระบบ";
     }
 }
+
 
 
 async function handleLogout() {
