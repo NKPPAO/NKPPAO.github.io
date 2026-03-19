@@ -253,45 +253,48 @@ function renderTable(data) {
         div.className = "p-5 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0";
 
         div.innerHTML = `
-            <div class="flex gap-4">
-              <div class="flex-none">
-                  <span class="inline-flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-600 text-lg font-bold rounded-lg">
-                      ${rowNumber}
-                  </span>
-              </div>
-            
-              <div class="flex flex-col gap-3 flex-1">
-                  <div class="flex justify-between items-start">
-                      <div class="text-base font-bold text-blue-600 uppercase tracking-wider">
-                          อ. ${item.district} <span class="mx-1 text-slate-200">/</span> ${item.local_org}
-                      </div>
-                      <!--<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">
-                          ${item.project_status || '-'}
-                      </span>-->
-                      ${adminTools}
-                  </div>
-            
-                  <div class="flex justify-between items-start gap-4">
-                      <div class="text-sm font-bold text-slate-600 leading-snug flex-1">
-                          ${item.project_name}
-                      </div>
-                      <!--<div class="flex-none text-right">
-                          <span class="block text-[10px] text-slate-400 font-bold uppercase">งบประมาณ</span>
-                          <span class="text-sm font-black text-green-600">
-                              ${(Number(item.budget_amount) || 0).toLocaleString()} <span class="text-[10px]">บาท</span>
-                          </span>
-                      </div>-->
-                  </div>
-            
-                  <div class="flex justify-between items-center mt-1">
-                      <div class="flex flex-wrap gap-2">
-                          ${mainBtn} ${extraBtns}
-                          ${(!mainBtn && !extraBtns) ? '<span class="text-xs text-slate-300 italic">ไม่มีข้อมูลไฟล์แนบ</span>' : ''}
-                      </div>
-                      
-                  </div>
-              </div>
+            <div class="flex gap-4 items-start">
+    <div class="flex-none">
+        <span class="inline-flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-600 text-lg font-bold rounded-lg">
+            ${rowNumber}
+        </span>
+    </div>
+
+    <div class="flex flex-col gap-1.5 flex-1">
+        <div class="flex justify-between items-center">
+            <div class="text-[13px] font-bold text-blue-600 uppercase tracking-wider flex items-center">
+              <span>อ. ${item.district}</span>
+              
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mx-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+              
+              <span>${item.local_org}</span>
             </div>
+            <div class="flex-none">
+              <!--<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">${item.project_status || '-'}</span>-->
+                ${adminTools}
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-4 py-1 border-t border-slate-50">
+            <div class="text-sm font-bold text-slate-700 leading-snug flex-1 min-w-[300px]">
+                ${item.project_name}
+            </div>
+            <!--<div class="flex-none text-right">
+                <span class="block text-[10px] text-slate-400 font-bold uppercase">งบประมาณ</span>
+                <span class="text-sm font-black text-green-600">
+                    ${(Number(item.budget_amount) || 0).toLocaleString()} <span class="text-[10px]">บาท</span>
+                </span>
+            </div>-->
+
+            <div class="flex flex-wrap gap-1.5 flex-none justify-end">
+                ${mainBtn} ${extraBtns}
+                ${(!mainBtn && !extraBtns) ? '<span class="text-[11px] text-slate-300 ">ไม่ได้พบเล่มแผนฯ</span>' : ''}
+            </div>
+        </div>
+    </div>
+</div>
         `;
         tableBody.appendChild(div);
     });
