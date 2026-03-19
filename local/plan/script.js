@@ -634,6 +634,9 @@ function downloadTemplate() {
 }
 
 async function importToSupabase(items) {
+  const isAuthenticated = await checkAuthBeforeAction();
+  if (!isAuthenticated) return;
+  
     // 1. ดึง ID ล่าสุดมาเพื่อรันต่อ (Auto Increment Logic)
     const { data: maxIdData } = await _supabase
         .from('plan_projects')
@@ -674,6 +677,9 @@ async function importToSupabase(items) {
 
 // --- ส่วนเชื่อมต่อปุ่มกับฟังก์ชันอ่านไฟล์ ---
 function processUpload() {
+  const isAuthenticated = await checkAuthBeforeAction();
+  if (!isAuthenticated) return;
+  
     if (!selectedExcelFile) {
         alert("กรุณาเลือกไฟล์ก่อนครับ");
         return;
@@ -702,6 +708,9 @@ function processUpload() {
 
 // ฟังก์ชัน importToSupabase (ใช้ตัวเดิมที่คุณส่งมาได้เลย แต่ปรับ budget เล็กน้อยเผื่อมีลูกน้ำ)
 async function importToSupabase(items) {
+  const isAuthenticated = await checkAuthBeforeAction();
+  if (!isAuthenticated) return;
+  
     const { data: maxIdData } = await _supabase
         .from('plan_projects')
         .select('id')
@@ -760,6 +769,9 @@ async function deleteProject(id) {
 
 // 1. ฟังก์ชันเรียกใช้งานการลบ (ใช้ผูกกับปุ่มถังขยะในตาราง)
 function confirmDelete(id, projectName) {
+    const isAuthenticated = await checkAuthBeforeAction();
+    if (!isAuthenticated) return;
+  
     const modal = document.getElementById('universalModal');
     const btn = document.getElementById('modalBtn');
     const closeBtn = document.getElementById('modalCloseBtn');
@@ -791,6 +803,8 @@ function confirmDelete(id, projectName) {
 
 // 2. ฟังก์ชันสื่อสารกับ Supabase เพื่อลบข้อมูลจริง
 async function executeDelete(id) {
+    const isAuthenticated = await checkAuthBeforeAction();
+    if (!isAuthenticated) return;
     const { error } = await _supabase
         .from('plan_projects')
         .delete()
@@ -849,6 +863,8 @@ function addExtraDocRow() {
 
 // 4. ฟังก์ชันโหลดข้อมูลใส่ Modal (เมื่อกดปุ่มแก้ไขในตาราง)
 async function editProject(id) {
+    const isAuthenticated = await checkAuthBeforeAction();
+    if (!isAuthenticated) return;
     const project = allData.find(item => item.id == id);
     if (!project) return alert("ไม่พบข้อมูลโครงการ");
 
@@ -886,6 +902,8 @@ async function editProject(id) {
 
 // 5. ฟังก์ชันบันทึกการแก้ไข
 async function saveEdit() {
+    const isAuthenticated = await checkAuthBeforeAction();
+    if (!isAuthenticated) return;
     const id = document.getElementById('editId').value;
     const btnSave = document.getElementById('btnSaveEdit');
     
@@ -939,6 +957,8 @@ async function saveEdit() {
 // --- Plan Documents Management ---
 
 async function renderPlanList() {
+    const isAuthenticated = await checkAuthBeforeAction();
+    if (!isAuthenticated) return;
     const container = document.getElementById('planListContainer');
     container.innerHTML = '<div class="text-center py-4 animate-pulse text-slate-400 text-xs">กำลังโหลดข้อมูลเล่มแผน...</div>';
 
@@ -976,6 +996,8 @@ async function renderPlanList() {
 }
 
 async function savePlan() {
+    const isAuthenticated = await checkAuthBeforeAction();
+    if (!isAuthenticated) return;
     const id = document.getElementById('planId').value;
     const planData = {
         doc_name: document.getElementById('pDocName').value.trim(),
@@ -1028,6 +1050,8 @@ function resetPlanForm() {
 }
 
 async function deletePlan(id, name) {
+    const isAuthenticated = await checkAuthBeforeAction();
+    if (!isAuthenticated) return;
     if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบเล่มแผน: ${name}?`)) return;
 
     const { error } = await _supabase.from('plan_documents').delete().eq('id', id);
@@ -1046,6 +1070,20 @@ async function openPlanManager() {
 function closePlanManager() {
     const modal = document.getElementById('planManagerModal');
     if (modal) modal.classList.add('hidden');
+}
+
+// ฟังก์ชันตรวจสอบว่า Session ยังใช้งานได้อยู่ไหม
+async function checkAuthBeforeAction() {
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    if (!session) {
+        // ถ้าไม่มี Session ให้แสดง Modal แจ้งเตือนและเตะออกไป Login ใหม่
+        showAlert('error', 'เซสชันหมดอายุ', 'กรุณาเข้าสู่ระบบใหม่อีกครั้งเพื่อดำเนินการต่อ', true);
+        currentUser = null;
+        checkAuthState();
+        return false;
+    }
+    return true;
 }
 
 function showAlert(type, title, message, reload = false, showCancel = false) {
