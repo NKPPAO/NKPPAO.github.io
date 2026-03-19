@@ -228,10 +228,17 @@ function renderTable(data) {
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     แก้ไข
                 </button>
-                <button onclick="deleteProject(${item.id})" class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 transition-colors">
+                <button onclick="confirmDelete('${item.id}', '${item.project_name.replace(/'/g, "\\'")}')" 
+                      class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" 
+                      title="ลบโครงการ">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+              </button>
+                <!--<button onclick="deleteProject(${item.id})" class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     ลบ
-                </button>
+                </button>-->
             </div>
         ` : '';
 
@@ -749,6 +756,51 @@ async function deleteProject(id) {
         alert("ลบข้อมูลสำเร็จ");
         loadData();
     }
+}
+
+// 1. ฟังก์ชันเรียกใช้งานการลบ (ใช้ผูกกับปุ่มถังขยะในตาราง)
+function confirmDelete(id, projectName) {
+    const modal = document.getElementById('universalModal');
+    const btn = document.getElementById('modalBtn');
+    const closeBtn = document.getElementById('modalCloseBtn');
+    
+    // เรียกใช้ showAlert เพื่อตั้งค่า UI พื้นฐาน
+    showAlert('error', 'ยืนยันการลบข้อมูล', `คุณแน่ใจหรือไม่ที่จะลบโครงการ: "${projectName}"? การดำเนินการนี้ไม่สามารถย้อนกลับได้`, false, true);
+    
+    // ปรับแต่งปุ่มกดยืนยันให้เป็นคำว่า "ลบข้อมูล"
+    btn.innerText = "ยืนยันการลบ";
+    btn.className = "w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-2xl shadow-lg shadow-red-100 transition-all active:scale-95";
+
+    // ✅ เขียนทับปุ่ม onclick เพื่อให้ทำงานเฉพาะฟังก์ชันลบ
+    btn.onclick = async () => {
+        btn.disabled = true;
+        btn.innerText = "กำลังลบ...";
+        
+        const isSuccess = await executeDelete(id);
+        
+        if (isSuccess) {
+            modal.classList.add('hidden');
+            showAlert('success', 'ลบสำเร็จ', 'ลบข้อมูลโครงการเรียบร้อยแล้ว');
+            loadData(); // รีโหลดตาราง
+        } else {
+            btn.disabled = false;
+            btn.innerText = "ยืนยันการลบ";
+        }
+    };
+}
+
+// 2. ฟังก์ชันสื่อสารกับ Supabase เพื่อลบข้อมูลจริง
+async function executeDelete(id) {
+    const { error } = await _supabase
+        .from('plan_projects')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถลบข้อมูลได้: ' + error.message);
+        return false;
+    }
+    return true;
 }
 
 // --- ส่วนควบคุม Modal แก้ไขโครงการ ---
