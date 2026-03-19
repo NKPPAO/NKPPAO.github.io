@@ -395,7 +395,8 @@ function renderPagination() {
 // 6. ฟังก์ชันส่งออก Excel
 function exportToExcel() {
     if (!allData || allData.length === 0) {
-        alert('ไม่พบข้อมูลตามเงื่อนไขที่ระบุ');
+        //alert('ไม่พบข้อมูลตามเงื่อนไขที่ระบุ');
+        showAlert('info', 'ไม่พบข้อมูล', 'กรุณาเลือกเงื่อนไขการกรองใหม่ เนื่องจากไม่พบข้อมูลโครงการที่ต้องการส่งออก');
         return;
     }
 
@@ -456,8 +457,11 @@ function exportToExcel() {
         const finalData = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
         
         saveAs(finalData, fileName);
+        // ✅ แจ้งเตือนเมื่อเตรียมไฟล์เสร็จ (Optional)
+        showAlert('success', 'ส่งออกสำเร็จ', 'ระบบเตรียมไฟล์ Excel เรียบร้อยแล้ว');
     } catch (err) {
-        alert("Export Error: " + err.message);
+        //alert("Export Error: " + err.message);
+        showAlert('error', 'ส่งออกล้มเหลว', 'เกิดข้อผิดพลาดทางเทคนิค: ' + err.message);
     }
 }
 
@@ -469,12 +473,14 @@ async function handleLogin() {
     const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-        alert("เข้าสู่ระบบไม่สำเร็จ: " + error.message);
+        //alert("เข้าสู่ระบบไม่สำเร็จ: " + error.message);
+      showAlert('error', 'เข้าสู่ระบบไม่สำเร็จ', error.message);
     } else {
         currentUser = data.user;
         toggleLoginModal();
         checkAuthState();
-        alert("ยินดีต้อนรับ ผู้ดูแลระบบ");
+        //alert("ยินดีต้อนรับ ผู้ดูแลระบบ");
+        showAlert('success', 'ยินดีต้อนรับ', 'เข้าสู่ระบบในฐานะผู้ดูแลระบบเรียบร้อยแล้ว');
     }
 }
 
@@ -482,7 +488,8 @@ async function handleLogout() {
     await _supabase.auth.signOut();
     currentUser = null;
     checkAuthState();
-    alert("ออกจากระบบแล้ว");
+    //alert("ออกจากระบบแล้ว");
+  showAlert('info', 'ออกจากระบบ', 'คุณได้ออกจากระบบเรียบร้อยแล้ว');
 }
 function checkAuthState() {
     const adminControls = document.getElementById('adminControls'); // หรือ adminActions ตามใน HTML
@@ -519,7 +526,8 @@ function resetInactivityTimer() {
     inactivityTimer = setTimeout(() => {
         // เช็คอีกครั้งว่าหน้าจอยังเปิดอยู่ไหม
         if (currentUser) {
-            alert("คุณไม่มีการเคลื่อนไหวนานเกิน 10 นาที ระบบจะออกจากระบบอัตโนมัติ");
+           // alert("คุณไม่มีการเคลื่อนไหวนานเกิน 10 นาที ระบบจะออกจากระบบอัตโนมัติ");
+            showAlert('error', 'หมดเวลาเชื่อมต่อ', 'คุณไม่มีการเคลื่อนไหวนานเกิน 10 นาที ระบบจะออกจากระบบอัตโนมัติเพื่อความปลอดภัย', true); // reload = true เพื่อเคลียร์หน้าจอ
             handleLogout();
         }
     }, 10 * 60 * 1000);
@@ -863,10 +871,12 @@ async function saveEdit() {
         .eq('id', id);
 
     if (error) {
-        alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+        //alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+      showAlert('error', 'บันทึกไม่สำเร็จ', 'ไม่สามารถอัปเดตข้อมูลได้: ' + error.message);
     } else {
-        alert("บันทึกข้อมูลเรียบร้อยแล้ว ✨");
+        //alert("บันทึกข้อมูลเรียบร้อยแล้ว ✨");
         toggleEditModal();
+        showAlert('success', 'บันทึกสำเร็จ', 'อัปเดตข้อมูลโครงการเรียบร้อยแล้ว');
         loadData(); // รีโหลดตารางโครงการใหม่
     }
     
@@ -984,4 +994,63 @@ async function openPlanManager() {
 function closePlanManager() {
     const modal = document.getElementById('planManagerModal');
     if (modal) modal.classList.add('hidden');
+}
+
+function showAlert(type, title, message, reload = false, showCancel = false) {
+    const btn = document.getElementById('modalBtn');
+    btn.disabled = false; // รีเซ็ตสถานะปุ่มทุกครั้งที่เปิดแจ้งเตือนใหม่
+    btn.innerText = "ตกลง";   // ค่าพื้นฐาน
+    const modal = document.getElementById('universalModal');
+    const container = document.getElementById('modalIconContainer');
+    const icon = document.getElementById('modalIcon');
+    const titleEl = document.getElementById('modalTitle');
+    const msgEl = document.getElementById('modalMessage');
+    //const btn = document.getElementById('modalBtn');
+    const closeBtn = document.getElementById('modalCloseBtn');
+    
+    // ดึงตัวครอบปุ่ม (Action Area) มาจัดการ Layout
+    const actionArea = document.getElementById('modalActionArea');
+
+    // ล้าง Class เดิมออกก่อน
+    container.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ";
+    
+    // ตั้งค่าตามประเภท (Success / Error / Info)
+    if (type === 'success') {
+        container.classList.add('bg-emerald-100', 'text-emerald-600');
+        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>`;
+        btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-2xl shadow-emerald-100 transition-all";
+    } else if (type === 'error') {
+        container.classList.add('bg-red-100', 'text-red-600');
+        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`;
+        btn.className = "w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-2xl shadow-red-100 transition-all";
+    } else { // info
+        container.classList.add('bg-blue-100', 'text-blue-600');
+        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+        btn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl shadow-blue-100 transition-all";
+    }
+
+    titleEl.innerText = title;
+    msgEl.innerText = message;
+    
+    // ✅ จุดสำคัญ: จัดการปุ่มให้สมดุล
+    if (showCancel && closeBtn) {
+        closeBtn.classList.remove('hidden');
+        // ใช้ Grid 2 คอลัมน์เพื่อให้ปุ่มกว้างเท่ากัน (50/50)
+        actionArea.className = "grid grid-cols-2 gap-3 mt-8 w-full"; 
+        
+        // เซ็ตปุ่มกดยกเลิกให้ปิด Modal
+        closeBtn.onclick = () => modal.classList.add('hidden');
+    } else if (closeBtn) {
+        closeBtn.classList.add('hidden');
+        // ถ้ามีปุ่มเดียว ให้แสดงแบบเต็มความกว้าง (Full Width)
+        actionArea.className = "block mt-8 w-full"; 
+    }
+
+    // ตั้งค่าปุ่มหลัก (ตกลง/ยืนยัน)
+    btn.onclick = () => {
+        modal.classList.add('hidden');
+        if (reload) location.reload();
+    };
+
+    modal.classList.remove('hidden');
 }
