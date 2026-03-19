@@ -263,34 +263,37 @@ function renderTable(data) {
     <div class="flex flex-col gap-1.5 flex-1">
         <div class="flex justify-between items-center">
             <div class="text-[13px] font-bold text-blue-600 uppercase tracking-wider flex items-center">
-              <span>อ. ${item.district}</span>
-              
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mx-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              </svg>
-              
-              <span>${item.local_org}</span>
+                <span>อ. ${item.district}</span>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mx-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                </svg>
+                
+                <span>${item.local_org}</span>
             </div>
             <div class="flex-none">
               <!--<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">${item.project_status || '-'}</span>-->
-                ${adminTools}
+              ${adminTools}
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-4 py-1 border-t border-slate-50">
-            <div class="text-sm font-bold text-slate-700 leading-snug flex-1 min-w-[300px]">
+        <div class="flex flex-col gap-2 py-1 border-t border-slate-50">
+            <div class="text-sm font-bold text-slate-700 leading-snug">
                 ${item.project_name}
             </div>
-            <!--<div class="flex-none text-right">
+             <!--<div class="flex-none text-right">
                 <span class="block text-[10px] text-slate-400 font-bold uppercase">งบประมาณ</span>
                 <span class="text-sm font-black text-green-600">
                     ${(Number(item.budget_amount) || 0).toLocaleString()} <span class="text-[10px]">บาท</span>
                 </span>
             </div>-->
 
-            <div class="flex flex-wrap gap-1.5 flex-none justify-end">
-                ${mainBtn} ${extraBtns}
-                ${(!mainBtn && !extraBtns) ? '<span class="text-[11px] text-slate-300 ">ไม่ได้พบเล่มแผนฯ</span>' : ''}
+            <div class="flex flex-col gap-1.5 items-start">
+                ${mainBtn ? `<div class="w-full">${mainBtn}</div>` : ''}
+                
+                ${extraBtns ? `<div class="flex flex-col gap-1.5 w-full">${extraBtns}</div>` : ''}
+                
+                ${(!mainBtn && !extraBtns) ? '<span class="text-[11px] text-slate-300 ">ไม่พบเล่มแผนฯ</span>' : ''}
             </div>
         </div>
     </div>
