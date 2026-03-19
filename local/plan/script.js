@@ -633,53 +633,8 @@ function downloadTemplate() {
     XLSX.writeFile(wb, "แบบฟอร์มนำเข้าข้อมูล_อบจ_นครปฐม.xlsx");
 }
 
-async function importToSupabase(items) {
-  const isAuthenticated = await checkAuthBeforeAction();
-  if (!isAuthenticated) return;
-  
-    // 1. ดึง ID ล่าสุดมาเพื่อรันต่อ (Auto Increment Logic)
-    const { data: maxIdData } = await _supabase
-        .from('plan_projects')
-        .select('id')
-        .order('id', { ascending: false })
-        .limit(1);
-
-    let lastId = maxIdData && maxIdData.length > 0 ? maxIdData[0].id : 0;
-
-    // 2. แปลงข้อมูลจากหัวภาษาไทย เป็นฟิลด์ภาษาอังกฤษ
-    const cleanData = items.map((item) => {
-        lastId++;
-        return {
-            id: lastId,
-            district: item["อำเภอ"] || "",
-            local_org: item["อปท"] || "",
-            project_name: item["ชื่อโครงการ"] || "",
-            budget_amount: Number(item["งบประมาณ"]) || 0,
-            project_status: item["สถานะ"] || "-",
-            main_doc_id: item["IDเล่มแผนหลัก"] || null,
-            main_page: item["หน้าในเล่มหลัก"] || null,
-            extra_doc_id: item["IDเล่มแผนเสริม"] || null,
-            extra_page: item["หน้าในเล่มเสริม"] || null
-        };
-    });
-
-    // 3. Insert ลง Supabase
-    const { error } = await _supabase.from('plan_projects').insert(cleanData);
-
-    if (error) {
-        alert("เกิดข้อผิดพลาด: " + error.message);
-    } else {
-        alert(`นำเข้าข้อมูลสำเร็จ ${cleanData.length} รายการ`);
-        toggleUploadModal();
-        loadData();
-    }
-}
-
 // --- ส่วนเชื่อมต่อปุ่มกับฟังก์ชันอ่านไฟล์ ---
 function processUpload() {
-  const isAuthenticated = await checkAuthBeforeAction();
-  if (!isAuthenticated) return;
-  
     if (!selectedExcelFile) {
         alert("กรุณาเลือกไฟล์ก่อนครับ");
         return;
@@ -751,27 +706,8 @@ async function importToSupabase(items) {
 }
 
 // --- ฟังก์ชันลบ ---
-async function deleteProject(id) {
-    if (!confirm("ยืนยันการลบโครงการนี้?")) return;
-
-    const { error } = await _supabase
-        .from('plan_projects')
-        .delete()
-        .eq('id', id);
-
-    if (error) {
-        alert("ลบไม่สำเร็จ: " + error.message);
-    } else {
-        alert("ลบข้อมูลสำเร็จ");
-        loadData();
-    }
-}
-
 // 1. ฟังก์ชันเรียกใช้งานการลบ (ใช้ผูกกับปุ่มถังขยะในตาราง)
 function confirmDelete(id, projectName) {
-    const isAuthenticated = await checkAuthBeforeAction();
-    if (!isAuthenticated) return;
-  
     const modal = document.getElementById('universalModal');
     const btn = document.getElementById('modalBtn');
     const closeBtn = document.getElementById('modalCloseBtn');
