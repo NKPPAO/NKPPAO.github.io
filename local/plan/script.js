@@ -202,16 +202,24 @@ function renderTable(data) {
             if (!doc || !doc.pdf_url) return '';
 
             const actualPdfPage = Number(pageInBook) + (Number(doc.page_offset) || 0);
-            return `
+          /*return `
                 <a href="${doc.pdf_url}#page=${actualPdfPage}" target="_blank" 
                    class="inline-flex items-center gap-2 px-3 py-2 ${themeColor} text-white rounded-xl text-[11px] font-bold shadow-sm transition-all hover:brightness-110 active:scale-95">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                     ${doc.doc_name} หน้า ${pageInBook}
-                </a>`;
+                </a>`;*/
+            return `
+                <a href="${doc.pdf_url}#page=${actualPdfPage}" target="_blank" 
+                 class="inline-flex items-center gap-1 text-slate-500 text-[11px] ${themeColor} font-bold transition-all group">      
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-400 group-${themeColor} transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                  </svg>
+                  <span>${doc.doc_name} หน้า ${pageInBook}</span>
+              </a>`;
         };
 
         // สร้างปุ่มแผนหลัก
-        const mainBtn = createPdfButtonFromCache(item.main_doc_id, item.main_page, 'bg-blue-600');
+        const mainBtn = createPdfButtonFromCache(item.main_doc_id, item.main_page, 'hover:text-blue-600');
 
         // สร้างปุ่มแผนเสริม (รองรับหลายค่าคั่นด้วยคอมม่า)
         let extraBtns = '';
@@ -219,7 +227,7 @@ function renderTable(data) {
             const ids = String(item.extra_doc_id).split(',');
             const pages = String(item.extra_page || '').split(',');
             extraBtns = ids.map((id, i) => {
-                return createPdfButtonFromCache(id.trim(), (pages[i] || pages[0] || '').trim(), 'bg-orange-500');
+                return createPdfButtonFromCache(id.trim(), (pages[i] || pages[0] || '').trim(), 'hover:text-orange-500');
             }).join('');
         }
 
@@ -230,11 +238,9 @@ function renderTable(data) {
                     แก้ไข
                 </button>
                 <button onclick="confirmDelete('${item.id}', '${item.project_name.replace(/'/g, "\\'")}')" 
-                      class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" 
-                      title="ลบโครงการ">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                      class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    ลบ
               </button>
                 <!--<button onclick="deleteProject(${item.id})" class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
