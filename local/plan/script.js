@@ -1050,55 +1050,63 @@ function closePlanManager() {
 
 function showAlert(type, title, message, reload = false, showCancel = false) {
     const btn = document.getElementById('modalBtn');
-    btn.disabled = false; // รีเซ็ตสถานะปุ่มทุกครั้งที่เปิดแจ้งเตือนใหม่
-    btn.innerText = "ตกลง";   // ค่าพื้นฐาน
     const modal = document.getElementById('universalModal');
     const container = document.getElementById('modalIconContainer');
     const icon = document.getElementById('modalIcon');
     const titleEl = document.getElementById('modalTitle');
     const msgEl = document.getElementById('modalMessage');
-    //const btn = document.getElementById('modalBtn');
     const closeBtn = document.getElementById('modalCloseBtn');
-    
-    // ดึงตัวครอบปุ่ม (Action Area) มาจัดการ Layout
     const actionArea = document.getElementById('modalActionArea');
 
-    // ล้าง Class เดิมออกก่อน
+    btn.disabled = false;
+    btn.innerText = "ตกลง"; 
+
+    // 1. ตั้งค่า Icon และสีตามประเภท (Success / Error / Info)
     container.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ";
     
-    // ตั้งค่าตามประเภท (Success / Error / Info)
     if (type === 'success') {
         container.classList.add('bg-emerald-100', 'text-emerald-600');
         icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>`;
-        btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-2xl shadow-emerald-100 transition-all";
     } else if (type === 'error') {
         container.classList.add('bg-red-100', 'text-red-600');
         icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`;
-        btn.className = "w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-2xl shadow-red-100 transition-all";
-    } else { // info
+    } else {
         container.classList.add('bg-blue-100', 'text-blue-600');
         icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
-        btn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl shadow-blue-100 transition-all";
     }
 
     titleEl.innerText = title;
     msgEl.innerText = message;
     
-    // ✅ จุดสำคัญ: จัดการปุ่มให้สมดุล
+    // 2. จัดการ Layout และสีของปุ่ม
     if (showCancel && closeBtn) {
+        // --- กรณีมี 2 ปุ่ม (ยืนยัน + ยกเลิก) ---
         closeBtn.classList.remove('hidden');
-        // ใช้ Grid 2 คอลัมน์เพื่อให้ปุ่มกว้างเท่ากัน (50/50)
         actionArea.className = "grid grid-cols-2 gap-3 mt-8 w-full"; 
         
-        // เซ็ตปุ่มกดยกเลิกให้ปิด Modal
+        // ปุ่มยืนยัน (สีฟ้า)
+        btn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl shadow-lg shadow-blue-100 transition-all active:scale-95";
+        
+        // ปุ่มยกเลิก (สีแดง)
+        closeBtn.innerText = "ยกเลิก";
+        closeBtn.className = "w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-2xl shadow-lg shadow-red-100 transition-all active:scale-95";
+        
         closeBtn.onclick = () => modal.classList.add('hidden');
-    } else if (closeBtn) {
-        closeBtn.classList.add('hidden');
-        // ถ้ามีปุ่มเดียว ให้แสดงแบบเต็มความกว้าง (Full Width)
+    } else {
+        // --- กรณีมีปุ่มเดียว (ตกลง) ---
+        if (closeBtn) closeBtn.classList.add('hidden');
         actionArea.className = "block mt-8 w-full"; 
+        
+        // ใช้สีตาม Type เดิม (Success=เขียว, Error=แดง, Info=ฟ้า)
+        if (type === 'success') {
+            btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-2xl transition-all";
+        } else if (type === 'error') {
+            btn.className = "w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-2xl transition-all";
+        } else {
+            btn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl transition-all";
+        }
     }
 
-    // ตั้งค่าปุ่มหลัก (ตกลง/ยืนยัน)
     btn.onclick = () => {
         modal.classList.add('hidden');
         if (reload) location.reload();
