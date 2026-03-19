@@ -665,21 +665,28 @@ let selectedExcelFile = null;
 function handleFileSelect(file) {
     if (file && file.name.endsWith('.xlsx')) {
         selectedExcelFile = file;
-        dropZone.innerHTML = `<p class="text-blue-600 font-bold">เตรียมพร้อม: ${file.name}</p>`;
+        const dropZone = document.getElementById('dropZone');
+        dropZone.innerHTML = `
+            <div class="flex flex-col items-center">
+                <svg class="h-10 w-10 text-emerald-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-emerald-600 font-bold">เตรียมพร้อมนำเข้า: ${file.name}</p>
+                <p class="text-xs text-slate-400 mt-1">กดปุ่มเริ่มนำเข้าข้อมูลด้านล่าง</p>
+            </div>`;
         document.getElementById('btnProcessUpload').classList.remove('hidden');
     } else {
-        alert("กรุณาเลือกไฟล์ .xlsx เท่านั้น");
+        // ✅ เปลี่ยนจาก alert เป็น showAlert
+        showAlert('error', 'ไฟล์ไม่ถูกต้อง', 'กรุณาเลือกไฟล์นามสกุล .xlsx เท่านั้น');
     }
 }
 
-// --- 4. ฟังก์ชันดาวน์โหลด Template ---
 function downloadTemplate() {
     if (typeof XLSX === 'undefined') {
-        alert('กรุณารอโหลดระบบสักครู่ครับ...');
+        showAlert('info', 'ระบบยังไม่พร้อม', 'กำลังโหลดไลบรารีจัดการไฟล์ กรุณารอสักครู่ครับ...');
         return;
     }
 
-    // กำหนดหัวคอลัมน์เป็นภาษาไทย
     const headers = [
         ["อำเภอ", "อปท", "ชื่อโครงการ", "งบประมาณ", "สถานะ", "IDเล่มแผนหลัก", "หน้าในเล่มหลัก", "IDเล่มแผนเสริม", "หน้าในเล่มเสริม"]
     ];
@@ -687,79 +694,104 @@ function downloadTemplate() {
     const ws = XLSX.utils.aoa_to_sheet(headers);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template_งบประมาณ");
-
     XLSX.writeFile(wb, "แบบฟอร์มนำเข้าข้อมูล_อบจ_นครปฐม.xlsx");
 }
 
 // --- ส่วนเชื่อมต่อปุ่มกับฟังก์ชันอ่านไฟล์ ---
-function processUpload() {
+async function processUpload() {
     if (!selectedExcelFile) {
-        alert("กรุณาเลือกไฟล์ก่อนครับ");
+        showAlert('info', 'ไม่พบไฟล์', 'กรุณาเลือกหรือลากไฟล์ Excel มาวางก่อนครับ');
         return;
     }
 
+    // 🛡️ เช็คสิทธิ์ก่อนเริ่มประมวลผล
+    const isAuthenticated = await checkAuthBeforeAction();
+    if (!isAuthenticated) return;
+
+    const btn = document.getElementById('btnProcessUpload');
+    btn.disabled = true;
+    btn.innerText = "กำลังประมวลผลไฟล์...";
+
     const reader = new FileReader();
     reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        
-        // อ่านข้อมูลเป็น JSON โดยใช้หัวตารางภาษาไทย
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        
-        if (jsonData.length === 0) {
-            alert("ไฟล์ว่างเปล่าหรือหัวตารางไม่ถูกต้อง");
-            return;
-        }
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            
+            if (jsonData.length === 0) {
+                showAlert('error', 'ข้อมูลว่างเปล่า', 'ไม่พบข้อมูลในไฟล์ หรือรูปแบบหัวตารางไม่ถูกต้อง');
+                btn.disabled = false;
+                btn.innerText = "เริ่มนำเข้าข้อมูล";
+                return;
+            }
 
-        // ส่งต่อไปยังฟังก์ชันที่คุณเขียนไว้
-        importToSupabase(jsonData);
+            importToSupabase(jsonData);
+        } catch (err) {
+            showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถอ่านไฟล์ได้: ' + err.message);
+            btn.disabled = false;
+        }
     };
     reader.readAsArrayBuffer(selectedExcelFile);
 }
 
-// ฟังก์ชัน importToSupabase (ใช้ตัวเดิมที่คุณส่งมาได้เลย แต่ปรับ budget เล็กน้อยเผื่อมีลูกน้ำ)
 async function importToSupabase(items) {
-  const isAuthenticated = await checkAuthBeforeAction();
-  if (!isAuthenticated) return;
-  
-    const { data: maxIdData } = await _supabase
-        .from('plan_projects')
-        .select('id')
-        .order('id', { ascending: false })
-        .limit(1);
+    const btn = document.getElementById('btnProcessUpload');
+    btn.innerText = "กำลังนำเข้าข้อมูลไปยังฐานข้อมูล...";
 
-    let lastId = maxIdData && maxIdData.length > 0 ? maxIdData[0].id : 0;
+    try {
+        // ดึง ID ล่าสุดมาจัดการ (เผื่อต้องการจัดเรียงเอง)
+        const { data: maxIdData } = await _supabase
+            .from('plan_projects')
+            .select('id')
+            .order('id', { ascending: false })
+            .limit(1);
 
-    const cleanData = items.map((item) => {
-        lastId++;
-        return {
-            id: lastId,
-            district: item["อำเภอ"] || "",
-            local_org: item["อปท"] || "",
-            project_name: item["ชื่อโครงการ"] || "",
-            // ปรับตรงนี้: กำจัดเครื่องหมายคอมมาก่อนแปลงเป็นตัวเลข
-            budget_amount: Number(String(item["งบประมาณ"]).replace(/,/g, '')) || 0,
-            project_status: item["สถานะ"] || "-",
-            main_doc_id: item["IDเล่มแผนหลัก"] || null,
-            main_page: item["หน้าในเล่มหลัก"] || null,
-            extra_doc_id: item["IDเล่มแผนเสริม"] || null,
-            extra_page: item["หน้าในเล่มเสริม"] || null
-        };
-    });
+        let lastId = maxIdData && maxIdData.length > 0 ? maxIdData[0].id : 0;
 
-    const { error } = await _supabase.from('plan_projects').insert(cleanData);
+        const cleanData = items.map((item) => {
+            lastId++;
+            return {
+                id: lastId,
+                district: item["อำเภอ"] || "",
+                local_org: item["อปท"] || "",
+                project_name: item["ชื่อโครงการ"] || "",
+                budget_amount: Number(String(item["งบประมาณ"] || 0).replace(/,/g, '')) || 0,
+                project_status: item["สถานะ"] || "คงเดิม",
+                main_doc_id: item["IDเล่มแผนหลัก"] || null,
+                main_page: item["หน้าในเล่มหลัก"] || null,
+                extra_doc_id: item["IDเล่มแผนเสริม"] || null,
+                extra_page: item["หน้าในเล่มเสริม"] || null
+            };
+        });
 
-    if (error) {
-        alert("เกิดข้อผิดพลาด: " + error.message);
-    } else {
-        alert(`นำเข้าข้อมูลสำเร็จ ${cleanData.length} รายการ`);
-        toggleUploadModal();
-        loadData();
-        // ล้างค่าไฟล์เดิมออก
-        selectedExcelFile = null;
-        document.getElementById('dropZone').innerHTML = `<p class="text-sm font-bold text-slate-600">ลากไฟล์ Excel มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>`;
+        // ทำการ Insert ข้อมูล
+        const { error } = await _supabase.from('plan_projects').insert(cleanData);
+
+        if (error) {
+            showAlert('error', 'นำเข้าล้มเหลว', 'เกิดข้อผิดพลาดจากฐานข้อมูล: ' + error.message);
+        } else {
+            // ✅ นำเข้าสำเร็จ
+            showAlert('success', 'นำเข้าข้อมูลสำเร็จ', `เพิ่มข้อมูลใหม่ทั้งหมด ${cleanData.length} รายการ เรียบร้อยแล้ว ✨`);
+            
+            // ปิด Modal และรีโหลดข้อมูล
+            if (typeof toggleUploadModal === 'function') toggleUploadModal();
+            loadData();
+
+            // ล้างค่า Interface การอัปโหลด
+            selectedExcelFile = null;
+            btn.classList.add('hidden');
+            document.getElementById('dropZone').innerHTML = `
+                <p class="text-sm font-bold text-slate-600">ลากไฟล์ Excel มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+                <p class="text-xs text-slate-400 mt-1">รองรับเฉพาะไฟล์ .xlsx</p>`;
+        }
+    } catch (err) {
+        showAlert('error', 'ผิดพลาดทางเทคนิค', err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "เริ่มนำเข้าข้อมูล";
     }
 }
 
