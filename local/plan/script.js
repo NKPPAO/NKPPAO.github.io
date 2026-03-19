@@ -277,7 +277,7 @@ function renderTable(data) {
             </div>
         </div>
 
-        <div class="flex flex-col gap-2 py-1 border-t border-slate-50">
+        <div class="flex flex-col gap-2 py-1">
             <div class="text-sm font-bold text-slate-700 leading-snug">
                 ${item.project_name}
             </div>
@@ -288,13 +288,11 @@ function renderTable(data) {
                 </span>
             </div>-->
 
-            <div class="flex flex-col gap-1.5 items-start">
-                ${mainBtn ? `<div class="w-full">${mainBtn}</div>` : ''}
-                
-                ${extraBtns ? `<div class="flex flex-col gap-1.5 w-full">${extraBtns}</div>` : ''}
-                
-                ${(!mainBtn && !extraBtns) ? '<span class="text-[11px] text-slate-300 ">ไม่พบเล่มแผนฯ</span>' : ''}
-            </div>
+            <div class="flex flex-col gap-1.5 items-start mt-2">
+              ${mainBtn ? mainBtn : ''}
+              ${extraBtns ? extraBtns : ''}  
+              ${(!mainBtn && !extraBtns) ? '<span class="text-[11px] text-slate-300">ไม่พบเล่มแผนฯ</span>' : ''}
+          </div>
         </div>
     </div>
 </div>
