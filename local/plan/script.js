@@ -261,21 +261,21 @@ function renderTable(data) {
     </div>
 
     <div class="flex flex-col gap-1.5 flex-1">
-        <div class="flex justify-between items-center">
-            <div class="text-[13px] font-bold text-blue-600 uppercase tracking-wider flex items-center">
-                <span>อ. ${item.district}</span>
-                
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mx-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                </svg>
-                
-                <span>${item.local_org}</span>
-            </div>
-            <div class="flex-none">
-              <!--<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase">${item.project_status || '-'}</span>-->
-              ${adminTools}
-            </div>
-        </div>
+        <div class="flex justify-between items-start sm:items-center gap-2">
+          <div class="text-sm font-bold text-blue-600 uppercase tracking-wider flex flex-wrap items-center leading-relaxed">
+              <span class="whitespace-nowrap">อ. ${item.district}</span>
+              
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mx-2 text-slate-300 flex-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+              
+              <span class="text-blue-700">${item.local_org}</span>
+          </div>
+          <div class="flex-none pt-0.5 sm:pt-0">
+            <!--<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-black rounded-full border border-blue-100 uppercase">${item.project_status || '-'}</span>-->
+            ${adminTools}
+          </div>
+      </div>
 
         <div class="flex flex-col gap-2 py-1">
             <div class="text-sm text-slate-700 leading-snug">
