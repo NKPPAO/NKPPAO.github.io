@@ -806,6 +806,7 @@ async function processUpload() {
             // แก้ไขจาก error.message เป็น err.message เพื่อแก้ ReferenceError
             const errorMessage = err.message || "เกิดข้อผิดพลาดไม่ทราบสาเหตุ";
             showAlert('error', 'เกิดข้อผิดพลาด', errorMessage);
+            resetUploadState(); // ล้างไฟล์เดิมและเปิดล็อค Dropzone
             
             btn.disabled = false;
             btn.innerText = "เริ่มอัปโหลด";

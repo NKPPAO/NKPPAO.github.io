@@ -250,24 +250,25 @@
     </div>
 </div>
 
-    <div id="uploadExcelModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden relative animate-in fade-in zoom-in duration-300">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-blue-900 text-white">
-            <div>
-                <h2 class="text-xl font-bold">นำเข้าข้อมูลจาก Excel</h2>
-                <p class="text-blue-200 text-xs text-nowrap">กรุณาดาวน์โหลดไฟล์ตัวอย่างการกรอกข้อมูล เพื่อการนำเข้าข้อมูลที่ถูกต้อง</p>
+    <div id="uploadExcelModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+    <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden relative animate-in fade-in zoom-in duration-300 my-auto max-h-[95vh] flex flex-col">
+        
+        <div class="p-4 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-blue-900 text-white shrink-0">
+            <div class="pr-4">
+                <h2 class="text-lg sm:text-xl font-bold">นำเข้าข้อมูลจาก Excel</h2>
+                <p class="text-blue-200 text-[10px] sm:text-xs leading-tight">กรุณาดาวน์โหลดไฟล์ตัวอย่าง เพื่อการนำเข้าที่ถูกต้อง</p>
             </div>
-            <button onclick="closeUploadModal()" class="text-white/60 hover:text-white transition-colors">
+            <button onclick="closeUploadModal()" class="text-white/60 hover:text-white transition-colors p-2 -mr-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
 
-        <div class="p-8">
-            <div class="flex justify-between items-center mb-6 bg-blue-50 p-4 rounded-2xl border border-blue-100">
+        <div class="p-4 sm:p-8 overflow-y-auto">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mb-6 bg-blue-50 p-4 rounded-2xl border border-blue-100">
                 <div class="text-sm font-bold text-blue-800">ยังไม่มีไฟล์ตัวอย่าง?</div>
-                <button onclick="downloadTemplate()" class="bg-white text-blue-600 px-4 py-2 rounded-xl text-xs font-bold shadow-sm hover:bg-blue-100 transition-all flex items-center gap-2">
+                <button onclick="downloadTemplate()" class="w-full sm:w-auto bg-white text-blue-600 px-4 py-2 rounded-xl text-xs font-bold shadow-sm hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0L8 8m4-4v12" />
                     </svg>
@@ -276,25 +277,26 @@
             </div>
 
             <div id="dropZone" 
-                 class="border-4 border-dashed border-slate-200 rounded-3xl p-10 flex flex-col items-center justify-center transition-all cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 group">
+                 class="border-4 border-dashed border-slate-200 rounded-3xl p-6 sm:p-10 flex flex-col items-center justify-center transition-all cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 group">
                 <div class="bg-blue-100 text-blue-600 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 sm:h-10 sm:w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                     </svg>
                 </div>
-                <h3 class="text-lg font-bold text-slate-700">ลากไฟล์ Excel มาวางที่นี่</h3>
-                <p class="text-slate-400 text-sm mt-1">รองรับเฉพาะไฟล์ .xlsx หรือ .xls เท่านั้น</p>
+                <h3 class="text-base sm:text-lg font-bold text-slate-700 text-center">ลากไฟล์ Excel มาวางที่นี่</h3>
+                <p class="text-slate-400 text-xs sm:text-sm mt-1">เฉพาะ .xlsx หรือ .xls</p>
                 <input type="file" id="excelInput" accept=".xlsx, .xls" class="hidden">
             </div>
 
-            <div id="fileInfo" class="hidden mt-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="text-emerald-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
-                    <span id="fileName" class="text-sm font-bold text-emerald-800 truncate max-w-[200px]">filename.xlsx</span>
+            <div id="fileInfo" class="hidden mt-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="text-emerald-600 shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+                    <span id="fileName" class="text-sm font-bold text-emerald-800 truncate block">filename.xlsx</span>
                 </div>
-                <button onclick="processUpload()" id="btnStartUpload" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-sm shadow-lg shadow-emerald-200 hover:bg-emerald-700">
-                    เริ่มอัปโหลด
-                </button>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="resetUploadState()" class="flex-1 sm:flex-none bg-slate-200 text-slate-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-300">ยกเลิก</button>
+                    <button onclick="processUpload()" id="btnStartUpload" class="flex-1 sm:flex-none bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-sm shadow-lg shadow-emerald-200 hover:bg-emerald-700">เริ่มอัปโหลด</button>
+                </div>
             </div>
         </div>
     </div>
