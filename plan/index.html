@@ -56,25 +56,30 @@
             padding: 80px 0 40px 0;
         }
 
-        .system-card {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 15px 35px -10px rgba(0,0,0,0.05);
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-        }
+.system-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-        .system-card:hover {
-            transform: translateY(-15px) scale(1.02);
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 30px 60px -12px rgba(79, 70, 229, 0.15);
-            border-color: rgba(99, 102, 241, 0.4);
-        }
+.system-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
+    border-color: rgba(79, 70, 229, 0.3);
+}
 
-        .status-online {
-            background: #22c55e;
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
-        }
+.icon-box {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    font-size: 1.5rem;
+}
 
         .swiper-pagination-bullet-active {
             background: #4f46e5 !important;
@@ -118,71 +123,68 @@
         </div>
     </section>
 
-    <main class="container mx-auto px-8 py-16 flex-grow">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10">
-            
-            <div class="system-card p-10 rounded-[3.5rem] text-center relative group">
-                <div class="absolute top-8 right-10 flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full status-online mr-2 animate-pulse"></span>
-                    <span class="text-[10px] font-bold text-green-600 tracking-widest">ONLINE</span>
-                </div>
-                <div class="w-24 h-24 bg-gradient-to-br from-blue-50 to-indigo-50 text-indigo-600 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-8 transition-transform group-hover:rotate-6">
-                    <i class="fas fa-chart-pie"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">โครงการขอรับการสนับสนุนงบประมาณ</h3>
-                <p class="text-gray-500 text-sm mb-10 leading-relaxed">ระบบสืบค้นโครงการขอรับการสนับสนุนงบประมาณ</br>
-                องค์การบริหารส่วนจังหวัดนครปฐม</br>(ข้อมูลโครงการตั้งแต่ปีงบประมาณ พ.ศ. 2547 เป็นต้นไป)</p>
-                <a href="budget/" class="block w-full py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-100/50">เปิดระบบ</a>
+    <main class="container mx-auto px-6 py-10 flex-grow">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <a href="budget/" class="system-card p-6 rounded-3xl flex items-start gap-5 group">
+            <div class="icon-box bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
+                <i class="fas fa-chart-pie"></i>
             </div>
+            <div class="flex-grow">
+                <div class="flex justify-between items-start mb-1">
+                    <h3 class="font-bold text-gray-800 tracking-tight">โครงการขอรับการสนับสนุนงบประมาณ</h3>
+                    <span class="flex h-2 w-2 rounded-full bg-green-500 mt-2"></span>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    ระบบสืบค้นโครงการขอรับการสนับสนุนงบประมาณ</br>
+                    องค์การบริหารส่วนจังหวัดนครปฐม</br>(ข้อมูลโครงการตั้งแต่ปีงบประมาณ พ.ศ. 2547 เป็นต้นไป)
+                </p>
+                <div class="mt-4 text-xs font-bold text-indigo-600 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    เปิดระบบ <i class="fas fa-chevron-right text-[10px]"></i>
+                </div>
+            </div>
+        </a>
 
-            <div class="system-card p-10 rounded-[3.5rem] text-center relative group">
-                <div class="absolute top-8 right-10 flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-2"></span>
-                    <span class="text-[10px] font-bold text-red-600 tracking-widest uppercase">Maintenance</span>
-                </div>
-                <div class="w-24 h-24 bg-gradient-to-br from-purple-50 to-pink-50 text-purple-600 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-8 transition-transform group-hover:rotate-6">
-                    <i class="fa-solid fa-book-bookmark"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">โครงการตามแผนพัฒนาท้องถิ่น</h3>
-                <p class="text-gray-500 text-sm mb-10 leading-relaxed">ระบบค้นหาโครงการตามแผนพัฒนาท้องถิ่น (พ.ศ. 2571 - 2575)</br>
-                องค์การบริหารส่วนจังหวัดนครปฐม</br>(อยู่ระหว่างปรับปรุงข้อมูล | ข้อมูลสำหรับทดสอบเท่านั้น)</p>
-                <a href="plan/" class="block w-full py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-100/50">เปิดระบบ</a>
+        <a href="plan/" class="system-card p-6 rounded-3xl flex items-start gap-5 group">
+            <div class="icon-box bg-purple-50 text-purple-600 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-book-bookmark"></i>
             </div>
-            <!--
-            <div class="system-card p-10 rounded-[3.5rem] text-center relative opacity-60 grayscale-[0.8]">
-                <div class="absolute top-8 right-10 flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-2"></span>
-                    <span class="text-[10px] font-bold text-red-600 tracking-widest uppercase">Maintenance</span>
+            <div class="flex-grow">
+                <div class="flex justify-between items-start mb-1">
+                    <h3 class="font-bold text-gray-800 tracking-tight">โครงการตามแผนพัฒนาท้องถิ่น</h3>
+                    <span class="flex h-2 w-2 rounded-full bg-orange-400 mt-2"></span>
                 </div>
-                <div class="w-24 h-24 bg-gray-100 text-gray-400 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-8">
-                    <i class="fas fa-lock"></i>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    ระบบค้นหาโครงการตามแผนพัฒนาท้องถิ่น (พ.ศ. 2571 - 2575)</br>
+                    องค์การบริหารส่วนจังหวัดนครปฐม</br>(อยู่ระหว่างปรับปรุงข้อมูล | ข้อมูลสำหรับทดสอบเท่านั้น)
+                </p>
+                <div class="mt-4 text-xs font-bold text-purple-600 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    เปิดระบบ <i class="fas fa-chevron-right text-[10px]"></i>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-400 mb-3">ระบบบุคลากร</h3>
-                <p class="text-gray-400 text-sm mb-10 leading-relaxed">กำลังอัปเดตฐานข้อมูลใหม่</p>
-                <button disabled class="w-full py-4 bg-gray-200 text-gray-400 rounded-2xl font-bold cursor-not-allowed">ปิดปรับปรุง</button>
             </div>
+        </a>
 
-            <div class="system-card p-10 rounded-[3.5rem] text-center relative group">
-                <div class="absolute top-8 right-10 flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full status-online mr-2 animate-pulse"></span>
-                    <span class="text-[10px] font-bold text-green-600 tracking-widest">ONLINE</span>
-                </div>
-                <div class="w-24 h-24 bg-gradient-to-br from-cyan-50 to-blue-50 text-cyan-600 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-8 transition-transform group-hover:rotate-6">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">จัดซื้อจัดจ้าง</h3>
-                <p class="text-gray-500 text-sm mb-10 leading-relaxed">ติดตามพัสดุและกระบวนการจัดซื้อจัดจ้าง</p>
-                <a href="#" class="block w-full py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-cyan-600 transition-all shadow-xl shadow-cyan-100/50">เปิดระบบ</a>
+        <div class="system-card p-6 rounded-3xl flex items-start gap-5 opacity-60 grayscale cursor-not-allowed">
+            <div class="icon-box bg-gray-100 text-gray-400">
+                <i class="fas fa-lock text-lg"></i>
             </div>
-            -->
+            <div class="flex-grow">
+                <h3 class="font-bold text-gray-400 tracking-tight mb-1">...</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    ...
+                </p>
+            </div>
         </div>
-    </main>
+
+    </div>
+</main>
 
     <footer class="py-12 relative z-10">
         <div class="container mx-auto px-8 text-center">
-            <div class="w-20 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto mb-8 rounded-full opacity-30"></div>
+            <div class="w-20 h-1 bg-gradient-to-r from-blue-600 to-blue-200 mx-auto mb-8 rounded-full opacity-30"></div>
             <p class="text-gray-800 font-extrabold text-lg mb-1">องค์การบริหารส่วนจังหวัดนครปฐม</p>
-            <p class="text-gray-400 text-xs tracking-[0.2em] uppercase font-medium">ฝ่ายนโนบายและแผนงาน กองยุทธศาสตร์และงบประมาณ | © 2026</p>
+            <p class="text-gray-400 text-xs tracking-[0.2em] uppercase font-medium">ฝ่ายนโนบายและแผนงาน กองยุทธศาสตร์และงบประมาณ</p>
+            <p class="text-gray-400 text-xs tracking-[0.2em] uppercase font-medium">© 2026 | ver. 0.5</p>
         </div>
     </footer>
 
