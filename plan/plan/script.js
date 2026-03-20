@@ -1057,7 +1057,7 @@ async function renderPlanList() {
                 <button onclick="editPlan(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </button>
-                <button onclick="deletePlan(${item.id}, '${item.doc_name}')" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
+                <button onclick="confirmDeletePlan(${item.id}, '${item.doc_name}')" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
             </div>
@@ -1132,24 +1132,54 @@ function resetPlanForm() {
     document.getElementById('btnCancelEdit').classList.add('hidden');
 }
 
-async function deletePlan(id, name) {
-    const isAuthenticated = await checkAuthBeforeAction();
-    if (!isAuthenticated) return;
-    if (!confirm(`⚠️ ยืนยันการลบเล่มแผน: "${name}"?\nการลบนี้จะไม่สามารถย้อนคืนได้`)) return;
 
-    try {
-        const { error } = await _supabase.from('plan_documents').delete().eq('id', id);
+function confirmDeletePlan(id, docName) {
+    const modal = document.getElementById('universalModal');
+    const btn = document.getElementById('modalBtn');
+    
+    // 1. เรียกใช้ showAlert เพื่อตั้งค่า UI พื้นฐาน (เล่มแผนใช้สีแดง/error เพื่อความระวัง)
+    showAlert('error', 'ยืนยันการลบเล่มแผน', `คุณแน่ใจหรือไม่ที่จะลบเล่มแผน: "${docName}"? การดำเนินการนี้จะทำให้ลิงก์ PDF ในโครงการต่างๆ ใช้งานไม่ได้`, false, true);
+    
+    // 2. ปรับแต่งปุ่มกดยืนยัน
+    btn.innerText = "ยืนยันการลบเล่มแผน";
+    btn.className = "w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-2xl shadow-lg shadow-red-100 transition-all active:scale-95";
+
+    // 3. เขียนทับ onclick ให้ทำงานเฉพาะการลบเล่มแผน
+    btn.onclick = async () => {
+        btn.disabled = true;
+        btn.innerText = "กำลังลบเล่มแผน...";
         
-        if (error) {
-            showAlert('error', 'ไม่สามารถลบได้', error.message);
-        } else {
-            showAlert('success', 'ลบข้อมูลแล้ว', `ลบเล่มแผน ${name} ออกจากระบบเรียบร้อย`);
-            renderPlanList();
+        const isSuccess = await executeDeletePlan(id);
+        
+        if (isSuccess) {
+            modal.classList.add('hidden');
+            showAlert('success', 'ลบสำเร็จ', 'ลบข้อมูลเล่มแผนเรียบร้อยแล้ว');
+            
+            // 4. รีโหลดรายการเล่มแผน และ Dropdown หน้าหลัก
+            renderPlanList(); 
             if (typeof loadInitialData === "function") loadInitialData(); 
+        } else {
+            btn.disabled = false;
+            btn.innerText = "ยืนยันการลบเล่มแผน";
         }
-    } catch (err) {
-        showAlert('error', 'เกิดข้อผิดพลาด', err.message);
+    };
+}
+
+async function executeDeletePlan(id) {
+    const isAuthenticated = await checkAuthBeforeAction();
+    if (!isAuthenticated) return false;
+
+    // เปลี่ยนจาก plan_projects เป็น plan_documents
+    const { error } = await _supabase
+        .from('plan_documents')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถลบเล่มแผนได้: ' + error.message);
+        return false;
     }
+    return true;
 }
 
 async function openPlanManager() {
