@@ -964,20 +964,30 @@ async function handleUpdateProject(e) {
     }
 }
 
-async function exportToExcel() {
-    // แสดงความคืบหน้า (ถ้าข้อมูลเยอะอาจใช้เวลา)
+async function exportToExcel(event) {
+    // 1. ตรวจสอบเบื้องต้นว่ามีข้อมูลให้ Export ไหม (ดักหน้างานก่อนเปลี่ยนสถานะปุ่ม)
+    if (!window.currentBudgetData || window.currentBudgetData.length === 0) {
+        // ลองดึงข้อมูลล่าสุดดูก่อน เผื่อ User ยังไม่ได้กดค้นหา
+        try {
+            window.currentBudgetData = await fetchAllFilteredData();
+        } catch (err) {
+            console.error(err);
+        }
+
+        // ถ้าดึงแล้วยังเป็น 0 หรือ Null ให้แจ้งเตือนแล้วหยุดการทำงาน
+        if (!window.currentBudgetData || window.currentBudgetData.length === 0) {
+            return showAlert('info', 'ไม่พบข้อมูล', 'ไม่มีรายการโครงการตามเงื่อนไขที่กรองไว้ ไม่สามารถส่งออกไฟล์ได้');
+        }
+    }
+
+    // 2. เริ่มต้นกระบวนการ Export (เปลี่ยนสถานะปุ่ม)
     const btn = event.target.closest('button');
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> กำลังเตรียมไฟล์...';
     btn.disabled = true;
 
     try {
-        // ใช้ข้อมูลที่ fetch มาแล้วใน window.currentBudgetData
-        if (!window.currentBudgetData || window.currentBudgetData.length === 0) {
-            // ถ้าบังเอิญยังไม่มีข้อมูล ให้ fetch ใหม่หน้างาน
-            window.currentBudgetData = await fetchAllFilteredData();
-        }
-
+        // 3. จัดรูปแบบข้อมูลสำหรับ Excel
         const excelData = window.currentBudgetData.map((item, index) => ({
             'ลำดับ': index + 1,
             'ปีงบประมาณ': item.fiscal_year || '',
@@ -988,21 +998,29 @@ async function exportToExcel() {
             'หมายเหตุ': item.remark || ''
         }));
 
+        // 4. สร้าง Workbook
         const worksheet = XLSX.utils.json_to_sheet(excelData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "รายชื่อโครงการ");
 
+        // กำหนดความกว้างคอลัมน์
         worksheet['!cols'] = [
             { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 25 }, { wch: 60 }, { wch: 18 }, { wch: 25 }
         ];
 
+        // 5. ตั้งชื่อไฟล์และดาวน์โหลด
         const dateNow = new Date().toLocaleDateString('th-TH').replace(/\//g, '-');
         XLSX.writeFile(workbook, `โครงการ_อบจ_นครปฐม_${dateNow}.xlsx`);
+
+        // แจ้งเตือนเมื่อสำเร็จ (Optional)
+        showAlert('success', 'ส่งออกสำเร็จ', 'ระบบได้สร้างไฟล์ Excel เรียบร้อยแล้ว');
         
     } catch (error) {
         console.error("Export Error:", error);
-        alert('เกิดข้อผิดพลาดในการส่งออก: ' + error.message);
+        // ใช้ showAlert แจ้ง Error
+        showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถส่งออกไฟล์ได้: ' + error.message);
     } finally {
+        // คืนค่าสถานะปุ่ม
         btn.innerHTML = originalText;
         btn.disabled = false;
     }

@@ -1,14 +1,19 @@
-/* --- ส่วนโครงสร้างป้องกันหน้าจอไถซ้ายขวา --- */
-html {
-    overflow-x: hidden; /* ย้ายมาไว้ที่นี่แทน */
-}
-
 html, body {
     max-width: 100%;
-    /*overflow-x: hidden;*/
+    /* 🛑 ลบหรือ Comment บรรทัดนี้ออก */
+    /* overflow-x: hidden; */ 
+    
+    /* ✅ ใช้บรรทัดนี้แทนเพื่อกันจอเลื่อนซ้ายขวาแต่ไม่ทำลาย sticky */
+    overflow-x: clip; 
+    position: relative;
+}
+/*
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
     position: relative;
     background-color: #f8fafc;
-}
+}*/
 
 /* --- ตาราง Desktop --- */
 .table-container {
@@ -80,6 +85,8 @@ body {
     /* ทำให้พื้นหลังอยู่กับที่ */
     background-attachment: fixed;
     background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
 }
 
 .glass-card { 
@@ -178,3 +185,7 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #003366; }
+
+* {
+    box-sizing: border-box; /* ป้องกันเนื้อหาบวมออกด้านข้าง */
+}
