@@ -709,6 +709,8 @@ function downloadTemplate() {
 
 // --- ส่วนเชื่อมต่อปุ่มกับฟังก์ชันอ่านไฟล์ ---
 async function processUpload() {
+    // รายชื่อหัวตารางที่ระบบยอมรับ
+    const REQUIRED_HEADERS = ["อำเภอ", "อปท", "ชื่อโครงการ", "งบประมาณ", "สถานะ", "IDเล่มแผนหลัก", "หน้าในเล่มหลัก", "IDเล่มแผนเสริม", "หน้าในเล่มเสริม"];
     if (!selectedExcelFile) {
         showAlert('info', 'ไม่พบไฟล์', 'กรุณาเลือกหรือลากไฟล์ Excel มาวางก่อนครับ');
         return;
@@ -729,22 +731,48 @@ async function processUpload() {
             const workbook = XLSX.read(data, { type: 'array' });
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
+
+            // 1. ดึงข้อมูลออกมาเป็น Array of Arrays (aoa) เพื่อเช็ค Header บรรทัดแรก
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            if (rows.length === 0) {
+                showAlert('error', 'ไฟล์ว่างเปล่า', 'ไม่พบข้อมูลใดๆ ในไฟล์');
+                resetUploadBtn(btn);
+                return;
+            }
+
+            // 2. ตรวจสอบหัวตาราง (บรรทัดที่ 0)
+            const fileHeaders = rows[0]; // ดึงหัวตารางจากไฟล์
+            const missingHeaders = REQUIRED_HEADERS.filter(h => !fileHeaders.includes(h));
+
+            if (missingHeaders.length > 0) {
+                showAlert('error', 'หัวตารางไม่ถูกต้อง', `ไม่พบคอลัมน์: ${missingHeaders.join(', ')} <br><br>กรุณาใช้ไฟล์ตาม Template ที่กำหนด`);
+                resetUploadBtn(btn);
+                return;
+            }
+
+            // 3. ถ้า Header ครบ ค่อยดึงข้อมูลเป็น JSON
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
             
             if (jsonData.length === 0) {
-                showAlert('error', 'ข้อมูลว่างเปล่า', 'ไม่พบข้อมูลในไฟล์ หรือรูปแบบหัวตารางไม่ถูกต้อง');
-                btn.disabled = false;
-                btn.innerText = "เริ่มนำเข้าข้อมูล";
+                showAlert('error', 'ไม่มีข้อมูล', 'พบหัวตารางแต่ไม่พบข้อมูลโครงการในบรรทัดถัดไป');
+                resetUploadBtn(btn);
                 return;
             }
 
             importToSupabase(jsonData);
         } catch (err) {
             showAlert('error', 'เกิดข้อผิดพลาด', 'ไม่สามารถอ่านไฟล์ได้: ' + err.message);
-            btn.disabled = false;
+            resetUploadBtn(btn);
         }
     };
     reader.readAsArrayBuffer(selectedExcelFile);
+}
+
+// ฟังก์ชันช่วยคืนค่าปุ่ม
+function resetUploadBtn(btn) {
+    btn.disabled = false;
+    btn.innerText = "เริ่มนำเข้าข้อมูล";
 }
 
 async function importToSupabase(items) {
@@ -993,8 +1021,6 @@ async function saveEdit() {
 // --- Plan Documents Management ---
 
 async function renderPlanList() {
-    const isAuthenticated = await checkAuthBeforeAction();
-    if (!isAuthenticated) return;
     const container = document.getElementById('planListContainer');
     container.innerHTML = '<div class="text-center py-4 animate-pulse text-slate-400 text-xs">กำลังโหลดข้อมูลเล่มแผน...</div>';
 
@@ -1003,22 +1029,31 @@ async function renderPlanList() {
         .select('*')
         .order('created_at', { ascending: false });
 
-    if (error) return console.error(error);
+    if (error) {
+        showAlert('error', 'โหลดข้อมูลล้มเหลว', error.message);
+        container.innerHTML = '<div class="text-center py-4 text-rose-400 text-xs">ไม่สามารถโหลดข้อมูลได้</div>';
+        return;
+    }
 
     container.innerHTML = '';
+    if (data.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs italic">ยังไม่มีข้อมูลเล่มแผนในระบบ</div>';
+        return;
+    }
+
     data.forEach(item => {
         const div = document.createElement('div');
-        div.className = "flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-amber-200 transition-all group shadow-sm";
+        div.className = "flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-amber-200 transition-all group shadow-sm mb-2";
         div.innerHTML = `
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500">${item.doc_type}</span>
-                    <span class="text-[10px] text-slate-400">Offset: ${item.page_offset}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-600 uppercase">${item.doc_type}</span>
+                    <span class="text-[10px] text-slate-400 font-medium">Offset: ${item.page_offset}</span>
                 </div>
                 <h4 class="text-sm font-bold text-slate-700 truncate">${item.doc_name}</h4>
-                <p class="text-[10px] text-blue-500 truncate">${item.pdf_url || 'ไม่มีลิงก์ PDF'}</p>
+                <p class="text-[10px] text-blue-400 truncate opacity-70">${item.pdf_url || 'ไม่มีลิงก์ PDF'}</p>
             </div>
-            <div class="flex gap-1 ml-4">
+            <div class="flex gap-1 ml-4 flex-none">
                 <button onclick="editPlan(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </button>
@@ -1030,7 +1065,6 @@ async function renderPlanList() {
         container.appendChild(div);
     });
 }
-
 async function savePlan() {
     const isAuthenticated = await checkAuthBeforeAction();
     if (!isAuthenticated) return;
@@ -1042,24 +1076,37 @@ async function savePlan() {
         page_offset: parseInt(document.getElementById('pOffset').value) || 0
     };
 
-    if (!planData.doc_name) return alert('กรุณาระบุชื่อเล่มแผน');
-
-    let error;
-    if (id) {
-        // อัปเดตข้อมูลเดิม
-        ({ error } = await _supabase.from('plan_documents').update(planData).eq('id', id));
-    } else {
-        // เพิ่มข้อมูลใหม่ (id รันอัตโนมัติ)
-        ({ error } = await _supabase.from('plan_documents').insert([planData]));
+    if (!planData.doc_name) {
+        return showAlert('warning', 'ข้อมูลไม่ครบถ้วน', 'กรุณาระบุชื่อเล่มแผนก่อนบันทึก');
     }
 
-    if (error) {
-        alert('เกิดข้อผิดพลาด: ' + error.message);
-    } else {
-        resetPlanForm();
-        renderPlanList();
-        // เรียกฟังก์ชันโหลด Dropdown หน้าหลักใหม่ (ถ้าคุณเขียนไว้)
-        if (typeof loadInitialData === "function") loadInitialData(); 
+    const btn = document.getElementById('btnSavePlan');
+    btn.disabled = true;
+    btn.innerText = "กำลังบันทึก...";
+
+    try {
+        let error;
+        if (id) {
+            ({ error } = await _supabase.from('plan_documents').update(planData).eq('id', id));
+        } else {
+            ({ error } = await _supabase.from('plan_documents').insert([planData]));
+        }
+
+        if (error) {
+            showAlert('error', 'บันทึกไม่สำเร็จ', error.message);
+        } else {
+            // ✅ แสดงความสำเร็จ
+            showAlert('success', 'ดำเนินการสำเร็จ', id ? 'แก้ไขข้อมูลเล่มแผนเรียบร้อยแล้ว' : 'เพิ่มเล่มแผนใหม่เรียบร้อยแล้ว');
+            
+            resetPlanForm();
+            renderPlanList();
+            if (typeof loadInitialData === "function") loadInitialData(); 
+        }
+    } catch (err) {
+        showAlert('error', 'ข้อผิดพลาดระบบ', err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = id ? 'บันทึกการแก้ไข' : 'บันทึกข้อมูล';
     }
 }
 
@@ -1088,11 +1135,21 @@ function resetPlanForm() {
 async function deletePlan(id, name) {
     const isAuthenticated = await checkAuthBeforeAction();
     if (!isAuthenticated) return;
-    if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบเล่มแผน: ${name}?`)) return;
+    if (!confirm(`⚠️ ยืนยันการลบเล่มแผน: "${name}"?\nการลบนี้จะไม่สามารถย้อนคืนได้`)) return;
 
-    const { error } = await _supabase.from('plan_documents').delete().eq('id', id);
-    if (!error) renderPlanList();
-    else alert('ไม่สามารถลบได้: ' + error.message);
+    try {
+        const { error } = await _supabase.from('plan_documents').delete().eq('id', id);
+        
+        if (error) {
+            showAlert('error', 'ไม่สามารถลบได้', error.message);
+        } else {
+            showAlert('success', 'ลบข้อมูลแล้ว', `ลบเล่มแผน ${name} ออกจากระบบเรียบร้อย`);
+            renderPlanList();
+            if (typeof loadInitialData === "function") loadInitialData(); 
+        }
+    } catch (err) {
+        showAlert('error', 'เกิดข้อผิดพลาด', err.message);
+    }
 }
 
 async function openPlanManager() {
