@@ -9,88 +9,109 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
-        .bg-custom-blue { background-color: #1e3a8a; }
-        .text-custom-blue { color: #1e3a8a; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f1f5f9; color: #334155; }
+        .bg-nkp-blue { background-color: #1e3a8a; }
+        .text-nkp-blue { color: #1e3a8a; }
+        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        section { display: none; }
+        section.active { display: block; }
     </style>
 </head>
-<body class="pt-16">
+<body class="pt-20">
 
     <nav class="bg-white border-b border-gray-200 fixed top-0 w-full z-50 h-16 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center text-white text-[10px] font-bold">LOGO</div>
-                <span class="font-bold text-custom-blue text-sm md:text-lg">ระบบประสานแผนพัฒนาท้องถิ่น</span>
+                <img src="https://upload.wikimedia.org/wikipedia/th/a/a2/Nakhon_Pathom_Provincial_Administrative_Organization_Logo.png" class="h-10 w-auto" alt="อบจ.นครปฐม">
+                <div>
+                    <h1 class="font-bold text-nkp-blue text-xs md:text-base leading-tight">ระบบประสานแผนพัฒนาท้องถิ่น</h1>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-tighter">Strategic and Budget Division</p>
+                </div>
             </div>
             
-            <div class="flex items-center gap-4">
-                <div id="nav-menu" class="hidden md:flex gap-4 text-sm font-medium text-gray-600">
-                    <a href="#" onclick="showSection('main')" class="hover:text-blue-700">สถานะการส่งแผน</a>
+            <div class="flex items-center gap-2 md:gap-6">
+                <div id="nav-menu" class="hidden md:flex gap-4 text-sm font-medium">
+                    <a href="#" onclick="showSection('main')" class="hover:text-blue-700">สถานะ</a>
                     <a href="#" onclick="showSection('criteria')" class="hover:text-blue-700">หลักเกณฑ์</a>
                     <a href="#" onclick="showSection('forms')" class="hover:text-blue-700">แบบฟอร์ม</a>
-                    <a href="#" id="upload-link" onclick="showSection('upload')" class="hidden hover:text-blue-700">นำเข้าข้อมูล</a>
+                    <a href="#" id="upload-nav" onclick="showSection('upload')" class="hidden text-blue-600 font-bold border-l pl-4">นำเข้าข้อมูล</a>
                 </div>
-                <div id="auth-ui" class="flex items-center gap-3">
-                    <button id="btn-login" onclick="handleLogin()" class="bg-custom-blue text-white px-4 py-1.5 rounded text-sm hover:bg-blue-800 transition">Login</button>
-                    <div id="user-info" class="hidden text-xs text-right">
-                        <p id="user-name" class="font-bold text-gray-800"></p>
-                        <button onclick="handleLogout()" class="text-red-500 hover:underline">Logout</button>
+                <div id="auth-area">
+                    <button id="btn-login" onclick="handleLogin()" class="bg-nkp-blue text-white px-4 py-1.5 rounded-lg text-sm hover:bg-blue-800 transition">เข้าสู่ระบบ</button>
+                    <div id="user-display" class="hidden flex flex-col items-end">
+                        <span id="display-name" class="text-xs font-bold text-gray-800 leading-none"></span>
+                        <span id="display-org" class="text-[10px] text-gray-500 mb-1"></span>
+                        <button onclick="handleLogout()" class="text-[10px] text-red-500 hover:underline font-bold">ออกจากระบบ</button>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto p-4 md:p-8">
+    <main class="max-w-7xl mx-auto p-4">
         
-        <section id="section-main">
-            <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h2 class="text-xl font-bold text-gray-800">สถานะการส่งแผนพัฒนาท้องถิ่น</h2>
-                <div class="flex gap-2">
-                    <input type="text" id="search-input" oninput="filterTable()" placeholder="ค้นหาชื่อ อปท. หรืออำเภอ..." class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <section id="section-main" class="active">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <h2 class="text-xl font-bold border-l-4 border-nkp-blue pl-3 text-gray-800">ติดตามสถานะการประสานแผน</h2>
+                    <input type="text" id="search-input" oninput="filterTable()" placeholder="🔍 ค้นหาชื่อ อปท. หรืออำเภอ..." class="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 text-sm w-full md:w-80 focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table class="w-full text-left text-sm" id="status-table">
-                    <thead class="bg-gray-50 border-b border-gray-200 text-gray-600">
-                        <tr>
-                            <th class="px-6 py-3">อำเภอ</th>
-                            <th class="px-6 py-3">องค์กรปกครองส่วนท้องถิ่น</th>
-                            <th class="px-6 py-3">สถานะ</th>
-                            <th class="px-6 py-3 text-center">อัปเดตล่าสุด</th>
-                        </tr>
-                    </thead>
-                    <tbody id="status-body" class="divide-y divide-gray-100">
-                        </tbody>
-                </table>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left" id="status-table">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-bold">
+                            <tr>
+                                <th class="px-6 py-4">อำเภอ</th>
+                                <th class="px-6 py-4">องค์กรปกครองส่วนท้องถิ่น</th>
+                                <th class="px-6 py-4">สถานะการส่ง</th>
+                                <th class="px-6 py-4">วันที่อัปเดต</th>
+                            </tr>
+                        </thead>
+                        <tbody id="status-body" class="text-sm divide-y divide-gray-100">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
-        <section id="section-upload" class="hidden">
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <h2 class="text-xl font-bold mb-6 text-custom-blue border-b pb-4">แบบฟอร์มนำเข้าข้อมูล (เฉพาะเจ้าหน้าที่ อปท.)</h2>
-                <form id="upload-form" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <label class="block text-sm font-bold text-gray-700">1. หนังสือนำส่งจากประธานระดับอำเภอ</label>
-                            <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                            
-                            <label class="block text-sm font-bold text-gray-700">2. บัญชีรายละเอียดโครงการ</label>
-                            <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+        <section id="section-criteria">
+            <h2 class="text-2xl font-bold text-nkp-blue mb-6">หลักเกณฑ์การเสนอโครงการประสานแผน</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="criteria-list">
+                </div>
+        </section>
 
-                            <label class="block text-sm font-bold text-gray-700">3. แบบเสนอโครงการ</label>
-                            <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+        <section id="section-forms">
+            <h2 class="text-2xl font-bold text-nkp-blue mb-6">ดาวน์โหลดแบบฟอร์มเอกสาร</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="form-container">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+                    <div class="text-blue-500 mb-4"><svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"></path></svg></div>
+                    <h3 class="font-bold text-gray-800 mb-2">บัญชีรายละเอียดโครงการ (Excel)</h3>
+                    <p class="text-xs text-gray-500 mb-4">ดาวน์โหลดแล้ว <span class="download-count">124</span> ครั้ง</p>
+                    <button onclick="recordDownload(1)" class="w-full bg-gray-100 text-nkp-blue py-2 rounded-lg text-sm font-bold hover:bg-blue-50 transition">ดาวน์โหลดไฟล์</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-upload">
+            <div class="bg-white rounded-2xl p-8 shadow-lg border border-blue-100 max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold text-nkp-blue mb-2">นำเข้าข้อมูลโครงการประสานแผน</h2>
+                <p class="text-sm text-gray-500 mb-8 font-light italic text-red-500">* รองรับเฉพาะไฟล์ PDF, Word, Excel เท่านั้น</p>
+                
+                <form id="submission-form" class="space-y-6">
+                    <div class="grid grid-cols-1 gap-y-4">
+                        <div class="upload-item p-4 border rounded-xl bg-gray-50">
+                            <label class="block text-sm font-bold mb-2 text-gray-700">1. หนังสือนำส่งจากประธานคณะกรรมการประสานแผนระดับอำเภอ</label>
+                            <input type="file" name="doc1" required class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
                         </div>
-                        <div class="space-y-4 text-xs text-gray-500 bg-gray-50 p-4 rounded-lg">
-                            <h3 class="font-bold text-gray-700">ข้อกำหนดการอัปโหลด:</h3>
-                            <ul class="list-disc ml-4 space-y-1">
-                                <li>รับเฉพาะไฟล์ PDF, Word, Excel</li>
-                                <li>กรุณารับรองสำเนาถูกต้องในไฟล์ภาพถ่าย</li>
-                                <li>พิกัดภูมิศาสตร์ต้องระบุจุดเริ่มต้นโครงการชัดเจน</li>
-                            </ul>
-                            <button type="submit" class="mt-4 w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">ส่งข้อมูลและเอกสาร</button>
+                        <div class="upload-item p-4 border rounded-xl bg-gray-50">
+                            <label class="block text-sm font-bold mb-2 text-gray-700">2. บัญชีรายละเอียดโครงการ (ประสานแผน อบจ.นครปฐม)</label>
+                            <input type="file" name="doc2" required class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
                         </div>
-                    </div>
+                        <div class="upload-item p-4 border rounded-xl bg-gray-50">
+                            <label class="block text-sm font-bold mb-2 text-gray-700">3. แบบเสนอโครงการ (ตามแบบที่กำหนด)</label>
+                            <input type="file" name="doc3" required class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                        </div>
+                        </div>
+                    <button type="submit" class="w-full bg-nkp-blue text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all active:scale-95">ยืนยันการส่งข้อมูล</button>
                 </form>
             </div>
         </section>
@@ -98,139 +119,140 @@
     </main>
 
     <script>
-        // --- ส่วนการตั้งค่า Supabase ---
+        // --- ⚙️ Config Supabase ---
         const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU'; // ใส่ Key จริงของคุณ
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let currentUser = null;
         let logoutTimer;
         const TIMEOUT_LIMIT = 10 * 60 * 1000; // 10 นาที
 
-        // --- ส่วนการจัดการ Authentication ---
+        // --- 🛡️ Auth Logic ---
         async function handleLogin() {
-            // ในที่นี้เป็นการ Login แบบพื้นฐาน แนะนำให้ใช้ Auth UI หรือสร้างหน้า Login แยก
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: 'user@example.com', 
-                password: 'password'
-            });
-            if (error) alert('Login Failed: ' + error.message);
+            // เพื่อการสาธิต: แนะนำให้ทำ UI Modal สำหรับใส่ Email/Password
+            const email = prompt("Email:");
+            const password = prompt("Password:");
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) alert("เข้าสู่ระบบไม่สำเร็จ: " + error.message);
             else checkSession();
         }
 
         async function handleLogout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
+            localStorage.removeItem('active_session');
             window.location.reload();
         }
 
         async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
-                // ดึงข้อมูล Role จากตาราง profiles
-                const { data: profile } = await supabase
+                const { data: profile } = await supabaseClient
                     .from('coords_profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
-
-                updateUI(profile);
-                startAutoLogoutTimer();
-            }
-        }
-
-        function updateUI(profile) {
-            if (profile) {
-                document.getElementById('btn-login').classList.add('hidden');
-                document.getElementById('user-info').classList.remove('hidden');
-                document.getElementById('user-name').innerText = `${profile.full_name} (${profile.org_name})`;
-                document.getElementById('upload-link').classList.remove('hidden');
+                    .select('*').eq('id', session.user.id).single();
                 
-                // ถ้าระดับ Admin ให้แสดงข้อมูลทั้งหมด
-                // ถ้าเป็น Staff ให้กรองข้อมูลเฉพาะตนเอง (Logic อยู่ในตอนโหลด Table)
-                loadStatusData(profile);
+                currentUser = profile;
+                renderUIForUser();
+                startTimers();
+            } else {
+                loadStatusData(); // Public View
             }
         }
 
-        // --- ระบบ Auto Logout ---
-        function startAutoLogoutTimer() {
+        function renderUIForUser() {
+            document.getElementById('btn-login').classList.add('hidden');
+            document.getElementById('user-display').classList.remove('hidden');
+            document.getElementById('upload-nav').classList.remove('hidden');
+            document.getElementById('display-name').innerText = currentUser.full_name;
+            document.getElementById('display-org').innerText = currentUser.role === 'admin' ? 'SYSTEM ADMIN' : currentUser.organization_name;
+            loadStatusData();
+        }
+
+        // --- ⏲️ Inactivity & Tab Close ---
+        function startTimers() {
             resetTimer();
             window.onmousemove = resetTimer;
             window.onkeydown = resetTimer;
-            window.onclick = resetTimer;
+            // บังคับ Logout หากปิด Tab (ใช้ Session Storage คู่ขนาน)
+            if (!sessionStorage.getItem('tab_open')) {
+                sessionStorage.setItem('tab_open', 'true');
+            }
         }
 
         function resetTimer() {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
-                alert('Session หมดอายุเนื่องจากไม่มีการใช้งานนาน 10 นาที');
+                alert("คุณไม่มีการใช้งานเกิน 10 นาที ระบบจะออกจากระบบอัตโนมัติ");
                 handleLogout();
             }, TIMEOUT_LIMIT);
         }
 
-        // --- การโหลดข้อมูลจากฐานข้อมูล ---
-        async function loadStatusData(profile = null) {
-            let query = supabase.from('coords_submissions').select('*');
+        // --- 📊 Data Logic ---
+        async function loadStatusData() {
+            let query = supabaseClient.from('coords_submissions').select('*');
             
-            // กรองข้อมูลตามสิทธิ์
-            if (profile && profile.role === 'staff') {
-                query = query.eq('org_id', profile.org_id);
+            // กรองตามสิทธิ์
+            if (currentUser && currentUser.role === 'staff') {
+                query = query.eq('organization_name', currentUser.organization_name);
             }
 
             const { data, error } = await query;
             if (data) {
                 const tbody = document.getElementById('status-body');
                 tbody.innerHTML = data.map(item => {
-                    const statusColor = {
-                        'pending': 'bg-red-100 text-red-700',
-                        'submitted': 'bg-yellow-100 text-yellow-700',
-                        'verified': 'bg-green-100 text-green-700'
-                    }[item.status];
-
-                    const statusText = {
-                        'pending': 'ยังไม่ได้ส่ง',
-                        'submitted': 'ส่งแล้ว',
-                        'verified': 'ยืนยันรับข้อมูล'
+                    const statusConfig = {
+                        'pending': { color: 'bg-red-500', text: 'ยังไม่ได้ส่ง', bg: 'bg-red-50' },
+                        'submitted': { color: 'bg-yellow-500', text: 'ส่งแล้ว', bg: 'bg-yellow-50' },
+                        'verified': { color: 'bg-green-500', text: 'ยืนยันรับข้อมูล', bg: 'bg-green-50' }
                     }[item.status];
 
                     return `
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 font-medium">${item.district}</td>
-                            <td class="px-6 py-4">${item.org_name}</td>
+                        <tr class="hover:bg-gray-50 border-b border-gray-100">
+                            <td class="px-6 py-4 font-bold text-gray-700">${item.district}</td>
+                            <td class="px-6 py-4">${item.organization_name}</td>
                             <td class="px-6 py-4">
-                                <span class="${statusColor} px-2.5 py-0.5 rounded-full text-xs font-semibold">${statusText}</span>
+                                <span class="${statusConfig.bg} px-3 py-1 rounded-full text-xs font-bold inline-flex items-center">
+                                    <span class="status-dot ${statusConfig.color}"></span> ${statusConfig.text}
+                                </span>
                             </td>
-                            <td class="px-6 py-4 text-center text-gray-500">${item.updated_at || '-'}</td>
+                            <td class="px-6 py-4 text-gray-400 text-xs">${new Date(item.updated_at).toLocaleString('th-TH')}</td>
                         </tr>
                     `;
                 }).join('');
             }
         }
 
-        // --- ระบบค้นหาอัตโนมัติ ---
+        // --- 🔍 Filter Table ---
         function filterTable() {
-            const input = document.getElementById('search-input').value.toUpperCase();
-            const rows = document.getElementById('status-body').getElementsByTagName('tr');
-            
-            for (let i = 0; i < rows.length; i++) {
-                const text = rows[i].textContent || rows[i].innerText;
-                rows[i].style.display = text.toUpperCase().indexOf(input) > -1 ? "" : "none";
-            }
+            const val = document.getElementById('search-input').value.toLowerCase();
+            const rows = document.querySelectorAll('#status-body tr');
+            rows.forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
+            });
         }
 
-        // --- Navigation Logic ---
-        function showSection(section) {
-            document.getElementById('section-main').classList.add('hidden');
-            document.getElementById('section-upload').classList.add('hidden');
-            // เพิ่ม Section อื่นๆ ตามความต้องการ
-            
-            document.getElementById('section-' + section).classList.remove('hidden');
+        // --- 📂 Render Criteria (8 Items) ---
+        const criteria = [
+            "ความสอดคล้องกับแผนพัฒนาจังหวัด", "ความพร้อมของพื้นที่และกรรมสิทธิ์", 
+            "ประโยชน์ที่ประชาชนได้รับโดยตรง", "ความคุ้มค่าทางเศรษฐกิจและสังคม",
+            "ความสอดคล้องกับยุทธศาสตร์ชาติ", "แผนการบำรุงรักษาโครงการ",
+            "ผลกระทบต่อสิ่งแวดล้อม", "ความถูกต้องของแบบแปลนและราคา"
+        ];
+        document.getElementById('criteria-list').innerHTML = criteria.map((c, i) => `
+            <div class="bg-white p-4 rounded-xl border-l-4 border-nkp-blue shadow-sm">
+                <span class="text-nkp-blue font-bold text-lg mr-2">${i+1}.</span>
+                <span class="text-gray-700 font-medium">${c}</span>
+            </div>
+        `).join('');
+
+        // --- 🧭 Navigation ---
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+            document.getElementById('section-' + id).classList.add('active');
         }
 
-        // Initial Load
-        window.onload = () => {
-            checkSession();
-            loadStatusData();
-        };
-
+        // Initialize
+        checkSession();
     </script>
 </body>
 </html>
