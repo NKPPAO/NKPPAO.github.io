@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบประสานแผนพัฒนาท้องถิ่น - อบจ.นครปฐม</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+        .bg-custom-blue { background-color: #1e3a8a; }
+        .text-custom-blue { color: #1e3a8a; }
+    </style>
+</head>
+<body class="pt-16">
+
+    <nav class="bg-white border-b border-gray-200 fixed top-0 w-full z-50 h-16 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center text-white text-[10px] font-bold">LOGO</div>
+                <span class="font-bold text-custom-blue text-sm md:text-lg">ระบบประสานแผนพัฒนาท้องถิ่น</span>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div id="nav-menu" class="hidden md:flex gap-4 text-sm font-medium text-gray-600">
+                    <a href="#" onclick="showSection('main')" class="hover:text-blue-700">สถานะการส่งแผน</a>
+                    <a href="#" onclick="showSection('criteria')" class="hover:text-blue-700">หลักเกณฑ์</a>
+                    <a href="#" onclick="showSection('forms')" class="hover:text-blue-700">แบบฟอร์ม</a>
+                    <a href="#" id="upload-link" onclick="showSection('upload')" class="hidden hover:text-blue-700">นำเข้าข้อมูล</a>
+                </div>
+                <div id="auth-ui" class="flex items-center gap-3">
+                    <button id="btn-login" onclick="handleLogin()" class="bg-custom-blue text-white px-4 py-1.5 rounded text-sm hover:bg-blue-800 transition">Login</button>
+                    <div id="user-info" class="hidden text-xs text-right">
+                        <p id="user-name" class="font-bold text-gray-800"></p>
+                        <button onclick="handleLogout()" class="text-red-500 hover:underline">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        
+        <section id="section-main">
+            <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 class="text-xl font-bold text-gray-800">สถานะการส่งแผนพัฒนาท้องถิ่น</h2>
+                <div class="flex gap-2">
+                    <input type="text" id="search-input" oninput="filterTable()" placeholder="ค้นหาชื่อ อปท. หรืออำเภอ..." class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-left text-sm" id="status-table">
+                    <thead class="bg-gray-50 border-b border-gray-200 text-gray-600">
+                        <tr>
+                            <th class="px-6 py-3">อำเภอ</th>
+                            <th class="px-6 py-3">องค์กรปกครองส่วนท้องถิ่น</th>
+                            <th class="px-6 py-3">สถานะ</th>
+                            <th class="px-6 py-3 text-center">อัปเดตล่าสุด</th>
+                        </tr>
+                    </thead>
+                    <tbody id="status-body" class="divide-y divide-gray-100">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="section-upload" class="hidden">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold mb-6 text-custom-blue border-b pb-4">แบบฟอร์มนำเข้าข้อมูล (เฉพาะเจ้าหน้าที่ อปท.)</h2>
+                <form id="upload-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <label class="block text-sm font-bold text-gray-700">1. หนังสือนำส่งจากประธานระดับอำเภอ</label>
+                            <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            
+                            <label class="block text-sm font-bold text-gray-700">2. บัญชีรายละเอียดโครงการ</label>
+                            <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+
+                            <label class="block text-sm font-bold text-gray-700">3. แบบเสนอโครงการ</label>
+                            <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        <div class="space-y-4 text-xs text-gray-500 bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-gray-700">ข้อกำหนดการอัปโหลด:</h3>
+                            <ul class="list-disc ml-4 space-y-1">
+                                <li>รับเฉพาะไฟล์ PDF, Word, Excel</li>
+                                <li>กรุณารับรองสำเนาถูกต้องในไฟล์ภาพถ่าย</li>
+                                <li>พิกัดภูมิศาสตร์ต้องระบุจุดเริ่มต้นโครงการชัดเจน</li>
+                            </ul>
+                            <button type="submit" class="mt-4 w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">ส่งข้อมูลและเอกสาร</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- ส่วนการตั้งค่า Supabase ---
+        const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmh4dWNnb2hvZXljYXJvb3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjAwNzAsImV4cCI6MjA4NzMzNjA3MH0.T2cH67c45xGbMLZamZ44aVn9WlhRwH47Zj0VYxtP-oU';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let logoutTimer;
+        const TIMEOUT_LIMIT = 10 * 60 * 1000; // 10 นาที
+
+        // --- ส่วนการจัดการ Authentication ---
+        async function handleLogin() {
+            // ในที่นี้เป็นการ Login แบบพื้นฐาน แนะนำให้ใช้ Auth UI หรือสร้างหน้า Login แยก
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: 'user@example.com', 
+                password: 'password'
+            });
+            if (error) alert('Login Failed: ' + error.message);
+            else checkSession();
+        }
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            window.location.reload();
+        }
+
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                // ดึงข้อมูล Role จากตาราง profiles
+                const { data: profile } = await supabase
+                    .from('coords_profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+
+                updateUI(profile);
+                startAutoLogoutTimer();
+            }
+        }
+
+        function updateUI(profile) {
+            if (profile) {
+                document.getElementById('btn-login').classList.add('hidden');
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('user-name').innerText = `${profile.full_name} (${profile.org_name})`;
+                document.getElementById('upload-link').classList.remove('hidden');
+                
+                // ถ้าระดับ Admin ให้แสดงข้อมูลทั้งหมด
+                // ถ้าเป็น Staff ให้กรองข้อมูลเฉพาะตนเอง (Logic อยู่ในตอนโหลด Table)
+                loadStatusData(profile);
+            }
+        }
+
+        // --- ระบบ Auto Logout ---
+        function startAutoLogoutTimer() {
+            resetTimer();
+            window.onmousemove = resetTimer;
+            window.onkeydown = resetTimer;
+            window.onclick = resetTimer;
+        }
+
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert('Session หมดอายุเนื่องจากไม่มีการใช้งานนาน 10 นาที');
+                handleLogout();
+            }, TIMEOUT_LIMIT);
+        }
+
+        // --- การโหลดข้อมูลจากฐานข้อมูล ---
+        async function loadStatusData(profile = null) {
+            let query = supabase.from('coords_submissions').select('*');
+            
+            // กรองข้อมูลตามสิทธิ์
+            if (profile && profile.role === 'staff') {
+                query = query.eq('org_id', profile.org_id);
+            }
+
+            const { data, error } = await query;
+            if (data) {
+                const tbody = document.getElementById('status-body');
+                tbody.innerHTML = data.map(item => {
+                    const statusColor = {
+                        'pending': 'bg-red-100 text-red-700',
+                        'submitted': 'bg-yellow-100 text-yellow-700',
+                        'verified': 'bg-green-100 text-green-700'
+                    }[item.status];
+
+                    const statusText = {
+                        'pending': 'ยังไม่ได้ส่ง',
+                        'submitted': 'ส่งแล้ว',
+                        'verified': 'ยืนยันรับข้อมูล'
+                    }[item.status];
+
+                    return `
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 font-medium">${item.district}</td>
+                            <td class="px-6 py-4">${item.org_name}</td>
+                            <td class="px-6 py-4">
+                                <span class="${statusColor} px-2.5 py-0.5 rounded-full text-xs font-semibold">${statusText}</span>
+                            </td>
+                            <td class="px-6 py-4 text-center text-gray-500">${item.updated_at || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // --- ระบบค้นหาอัตโนมัติ ---
+        function filterTable() {
+            const input = document.getElementById('search-input').value.toUpperCase();
+            const rows = document.getElementById('status-body').getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const text = rows[i].textContent || rows[i].innerText;
+                rows[i].style.display = text.toUpperCase().indexOf(input) > -1 ? "" : "none";
+            }
+        }
+
+        // --- Navigation Logic ---
+        function showSection(section) {
+            document.getElementById('section-main').classList.add('hidden');
+            document.getElementById('section-upload').classList.add('hidden');
+            // เพิ่ม Section อื่นๆ ตามความต้องการ
+            
+            document.getElementById('section-' + section).classList.remove('hidden');
+        }
+
+        // Initial Load
+        window.onload = () => {
+            checkSession();
+            loadStatusData();
+        };
+
+    </script>
+</body>
+</html>
