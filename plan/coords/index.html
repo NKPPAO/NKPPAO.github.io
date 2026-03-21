@@ -55,7 +55,7 @@
 
                 <div id="user-display" class="hidden flex items-center gap-3 bg-gray-50 py-1 px-3 rounded-full border border-gray-100">
                     <div class="flex flex-col items-end">
-                        <span id="display-name" class="text-xs text-gray-800 leading-none"></span>
+                        <!--<span id="display-name" class="text-xs text-gray-800 leading-none"></span>-->
                         <span id="display-org" class="text-xs text-gray-500"></span>
                     </div>
                     <button onclick="handleLogout()" title="ออกจากระบบ" 
@@ -370,7 +370,7 @@ async function handleLogout() {
             document.getElementById('btn-login').classList.add('hidden');
             document.getElementById('user-display').classList.remove('hidden');
             document.getElementById('upload-nav').classList.remove('hidden');
-            document.getElementById('display-name').innerText = currentUser.full_name;
+            //document.getElementById('display-name').innerText = currentUser.full_name;
             document.getElementById('display-org').innerText = currentUser.role === 'admin' ? 'SYSTEM ADMIN' : currentUser.organization_name;
             loadStatusData();
         }
@@ -609,7 +609,7 @@ function updateAuthUI(user) {
         if (userDisplay) userDisplay.classList.remove('hidden');
 
         // แสดงชื่อ (ใช้ full_name ตามที่ได้จาก RPC)
-        document.getElementById('display-name').innerText = user.full_name || 'ผู้ใช้งาน';
+        //document.getElementById('display-name').innerText = user.full_name || 'ผู้ใช้งาน';
         document.getElementById('display-org').innerText = user.role === 'admin' ? 'SYSTEM ADMIN' : (user.organization_name || '');
 
         // ✅ เปิดปุ่มนำเข้าข้อมูลทั้ง 2 จุด
