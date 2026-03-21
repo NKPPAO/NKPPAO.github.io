@@ -402,7 +402,11 @@ ${(currentUser && currentUser.role === 'admin' && item.status === 'submitted') ?
 ` : ''}
                             ` : ''}
                         </td>
-                        <td class="px-6 py-4 text-gray-400 text-[10px]">${item.updated_at ? new Date(item.updated_at).toLocaleString('th-TH') : '-'}</td>
+                        <td class="px-6 py-4 text-gray-400 text-xs">
+    ${(item.status === 'pending' || !item.updated_at) 
+        ? '-' 
+        : new Date(item.updated_at).toLocaleString('th-TH')}
+</td>
                     </tr>
                 `;
             }).join('');
