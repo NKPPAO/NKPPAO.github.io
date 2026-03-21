@@ -364,46 +364,66 @@ async function handleLogout() {
 
         // --- 📊 Data Logic ---
         async function loadStatusData() {
-            let query = supabaseClient.from('coords_submissions').select('*');
-            
-            // กรองตามสิทธิ์
-            if (currentUser && currentUser.role === 'staff') {
-                query = query.eq('organization_name', currentUser.organization_name);
-            }
-
-            const { data, error } = await query;
-            if (data) {
-                const tbody = document.getElementById('status-body');
-                tbody.innerHTML = data.map(item => {
-                    const statusConfig = {
-                        'pending': { color: 'bg-red-500', text: 'ยังไม่ได้ส่ง', bg: 'bg-red-50' },
-                        'submitted': { color: 'bg-yellow-500', text: 'ส่งแล้ว', bg: 'bg-yellow-50' },
-                        'verified': { color: 'bg-green-500', text: 'ยืนยันรับข้อมูล', bg: 'bg-green-50' }
-                    }[item.status];
-
-                    // แก้ไขส่วน return ใน loadStatusData()
-return `
-    <tr class="hover:bg-gray-50 border-b border-gray-100">
-        <td class="px-6 py-4 font-bold text-gray-700">${item.district}</td>
-        <td class="px-6 py-4">${item.organization_name}</td>
-        <td class="px-6 py-4">
-            <span class="${statusConfig.bg} px-3 py-1 rounded-full text-xs font-bold inline-flex items-center">
-                <span class="status-dot ${statusConfig.color}"></span> ${statusConfig.text}
-            </span>
-            ${item.doc1_url ? `
-                <div class="mt-2 flex gap-1">
-                    <a href="${item.doc1_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200">ไฟล์ 1</a>
-                    <a href="${item.doc2_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200">ไฟล์ 2</a>
-                    <a href="${item.doc3_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200">ไฟล์ 3</a>
-                </div>
-            ` : ''}
-        </td>
-        <td class="px-6 py-4 text-gray-400 text-xs">${new Date(item.updated_at).toLocaleString('th-TH')}</td>
-    </tr>
-`;
-                }).join('');
-            }
+        let query = supabaseClient.from('coords_submissions').select('*');
+        
+        // กรองตามสิทธิ์ (ถ้าเป็น staff ให้เห็นเฉพาะของตัวเอง, admin เห็นหมด)
+        if (currentUser && currentUser.role === 'staff') {
+            query = query.eq('organization_name', currentUser.organization_name);
         }
+
+        const { data, error } = await query;
+        if (data) {
+            const tbody = document.getElementById('status-body');
+            tbody.innerHTML = data.map(item => {
+                const statusConfig = {
+                    'pending': { color: 'bg-red-500', text: 'ยังไม่ได้ส่ง', bg: 'bg-red-50' },
+                    'submitted': { color: 'bg-yellow-500', text: 'ส่งแล้ว', bg: 'bg-yellow-50' },
+                    'verified': { color: 'bg-green-500', text: 'ยืนยันรับข้อมูล', bg: 'bg-green-50' }
+                }[item.status] || { color: 'bg-gray-500', text: 'ไม่ระบุ', bg: 'bg-gray-50' };
+
+                return `
+                    <tr class="hover:bg-gray-50 border-b border-gray-100">
+                        <td class="px-6 py-4 font-bold text-gray-700">${item.district}</td>
+                        <td class="px-6 py-4">${item.organization_name}</td>
+                        <td class="px-6 py-4">
+                            <span class="${statusConfig.bg} px-3 py-1 rounded-full text-xs font-bold inline-flex items-center">
+                                <span class="status-dot ${statusConfig.color}"></span> ${statusConfig.text}
+                            </span>
+                            ${item.doc1_url || item.doc2_url || item.doc3_url ? `
+                                <div class="mt-2 flex flex-wrap gap-1">
+                                    ${item.doc1_url ? `<a href="${item.doc1_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200 font-bold tracking-tighter">📄 นำส่ง</a>` : ''}
+                                    ${item.doc2_url ? `<a href="${item.doc2_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200 font-bold tracking-tighter">📊 บัญชีฯ</a>` : ''}
+                                    ${item.doc3_url ? `<a href="${item.doc3_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200 font-bold tracking-tighter">📝 แบบเสนอ</a>` : ''}
+                                </div>
+${(currentUser && currentUser.role === 'admin' && item.status === 'submitted') ? `
+    <button onclick="verifySubmission('${item.organization_name}')" class="mt-2 block w-full text-center text-[10px] bg-green-600 text-white py-1 rounded hover:bg-green-700 font-bold">
+        ✅ ตรวจสอบแล้ว (ยืนยัน)
+    </button>
+` : ''}
+                            ` : ''}
+                        </td>
+                        <td class="px-6 py-4 text-gray-400 text-[10px]">${item.updated_at ? new Date(item.updated_at).toLocaleString('th-TH') : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+
+    async function verifySubmission(orgName) {
+    if(!confirm(`ยืนยันการรับเอกสารของ ${orgName}?`)) return;
+    
+    const { error } = await supabaseClient
+        .from('coords_submissions')
+        .update({ status: 'verified', updated_at: new Date() })
+        .eq('organization_name', orgName);
+        
+    if (error) {
+        showAlert('ผิดพลาด: ' + error.message, 'error');
+    } else {
+        showAlert('ยืนยันข้อมูลเรียบร้อย');
+        loadStatusData();
+    }
+}
 
         // --- 🔍 Filter Table ---
         function filterTable() {
