@@ -15,6 +15,14 @@
         .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         section { display: none; }
         section.active { display: block; }
+        @keyframes bounce-in {
+    0% { transform: translateX(100px); opacity: 0; }
+    60% { transform: translateX(-10px); opacity: 1; }
+    100% { transform: translateX(0); }
+}
+.animate-bounce-in {
+    animation: bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
     </style>
 </head>
 <body class="pt-20">
@@ -118,6 +126,34 @@
 
     </main>
 
+    <div id="login-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-nkp-blue">เข้าสู่ระบบ</h3>
+                <button onclick="closeLoginModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form id="auth-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
+                    <input type="email" id="login-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="example@mail.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-nkp-blue text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-all shadow-lg active:scale-[0.98]">
+                    ลงชื่อเข้าใช้งาน
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="alert-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3"></div>
+
     <script>
         // --- ⚙️ Config Supabase ---
         const SUPABASE_URL = 'https://ojnhxucgohoeycarooyc.supabase.co';
@@ -128,21 +164,75 @@
         let logoutTimer;
         const TIMEOUT_LIMIT = 10 * 60 * 1000; // 10 นาที
 
-        // --- 🛡️ Auth Logic ---
-        async function handleLogin() {
-            // เพื่อการสาธิต: แนะนำให้ทำ UI Modal สำหรับใส่ Email/Password
-            const email = prompt("Email:");
-            const password = prompt("Password:");
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) alert("เข้าสู่ระบบไม่สำเร็จ: " + error.message);
-            else checkSession();
-        }
+        // --- 🎨 UI Control Functions ---
+function openLoginModal() {
+    document.getElementById('login-modal').classList.remove('hidden');
+}
 
-        async function handleLogout() {
-            await supabaseClient.auth.signOut();
-            localStorage.removeItem('active_session');
-            window.location.reload();
-        }
+function closeLoginModal() {
+    document.getElementById('login-modal').classList.add('hidden');
+}
+
+// ฟังก์ชัน showAlert แบบสวยงาม
+function showAlert(message, type = 'success') {
+    const container = document.getElementById('alert-container');
+    const toast = document.createElement('div');
+    
+    // กำหนดสีตามประเภท
+    const colors = {
+        success: 'bg-green-600',
+        error: 'bg-red-600',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-600'
+    };
+
+    toast.className = `${colors[type]} text-white px-6 py-3 rounded-xl shadow-2xl flex items-center justify-between min-w-[300px] animate-bounce-in transform transition-all duration-300`;
+    toast.innerHTML = `
+        <span class="text-sm font-medium">${message}</span>
+        <button class="ml-4 text-white/70 hover:text-white" onclick="this.parentElement.remove()">✕</button>
+    `;
+
+    container.appendChild(toast);
+
+    // หายไปเองใน 4 วินาที
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// --- 🛡️ ปรับปรุง Auth Logic ---
+async function handleLogin() {
+    // เปลี่ยนจาก prompt เป็นการเปิด Modal
+    openLoginModal();
+}
+
+// ดักจับการ Submit ฟอร์ม Login
+document.getElementById('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    
+    if (error) {
+        showAlert(error.message, 'error');
+    } else {
+        closeLoginModal();
+        showAlert('เข้าสู่ระบบสำเร็จ ยินดีต้อนรับครับ');
+        checkSession();
+    }
+});
+
+// ปรับปรุงฟังก์ชัน Logout
+async function handleLogout() {
+    const { error } = await supabaseClient.auth.signOut();
+    if (!error) {
+        showAlert('ออกจากระบบเรียบร้อยแล้ว', 'info');
+        setTimeout(() => window.location.reload(), 1000);
+    }
+}
 
         async function checkSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
