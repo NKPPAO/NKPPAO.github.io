@@ -44,12 +44,12 @@
         
         <div class="flex items-center gap-1 md:gap-4 shrink-0">
             <div id="nav-menu" class="hidden lg:flex gap-4 text-sm font-medium border-r pr-4 mr-2 border-gray-200">
-                <a href="#" onclick="showSection('main')" class="hover:text-blue-700 transition">หน้าหลัก</a>
-               <a href="#" onclick="showSection('status')" class="hover:text-blue-700 transition">สถานะ</a>
-                <a href="#" onclick="showSection('criteria')" class="hover:text-blue-700 transition">หลักเกณฑ์</a>
-                <a href="#" onclick="showSection('forms')" class="hover:text-blue-700 transition">แบบฟอร์ม</a>
-                <a href="#" id="upload-nav" onclick="showSection('upload')" class="hidden text-blue-600 font-bold">นำเข้าข้อมูล</a>
-            </div>
+            <a href="#" onclick="showSection('main')" class="hover:text-blue-700 transition">หน้าหลัก</a>
+            <a href="#" id="status-nav" onclick="showSection('status')" class="hidden hover:text-blue-700 transition">สถานะ</a>
+            <a href="#" onclick="showSection('criteria')" class="hover:text-blue-700 transition">หลักเกณฑ์</a>
+            <a href="#" onclick="showSection('forms')" class="hover:text-blue-700 transition">แบบฟอร์ม</a>
+            <a href="#" id="upload-nav" onclick="showSection('upload')" class="hidden text-blue-600 font-bold">นำเข้าข้อมูล</a>
+        </div>
 
             <div id="auth-area" class="flex items-center">
                 <button id="btn-login" onclick="handleLogin()" title="เข้าสู่ระบบ" 
@@ -85,7 +85,7 @@
     <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-gray-200 absolute w-full shadow-lg z-40">
         <div class="px-4 pt-2 pb-4 space-y-1">
             <a href="#" onclick="showSection('main'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">หน้าหลัก</a>
-             <a href="#" onclick="showSection('status'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">สถานะ</a>
+            <a href="#" id="status-nav-mobile" onclick="showSection('status'); toggleMobileMenu();" class="hidden block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">สถานะ</a>
             <a href="#" onclick="showSection('criteria'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">หลักเกณฑ์</a>
             <a href="#" onclick="showSection('forms'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">แบบฟอร์ม</a>
             <a href="#" id="upload-nav-mobile" onclick="showSection('upload'); toggleMobileMenu();" class="hidden px-3 py-2 rounded-md text-base font-bold text-blue-600 hover:bg-blue-50">นำเข้าข้อมูล</a>
@@ -487,7 +487,7 @@ async function handleLogout() {
         }).join('');
 
         document.getElementById('district-summary-list').innerHTML = districtSummaryHTML;
-        
+
             const tbody = document.getElementById('status-body');
             tbody.innerHTML = data.map(item => {
                 const statusConfig = {
@@ -691,16 +691,25 @@ function updateAuthUI(user) {
         if (user.role === 'staff' || user.role === 'admin') {
             if (uploadNav) uploadNav.classList.remove('hidden');
             if (uploadNavMobile) uploadNavMobile.classList.remove('hidden');
+            document.getElementById('status-nav').classList.remove('hidden');
+            document.getElementById('status-nav-mobile').classList.remove('hidden');
         }
     } else {
         if (btnLogin) btnLogin.classList.remove('hidden');
         if (userDisplay) userDisplay.classList.add('hidden');
         if (uploadNav) uploadNav.classList.add('hidden');
         if (uploadNavMobile) uploadNavMobile.classList.add('hidden');
+        document.getElementById('status-nav').classList.add('hidden');
+        document.getElementById('status-nav-mobile').classList.add('hidden');
     }
 }
         // --- 🧭 Navigation ---
         function showSection(id) {
+            if (sectionId === 'status' && !currentUser) {
+                showAlert('เกิดข้อผิดพลาด: ' + (err.message || 'กรุณาเข้าสู่ระบบเพื่อดูสถานะ'), 'error');
+                //alert('กรุณาเข้าสู่ระบบเพื่อดูสถานะ');
+                return;
+            }
             document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
             document.getElementById('section-' + id).classList.add('active');
         }
