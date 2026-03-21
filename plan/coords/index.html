@@ -211,28 +211,27 @@ async function handleLogin() {
 // ดักจับการ Submit ฟอร์ม Login ใหม่
 document.getElementById('auth-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const userVal = document.getElementById('login-email').value; // ใช้ช่องเดิมแต่เปลี่ยนเป็นรับ Username
+    const userVal = document.getElementById('login-email').value;
     const passVal = document.getElementById('login-password').value;
 
-    // ค้นหา User ในตาราง coords_profiles
-    const { data: profile, error } = await supabaseClient
-        .from('coords_profiles')
-        .select('*')
-        .eq('username', userVal)
-        .eq('password', passVal) // เช็ค Password ตรงๆ (Plain Text)
-        .single();
+    // เรียกใช้ Function ที่เราสร้างไว้ใน DB
+    const { data, error } = await supabaseClient
+        .rpc('check_user_login', { 
+            input_user: userVal, 
+            input_pass: passVal 
+        });
     
-    if (error || !profile) {
+    if (error || !data || data.length === 0) {
         showAlert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
     } else {
-        // จำลองการสร้าง Session ไว้ใน LocalStorage (เนื่องจากไม่ได้ใช้ Auth ของ Supabase โดยตรง)
+        const profile = data[0]; // ข้อมูล User ที่ได้
         currentUser = profile;
         localStorage.setItem('manual_session', JSON.stringify(profile));
         
         closeLoginModal();
         showAlert(`ยินดีต้อนรับคุณ ${profile.full_name}`);
         renderUIForUser();
-        startTimers(); // เริ่มนับถอยหลัง 10 นาที
+        startTimers();
     }
 });
 
