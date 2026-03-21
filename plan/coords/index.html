@@ -389,6 +389,11 @@ async function handleLogout() {
                     'verified': { color: 'bg-green-500', text: 'ยืนยันรับข้อมูล', bg: 'bg-green-50' }
                 }[item.status] || { color: 'bg-gray-500', text: 'ไม่ระบุ', bg: 'bg-gray-50' };
 
+                // 1. ตรวจสอบสิทธิ์: เป็น Admin หรือเป็นเจ้าของข้อมูล (ชื่อ อปท. ตรงกัน)
+                const isAdmin = currentUser && currentUser.role === 'admin';
+                const isOwner = currentUser && currentUser.organization_name === item.organization_name;
+                const canSeeDetails = isAdmin || isOwner;
+
                 return `
                     <tr class="hover:bg-gray-50 border-b border-gray-100">
                         <td class="px-6 py-4 font-bold text-gray-700">${item.district}</td>
@@ -397,20 +402,26 @@ async function handleLogout() {
                             <span class="${statusConfig.bg} px-3 py-1 rounded-full text-xs font-bold inline-flex items-center">
                                 <span class="status-dot ${statusConfig.color}"></span> ${statusConfig.text}
                             </span>
-                            ${(currentUser && currentUser.role === 'admin' && item.doc1_url || item.doc2_url || item.doc3_url) ? `
-                                <div class="mt-2 flex flex-wrap gap-1">
-                                    ${item.doc1_url ? `<a href="${item.doc1_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200 font-bold tracking-tighter">📄 นำส่ง</a>` : ''}
-                                    ${item.doc2_url ? `<a href="${item.doc2_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200 font-bold tracking-tighter">📊 บัญชีฯ</a>` : ''}
-                                    ${item.doc3_url ? `<a href="${item.doc3_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200 font-bold tracking-tighter">📝 แบบเสนอ</a>` : ''}
+
+                            ${canSeeDetails ? `
+                                <div class="mt-2">
+                                    ${(item.doc1_url || item.doc2_url || item.doc3_url) ? `
+                                        <div class="flex flex-wrap gap-1 mb-2">
+                                            ${item.doc1_url ? `<a href="${item.doc1_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200 font-bold tracking-tighter">📄 นำส่ง</a>` : ''}
+                                            ${item.doc2_url ? `<a href="${item.doc2_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200 font-bold tracking-tighter">📊 บัญชีฯ</a>` : ''}
+                                            ${item.doc3_url ? `<a href="${item.doc3_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200 font-bold tracking-tighter">📝 แบบเสนอ</a>` : ''}
+                                        </div>
+                                    ` : ''}
+
+                                    ${(isAdmin && item.status === 'submitted') ? `
+                                        <button onclick="verifySubmission('${item.organization_name}')" class="block w-full text-center text-[10px] bg-green-600 text-white py-1 rounded hover:bg-green-700 font-bold transition-transform active:scale-95">
+                                            ✅ ตรวจสอบแล้ว (ยืนยัน)
+                                        </button>
+                                    ` : ''}
                                 </div>
-                        ${(currentUser && currentUser.role === 'admin' && item.status === 'submitted') ? `
-                            <button onclick="verifySubmission('${item.organization_name}')" class="mt-2 block w-full text-center text-[10px] bg-green-600 text-white py-1 rounded hover:bg-green-700 font-bold">
-                                ✅ ตรวจสอบแล้ว (ยืนยัน)
-                            </button>
-                        ` : ''}
                             ` : ''}
                         </td>
-                        <td class="px-6 py-4 text-gray-400 text-xs">
+                        <td class="px-6 py-4 text-gray-400 text-xs text-center">
                             ${(item.status === 'pending' || !item.updated_at) 
                                 ? '-' 
                                 : new Date(item.updated_at).toLocaleString('th-TH')}
@@ -447,18 +458,107 @@ async function handleLogout() {
         }
 
         // --- 📂 Render Criteria (8 Items) ---
-        const criteria = [
-            "ความสอดคล้องกับแผนพัฒนาจังหวัด", "ความพร้อมของพื้นที่และกรรมสิทธิ์", 
-            "ประโยชน์ที่ประชาชนได้รับโดยตรง", "ความคุ้มค่าทางเศรษฐกิจและสังคม",
-            "ความสอดคล้องกับยุทธศาสตร์ชาติ", "แผนการบำรุงรักษาโครงการ",
-            "ผลกระทบต่อสิ่งแวดล้อม", "ความถูกต้องของแบบแปลนและราคา"
-        ];
-        document.getElementById('criteria-list').innerHTML = criteria.map((c, i) => `
-            <div class="bg-white p-4 rounded-xl border-l-4 border-nkp-blue shadow-sm">
-                <span class="text-nkp-blue font-bold text-lg mr-2">${i+1}.</span>
-                <span class="text-gray-700 font-medium">${c}</span>
-            </div>
-        `).join('');
+        // --- 📂 Render Detailed Criteria ---
+const criteriaData = [
+    {
+        title: "1. จำนวนโครงการ",
+        items: [
+            "คณะกรรมการประสานแผนระดับอำเภอพิจารณาจัดลำดับความสำคัญตามที่ อปท. คัดเลือก",
+            "พิจารณาจำนวนโครงการตามความเหมาะสม",
+            "<span class='text-red-500 font-bold'>* เพิ่มเติมโครงการเสนอได้ไม่เกินปีละ 3 โครงการ</span>",
+            "<span class='text-blue-600'>* ยกเว้นกรณีเปลี่ยนแปลงโครงการ สามารถเสนอได้ไม่จำกัดจำนวน</span>"
+        ]
+    },
+    {
+        title: "2. ก่อสร้าง/ปรับปรุง ถนนลาดยาง/ค.ส.ล.",
+        items: [
+            "เป็นถนนเชื่อมต่อคาบเกี่ยว หรือผู้รับประโยชน์ตั้งแต่ 2 อปท. ขึ้นไป",
+            "มาตรฐานกรมทางหลวงชนบท พ.ศ. 2550 (ผิวจราจรไม่น้อยกว่า 5 เมตร)",
+            "มีความคุ้มค่าและเกิดประโยชน์แก่ประชาชนโดยตรง",
+            "อปท. ในพื้นที่ไม่สามารถดำเนินการเองได้",
+            "มีหลักฐานการขออนุญาตใช้พื้นที่จากหน่วยงานรับผิดชอบ (ชลประทาน, ป่าไม้ ฯลฯ)",
+            "มีความพร้อมเข้าดำเนินการทันที (ต้องมีหนังสือยินยอมให้เข้าพื้นที่แนบประกอบ)"
+        ]
+    },
+    {
+        title: "3. ถนนดิน/ลูกรัง/หินคลุก",
+        items: [
+            "เป็นถนนเชื่อมต่อคาบเกี่ยว หรือผู้รับประโยชน์ตั้งแต่ 2 อปท. ขึ้นไป",
+            "มาตรฐานกรมทางหลวงชนบท พ.ศ. 2550 (ผิวจราจรไม่น้อยกว่า 8 เมตร)",
+            "มีความคุ้มค่าและเกิดประโยชน์แก่ประชาชนโดยตรง",
+            "อปท. ในพื้นที่ไม่สามารถดำเนินการเองได้",
+            "มีหลักฐานการขออนุญาตใช้พื้นที่จากหน่วยงานรับผิดชอบ",
+            "มีความพร้อมเข้าดำเนินการทันที (ต้องมีหนังสือยินยอม)"
+        ]
+    },
+    {
+        title: "4. ไฟฟ้าแสงสว่าง",
+        items: [
+            "เป็นถนนที่ อบจ. รับโอน หรือเคยดำเนินการมาแล้ว และเชื่อมต่อตั้งแต่ 2 อปท. ขึ้นไป",
+            "มาตรฐานกรมทางหลวงชนบท พ.ศ. 2550 (ผิวจราจรไม่น้อยกว่า 5 เมตร)",
+            "มีความคุ้มค่าและเกิดประโยชน์แก่ประชาชนโดยตรง",
+            "อปท. ในพื้นที่งบประมาณไม่เพียงพอ"
+        ]
+    },
+    {
+        title: "5. สะพาน/กำแพงกันดิน ค.ส.ล.",
+        items: [
+            "มีความคุ้มค่าและเกิดประโยชน์แก่ประชาชนโดยตรง",
+            "อปท. ในพื้นที่ไม่สามารถดำเนินการเองได้",
+            "มีหลักฐานการขออนุญาตใช้พื้นที่ (กรณีล่วงล้ำลำน้ำต้องมีมติคณะกรรมการจังหวัด)",
+            "มีความพร้อมเข้าดำเนินการทันที (ต้องมีหนังสือยินยอม)"
+        ]
+    },
+    {
+        title: "6. อาคาร/ลานอเนกประสงค์",
+        items: [
+            "เป็นโครงการในภาพรวมของ จังหวัด/อำเภอ/ตำบล",
+            "มีความคุ้มค่าและเกิดประโยชน์แก่ประชาชนโดยตรง",
+            "อปท. ในพื้นที่ไม่สามารถดำเนินการเองได้",
+            "ต้องเป็นพื้นที่ของ อบจ. หรือโอนที่ดินให้เป็นกรรมสิทธิ์ของ อบจ. จึงจะดำเนินการได้"
+        ]
+    },
+    {
+        title: "7. ด้านสังคม/สิ่งแวดล้อม/ท่องเที่ยว/เศรษฐกิจ",
+        items: [
+            "เป็นความร่วมมือกันระหว่าง อปท.",
+            "เป็นโครงการในภาพรวมของ จังหวัด/อำเภอ/ตำบล",
+            "มีความคุ้มค่าและเกิดประโยชน์แก่ประชาชนโดยตรง",
+            "อปท. ในพื้นที่งบประมาณไม่เพียงพอ"
+        ]
+    },
+    {
+        title: "8. การศึกษา/ศาสนา/วัฒนธรรม",
+        items: [
+            "ต้องผ่านความเห็นชอบจากคณะกรรมการการศึกษา อบจ.นครปฐม",
+            "เป็นโครงการในภาพรวมของ จังหวัด/อำเภอ",
+            "มีความคุ้มค่าและเกิดประโยชน์แก่ประชาชนโดยตรง",
+            "การดำเนินงานไม่ซ้ำซ้อนกับหน่วยงานอื่น"
+        ]
+    }
+];
+
+// ฟังก์ชันการ Render แบบ Card
+document.getElementById('criteria-list').innerHTML = criteriaData.map((group) => `
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+        <div class="bg-nkp-blue p-4">
+            <h3 class="text-white font-bold flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                ${group.title}
+            </h3>
+        </div>
+        <div class="p-5">
+            <ul class="space-y-3">
+                ${group.items.map(item => `
+                    <li class="flex items-start gap-2 text-sm text-gray-600">
+                        <span class="text-blue-400 mt-1">•</span>
+                        <span>${item}</span>
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
+    </div>
+`).join('');
 
         // --- 🧭 Navigation ---
         function showSection(id) {
