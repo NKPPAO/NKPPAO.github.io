@@ -364,7 +364,15 @@ async function handleLogout() {
 
         // --- 📊 Data Logic ---
         async function loadStatusData() {
-        let query = supabaseClient.from('coords_submissions').select('*');
+        let query = supabaseClient
+        .from('coords_submissions')
+        .select('*')
+        // 1. เรียงตามวันที่ (เก่าไปใหม่) โดยให้ค่า NULL (ยังไม่ส่ง) อยู่ล่างสุด (nullsLast)
+        .order('updated_at', { ascending: true, nullsFirst: false })
+        // 2. เรียงตามอำเภอ (ก-ฮ)
+        .order('district', { ascending: true })
+        // 3. เรียงตามชื่อ อปท. (ก-ฮ)
+        .order('organization_name', { ascending: true });
         
         // กรองตามสิทธิ์ (ถ้าเป็น staff ให้เห็นเฉพาะของตัวเอง, admin เห็นหมด)
         if (currentUser && currentUser.role === 'staff') {
