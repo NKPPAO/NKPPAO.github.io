@@ -28,33 +28,64 @@
 <body class="pt-20">
 
     <nav class="bg-white border-b border-gray-200 fixed top-0 w-full z-50 h-16 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <img src="https://upload.wikimedia.org/wikipedia/th/a/a2/Nakhon_Pathom_Provincial_Administrative_Organization_Logo.png" class="h-10 w-auto" alt="อบจ.นครปฐม">
-                <div>
-                    <h1 class="font-bold text-nkp-blue text-xs md:text-base leading-tight">ระบบประสานแผนพัฒนาท้องถิ่น</h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-tighter">Strategic and Budget Division</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-2 md:gap-6">
-                <div id="nav-menu" class="hidden md:flex gap-4 text-sm font-medium">
-                    <a href="#" onclick="showSection('main')" class="hover:text-blue-700">สถานะ</a>
-                    <a href="#" onclick="showSection('criteria')" class="hover:text-blue-700">หลักเกณฑ์</a>
-                    <a href="#" onclick="showSection('forms')" class="hover:text-blue-700">แบบฟอร์ม</a>
-                    <a href="#" id="upload-nav" onclick="showSection('upload')" class="hidden text-blue-600 font-bold border-l pl-4">นำเข้าข้อมูล</a>
-                </div>
-                <div id="auth-area">
-                    <button id="btn-login" onclick="handleLogin()" class="bg-nkp-blue text-white px-4 py-1.5 rounded-lg text-sm hover:bg-blue-800 transition">เข้าสู่ระบบ</button>
-                    <div id="user-display" class="hidden flex flex-col items-end">
-                        <span id="display-name" class="text-xs font-bold text-gray-800 leading-none"></span>
-                        <span id="display-org" class="text-[10px] text-gray-500 mb-1"></span>
-                        <button onclick="handleLogout()" class="text-[10px] text-red-500 hover:underline font-bold">ออกจากระบบ</button>
-                    </div>
-                </div>
+    <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <img src="https://upload.wikimedia.org/wikipedia/th/a/a2/Nakhon_Pathom_Provincial_Administrative_Organization_Logo.png" class="h-10 w-auto" alt="อบจ.นครปฐม">
+            <div class="hidden xs:block">
+                <h1 class="font-bold text-nkp-blue text-xs md:text-base leading-tight">ระบบประสานแผนพัฒนาท้องถิ่น</h1>
+                <p class="text-[10px] text-gray-500 uppercase tracking-tighter">Strategic and Budget Division</p>
             </div>
         </div>
-    </nav>
+        
+        <div class="flex items-center gap-2 md:gap-4">
+            <div id="nav-menu" class="hidden lg:flex gap-4 text-sm font-medium border-r pr-4 mr-2 border-gray-200">
+                <a href="#" onclick="showSection('main')" class="hover:text-blue-700 transition">สถานะ</a>
+                <a href="#" onclick="showSection('criteria')" class="hover:text-blue-700 transition">หลักเกณฑ์</a>
+                <a href="#" onclick="showSection('forms')" class="hover:text-blue-700 transition">แบบฟอร์ม</a>
+                <a href="#" id="upload-nav" onclick="showSection('upload')" class="hidden text-blue-600 font-bold">นำเข้าข้อมูล</a>
+            </div>
+
+            <div id="auth-area" class="flex items-center">
+                <button id="btn-login" onclick="handleLogin()" title="เข้าสู่ระบบ" 
+                    class="p-2 rounded-full text-nkp-blue hover:bg-blue-50 transition-all border border-transparent hover:border-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+
+                <div id="user-display" class="hidden flex items-center gap-3 bg-gray-50 py-1 px-3 rounded-full border border-gray-100">
+                    <div class="flex flex-col items-end">
+                        <span id="display-name" class="text-[11px] font-bold text-gray-800 leading-none"></span>
+                        <span id="display-org" class="text-[9px] text-gray-500 truncate max-w-[120px]"></span>
+                    </div>
+                    <button onclick="handleLogout()" title="ออกจากระบบ" 
+                        class="p-1.5 rounded-full text-red-500 hover:bg-red-50 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:hidden flex items-center">
+                <button onclick="toggleMobileMenu()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-gray-200 absolute w-full shadow-lg z-40 animate-fade-in-down">
+        <div class="px-4 pt-2 pb-4 space-y-1">
+            <a href="#" onclick="showSection('main'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700">สถานะ</a>
+            <a href="#" onclick="showSection('criteria'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700">หลักเกณฑ์</a>
+            <a href="#" onclick="showSection('forms'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700">แบบฟอร์ม</a>
+            <a href="#" id="upload-nav-mobile" onclick="showSection('upload'); toggleMobileMenu();" class="hidden px-3 py-2 rounded-md text-base font-bold text-blue-600 hover:bg-blue-50">นำเข้าข้อมูล</a>
+        </div>
+    </div>
+</nav>
 
     <main class="max-w-7xl mx-auto p-4">
         
@@ -559,6 +590,37 @@ document.getElementById('criteria-list').innerHTML = criteriaData.map((group) =>
         </div>
     </div>
 `).join('');
+
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+}
+
+// ปรับปรุงส่วนอัปเดต UI ตอน Login/Logout ให้คุมส่วน Mobile ด้วย
+function updateAuthUI(user) {
+    const btnLogin = document.getElementById('btn-login');
+    const userDisplay = document.getElementById('user-display');
+    const uploadNav = document.getElementById('upload-nav');
+    const uploadNavMobile = document.getElementById('upload-nav-mobile');
+
+    if (user) {
+        btnLogin.classList.add('hidden');
+        userDisplay.classList.remove('hidden');
+        document.getElementById('display-name').innerText = user.name || 'ผู้ใช้งาน';
+        document.getElementById('display-org').innerText = user.organization_name || '-';
+        
+        // ถ้าเป็น staff หรือ admin ให้โชว์เมนูนำเข้าข้อมูล
+        if (user.role === 'staff' || user.role === 'admin') {
+            uploadNav.classList.remove('hidden');
+            if(uploadNavMobile) uploadNavMobile.classList.remove('hidden');
+        }
+    } else {
+        btnLogin.classList.remove('hidden');
+        userDisplay.classList.add('hidden');
+        uploadNav.classList.add('hidden');
+        if(uploadNavMobile) uploadNavMobile.classList.add('hidden');
+    }
+}
 
         // --- 🧭 Navigation ---
         function showSection(id) {
