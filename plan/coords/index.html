@@ -165,80 +165,71 @@
         const TIMEOUT_LIMIT = 10 * 60 * 1000; // 10 นาที
 
         document.getElementById('submission-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // ตรวจสอบว่า Login หรือยัง
-        if (!currentUser) {
-            showAlert('กรุณาเข้าสู่ระบบก่อนส่งข้อมูล', 'error');
-            return;
-        }
-
-        const uploadPromises = Object.entries(files).map(async ([key, file]) => {
-    if (file && file.name) {
-        const fileExt = file.name.split('.').pop();
-        
-        // ✅ เปลี่ยนจากชื่อภาษาไทย เป็น Username หรือ ID แทน
-        // เช่น: 1774104906711_conkp001_doc1.xlsx
-        const cleanOrgName = currentUser.username.replace(/[^a-zA-Z0-9]/g, ''); 
-        const fileName = `${Date.now()}_${cleanOrgName}_${key}.${fileExt}`;
-        
-        const { data, error } = await supabaseClient.storage
-            .from('submissions')
-            .upload(fileName, file, {
-                upsert: true // ถ้ามีไฟล์ชื่อซ้ำให้เขียนทับได้
-            });
-
-        if (error) throw error;
-        return data.path;
+    e.preventDefault();
+    
+    if (!currentUser) {
+        showAlert('กรุณาเข้าสู่ระบบก่อนส่งข้อมูล', 'error');
+        return;
     }
-});
 
-        const formData = new FormData(e.target);
-        const files = {
-            doc1: formData.get('doc1'),
-            doc2: formData.get('doc2'),
-            doc3: formData.get('doc3')
-        };
+    const formData = new FormData(e.target);
+    const files = {
+        doc1: formData.get('doc1'),
+        doc2: formData.get('doc2'),
+        doc3: formData.get('doc3')
+    };
 
-        try {
-            const uploadPromises = Object.entries(files).map(async ([key, file]) => {
-                if (file.name) {
-                    // สร้างชื่อไฟล์ใหม่: วันที่_ชื่ออปท_ชื่อเอกสาร.สกุลไฟล์
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}_${currentUser.organization_name}_${key}.${fileExt}`;
-                    
-                    // 1. อัปโหลดขึ้น Storage
-                    const { data, error } = await supabaseClient.storage
-                        .from('submissions')
-                        .upload(fileName, file);
+    try {
+        // สร้าง Object ไว้รอเก็บ URL ของไฟล์
+        const fileUrls = {}; 
 
-                    if (error) throw error;
-                    return data.path; // คืนค่าที่อยู่ไฟล์กลับมา
-                }
-            });
+        // 1. วนลูปอัปโหลดไฟล์ทีละไฟล์
+        for (const [key, file] of Object.entries(files)) {
+            if (file && file.name) {
+                const fileExt = file.name.split('.').pop();
+                
+                // ตั้งชื่อไฟล์ใหม่เป็นภาษาอังกฤษ: เวลา_username_ลำดับเอกสาร.นามสกุล
+                const cleanUser = currentUser.username.replace(/[^a-zA-Z0-9]/g, ''); 
+                const fileName = `${Date.now()}_${cleanUser}_${key}.${fileExt}`;
+                
+                // อัปโหลดขึ้น Storage
+                const { data, error: uploadError } = await supabaseClient.storage
+                    .from('submissions')
+                    .upload(fileName, file);
 
-            const uploadedPaths = await Promise.all(uploadPromises);
+                if (uploadError) throw uploadError;
 
-            // 2. อัปเดตสถานะในตาราง coords_submissions
-            const { error: updateError } = await supabaseClient
-                .from('coords_submissions')
-                .update({ 
-                    status: 'submitted',
-                    updated_at: new Date(),
-                    // แนะนำให้เพิ่มคอลัมน์ใน DB เพื่อเก็บ path ไฟล์ด้วย เช่น doc1_path, doc2_path
-                })
-                .eq('organization_name', currentUser.organization_name);
-
-            if (updateError) throw updateError;
-
-            showAlert('ส่งข้อมูลสำเร็จแล้ว!');
-            loadStatusData(); // โหลดตารางใหม่
-            showSection('main');
-
-        } catch (err) {
-            console.error(err);
-            showAlert('เกิดข้อผิดพลาดในการอัปโหลด: ' + err.message, 'error');
+                // 2. ดึง Public URL ของไฟล์ที่อัปโหลดเสร็จเมื่อกี้
+                const { data: urlData } = supabaseClient.storage
+                    .from('submissions')
+                    .getPublicUrl(fileName);
+                
+                // เก็บ URL เข้าไปใน Object (เช่น doc1_url: "https://...")
+                fileUrls[`${key}_url`] = urlData.publicUrl;
+            }
         }
+
+        // 3. อัปเดตข้อมูลลง Database (ทั้งสถานะ และ ลิงก์ไฟล์)
+        const { error: updateError } = await supabaseClient
+            .from('coords_submissions')
+            .update({ 
+                status: 'submitted',
+                updated_at: new Date(),
+                ...fileUrls // ระบบจะเติม doc1_url, doc2_url, doc3_url ให้เองจาก Object ที่เราเตรียมไว้
+            })
+            .eq('organization_name', currentUser.organization_name);
+
+        if (updateError) throw updateError;
+
+        showAlert('🚀 ส่งข้อมูลและไฟล์เรียบร้อยแล้ว!');
+        e.target.reset(); // ล้างฟอร์ม
+        loadStatusData(); // อัปเดตตารางหน้าแรก
+        showSection('main'); // กลับไปหน้าติดตามสถานะ
+
+    } catch (err) {
+        console.error("Upload Process Error:", err);
+        showAlert('เกิดข้อผิดพลาด: ' + (err.message || 'ไม่สามารถส่งข้อมูลได้'), 'error');
+    }
 });
 
 // แก้ไขฟังก์ชัน recordDownload
@@ -390,18 +381,26 @@ async function handleLogout() {
                         'verified': { color: 'bg-green-500', text: 'ยืนยันรับข้อมูล', bg: 'bg-green-50' }
                     }[item.status];
 
-                    return `
-                        <tr class="hover:bg-gray-50 border-b border-gray-100">
-                            <td class="px-6 py-4 font-bold text-gray-700">${item.district}</td>
-                            <td class="px-6 py-4">${item.organization_name}</td>
-                            <td class="px-6 py-4">
-                                <span class="${statusConfig.bg} px-3 py-1 rounded-full text-xs font-bold inline-flex items-center">
-                                    <span class="status-dot ${statusConfig.color}"></span> ${statusConfig.text}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-gray-400 text-xs">${new Date(item.updated_at).toLocaleString('th-TH')}</td>
-                        </tr>
-                    `;
+                    // แก้ไขส่วน return ใน loadStatusData()
+return `
+    <tr class="hover:bg-gray-50 border-b border-gray-100">
+        <td class="px-6 py-4 font-bold text-gray-700">${item.district}</td>
+        <td class="px-6 py-4">${item.organization_name}</td>
+        <td class="px-6 py-4">
+            <span class="${statusConfig.bg} px-3 py-1 rounded-full text-xs font-bold inline-flex items-center">
+                <span class="status-dot ${statusConfig.color}"></span> ${statusConfig.text}
+            </span>
+            ${item.doc1_url ? `
+                <div class="mt-2 flex gap-1">
+                    <a href="${item.doc1_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200">ไฟล์ 1</a>
+                    <a href="${item.doc2_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200">ไฟล์ 2</a>
+                    <a href="${item.doc3_url}" target="_blank" class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-200">ไฟล์ 3</a>
+                </div>
+            ` : ''}
+        </td>
+        <td class="px-6 py-4 text-gray-400 text-xs">${new Date(item.updated_at).toLocaleString('th-TH')}</td>
+    </tr>
+`;
                 }).join('');
             }
         }
