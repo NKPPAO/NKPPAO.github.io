@@ -341,21 +341,22 @@ document.getElementById('auth-form').addEventListener('submit', async (e) => {
         
         closeLoginModal();
         showAlert(`ยินดีต้อนรับคุณ ${profile.full_name}`);
-        renderUIForUser();
+        updateAuthUI(profile); 
+        
+        loadStatusData();
         startTimers();
     }
 });
 
 async function checkSession() {
-    // ตรวจสอบจาก LocalStorage ที่เราเก็บไว้เอง
     const savedSession = localStorage.getItem('manual_session');
-    
     if (savedSession) {
         currentUser = JSON.parse(savedSession);
-        renderUIForUser();
+        updateAuthUI(currentUser); // ✅ เรียกตัวนี้ตัวเดียวจบ
         startTimers();
+        loadStatusData();
     } else {
-        loadStatusData(); // สำหรับผู้ใช้ทั่วไป (Public)
+        loadStatusData();
     }
 }
 
@@ -600,35 +601,29 @@ function toggleMobileMenu() {
 function updateAuthUI(user) {
     const btnLogin = document.getElementById('btn-login');
     const userDisplay = document.getElementById('user-display');
-    
-    // ดึง ID ของปุ่มนำเข้าข้อมูลทั้ง 2 จุด (PC และ Mobile)
     const uploadNav = document.getElementById('upload-nav');
     const uploadNavMobile = document.getElementById('upload-nav-mobile');
 
     if (user) {
-        // 1. สลับปุ่ม Login เป็นข้อมูลผู้ใช้
         if (btnLogin) btnLogin.classList.add('hidden');
         if (userDisplay) userDisplay.classList.remove('hidden');
 
-        // 2. แสดงชื่อและ อปท.
-        document.getElementById('display-name').innerText = user.name || '';
-        document.getElementById('display-org').innerText = user.organization_name || '';
+        // แสดงชื่อ (ใช้ full_name ตามที่ได้จาก RPC)
+        document.getElementById('display-name').innerText = user.full_name || 'ผู้ใช้งาน';
+        document.getElementById('display-org').innerText = user.role === 'admin' ? 'SYSTEM ADMIN' : (user.organization_name || '');
 
-        // 3. ✅ เช็คสิทธิ์เพื่อแสดงปุ่ม "นำเข้าข้อมูล"
+        // ✅ เปิดปุ่มนำเข้าข้อมูลทั้ง 2 จุด
         if (user.role === 'staff' || user.role === 'admin') {
-            // เปิดให้แสดงผลทั้งในเมนูจอใหญ่ และเมนูมือถือ
             if (uploadNav) uploadNav.classList.remove('hidden');
             if (uploadNavMobile) uploadNavMobile.classList.remove('hidden');
         }
     } else {
-        // กรณีไม่ได้ Login ให้ซ่อนให้หมด
         if (btnLogin) btnLogin.classList.remove('hidden');
         if (userDisplay) userDisplay.classList.add('hidden');
         if (uploadNav) uploadNav.classList.add('hidden');
         if (uploadNavMobile) uploadNavMobile.classList.add('hidden');
     }
 }
-
         // --- 🧭 Navigation ---
         function showSection(id) {
             document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
