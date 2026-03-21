@@ -27,17 +27,22 @@
 </head>
 <body class="pt-20">
 
-    <nav class="bg-white border-b border-gray-200 fixed top-0 w-full z-50 h-16 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <img src="https://nkppao.github.io/logonkp.png" class="h-10 w-auto" alt="อบจ.นครปฐม">
-            <div>
-                <h1 class="font-bold text-nkp-blue text-lg md:text-base leading-tight">ระบบประสานแผนพัฒนาท้องถิ่น</h1>
-                <p class="text-sm md:text-xs text-gray-500 uppercase tracking-tighter">Strategic and Budget Division</p>
+    <nav class="bg-white border-b border-gray-200 fixed top-0 w-full z-50 min-h-[4rem] py-2 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center gap-2">
+        
+        <div class="flex items-center gap-3 shrink"> 
+            <img src="https://nkppao.github.io/logonkp.png" class="h-10 w-auto shrink-0" alt="อบจ.นครปฐม">
+            <div class="flex flex-col justify-center">
+                <h1 class="font-bold text-nkp-blue text-sm md:text-base leading-tight break-words">
+                    ระบบประสานแผนพัฒนาท้องถิ่น
+                </h1>
+                <p class="text-[9px] md:text-xs text-gray-500 uppercase tracking-tighter leading-none">
+                    Strategic and Budget Division
+                </p>
             </div>
         </div>
         
-        <div class="flex items-center gap-2 md:gap-4">
+        <div class="flex items-center gap-1 md:gap-4 shrink-0">
             <div id="nav-menu" class="hidden lg:flex gap-4 text-sm font-medium border-r pr-4 mr-2 border-gray-200">
                 <a href="#" onclick="showSection('main')" class="hover:text-blue-700 transition">สถานะ</a>
                 <a href="#" onclick="showSection('criteria')" class="hover:text-blue-700 transition">หลักเกณฑ์</a>
@@ -47,16 +52,15 @@
 
             <div id="auth-area" class="flex items-center">
                 <button id="btn-login" onclick="handleLogin()" title="เข้าสู่ระบบ" 
-                    class="p-2 rounded-full text-nkp-blue hover:bg-blue-50 transition-all border border-transparent hover:border-blue-100">
+                    class="p-2 rounded-full text-nkp-blue hover:bg-blue-50 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                     </svg>
                 </button>
 
-                <div id="user-display" class="hidden flex items-center gap-3 bg-gray-50 py-1 px-3 rounded-full border border-gray-100">
-                    <div class="flex flex-col items-end">
-                        <!--<span id="display-name" class="text-xs text-gray-800 leading-none"></span>-->
-                        <span id="display-org" class="text-xs text-gray-500"></span>
+                <div id="user-display" class="hidden flex items-center gap-2 bg-gray-50 py-1 px-2 md:px-3 rounded-full border border-gray-100">
+                    <div class="flex flex-col items-end shrink-0">
+                        <span id="display-org" class="text-[10px] md:text-xs text-gray-500"></span>
                     </div>
                     <button onclick="handleLogout()" title="ออกจากระบบ" 
                         class="p-1.5 rounded-full text-red-500 hover:bg-red-50 transition-colors">
@@ -67,7 +71,7 @@
                 </div>
             </div>
 
-            <div class="lg:hidden flex items-center">
+            <div class="lg:hidden flex items-center ml-1">
                 <button onclick="toggleMobileMenu()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -76,12 +80,12 @@
             </div>
         </div>
     </div>
-
-    <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-gray-200 absolute w-full shadow-lg z-40 animate-fade-in-down">
+    
+    <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-gray-200 absolute w-full shadow-lg z-40">
         <div class="px-4 pt-2 pb-4 space-y-1">
-            <a href="#" onclick="showSection('main'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700">สถานะ</a>
-            <a href="#" onclick="showSection('criteria'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700">หลักเกณฑ์</a>
-            <a href="#" onclick="showSection('forms'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700">แบบฟอร์ม</a>
+            <a href="#" onclick="showSection('main'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">สถานะ</a>
+            <a href="#" onclick="showSection('criteria'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">หลักเกณฑ์</a>
+            <a href="#" onclick="showSection('forms'); toggleMobileMenu();" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">แบบฟอร์ม</a>
             <a href="#" id="upload-nav-mobile" onclick="showSection('upload'); toggleMobileMenu();" class="hidden px-3 py-2 rounded-md text-base font-bold text-blue-600 hover:bg-blue-50">นำเข้าข้อมูล</a>
         </div>
     </div>
