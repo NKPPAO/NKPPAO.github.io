@@ -165,60 +165,80 @@
         const TIMEOUT_LIMIT = 10 * 60 * 1000; // 10 นาที
 
         document.getElementById('submission-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    // ตรวจสอบว่า Login หรือยัง
-    if (!currentUser) {
-        showAlert('กรุณาเข้าสู่ระบบก่อนส่งข้อมูล', 'error');
-        return;
-    }
+        e.preventDefault();
+        
+        // ตรวจสอบว่า Login หรือยัง
+        if (!currentUser) {
+            showAlert('กรุณาเข้าสู่ระบบก่อนส่งข้อมูล', 'error');
+            return;
+        }
 
-    const formData = new FormData(e.target);
-    const files = {
-        doc1: formData.get('doc1'),
-        doc2: formData.get('doc2'),
-        doc3: formData.get('doc3')
-    };
-
-    try {
         const uploadPromises = Object.entries(files).map(async ([key, file]) => {
-            if (file.name) {
-                // สร้างชื่อไฟล์ใหม่: วันที่_ชื่ออปท_ชื่อเอกสาร.สกุลไฟล์
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}_${currentUser.organization_name}_${key}.${fileExt}`;
-                
-                // 1. อัปโหลดขึ้น Storage
-                const { data, error } = await supabaseClient.storage
-                    .from('submissions')
-                    .upload(fileName, file);
+    if (file && file.name) {
+        const fileExt = file.name.split('.').pop();
+        
+        // ✅ เปลี่ยนจากชื่อภาษาไทย เป็น Username หรือ ID แทน
+        // เช่น: 1774104906711_conkp001_doc1.xlsx
+        const cleanOrgName = currentUser.username.replace(/[^a-zA-Z0-9]/g, ''); 
+        const fileName = `${Date.now()}_${cleanOrgName}_${key}.${fileExt}`;
+        
+        const { data, error } = await supabaseClient.storage
+            .from('submissions')
+            .upload(fileName, file, {
+                upsert: true // ถ้ามีไฟล์ชื่อซ้ำให้เขียนทับได้
+            });
 
-                if (error) throw error;
-                return data.path; // คืนค่าที่อยู่ไฟล์กลับมา
-            }
-        });
-
-        const uploadedPaths = await Promise.all(uploadPromises);
-
-        // 2. อัปเดตสถานะในตาราง coords_submissions
-        const { error: updateError } = await supabaseClient
-            .from('coords_submissions')
-            .update({ 
-                status: 'submitted',
-                updated_at: new Date(),
-                // แนะนำให้เพิ่มคอลัมน์ใน DB เพื่อเก็บ path ไฟล์ด้วย เช่น doc1_path, doc2_path
-            })
-            .eq('organization_name', currentUser.organization_name);
-
-        if (updateError) throw updateError;
-
-        showAlert('ส่งข้อมูลสำเร็จแล้ว!');
-        loadStatusData(); // โหลดตารางใหม่
-        showSection('main');
-
-    } catch (err) {
-        console.error(err);
-        showAlert('เกิดข้อผิดพลาดในการอัปโหลด: ' + err.message, 'error');
+        if (error) throw error;
+        return data.path;
     }
+});
+
+        const formData = new FormData(e.target);
+        const files = {
+            doc1: formData.get('doc1'),
+            doc2: formData.get('doc2'),
+            doc3: formData.get('doc3')
+        };
+
+        try {
+            const uploadPromises = Object.entries(files).map(async ([key, file]) => {
+                if (file.name) {
+                    // สร้างชื่อไฟล์ใหม่: วันที่_ชื่ออปท_ชื่อเอกสาร.สกุลไฟล์
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Date.now()}_${currentUser.organization_name}_${key}.${fileExt}`;
+                    
+                    // 1. อัปโหลดขึ้น Storage
+                    const { data, error } = await supabaseClient.storage
+                        .from('submissions')
+                        .upload(fileName, file);
+
+                    if (error) throw error;
+                    return data.path; // คืนค่าที่อยู่ไฟล์กลับมา
+                }
+            });
+
+            const uploadedPaths = await Promise.all(uploadPromises);
+
+            // 2. อัปเดตสถานะในตาราง coords_submissions
+            const { error: updateError } = await supabaseClient
+                .from('coords_submissions')
+                .update({ 
+                    status: 'submitted',
+                    updated_at: new Date(),
+                    // แนะนำให้เพิ่มคอลัมน์ใน DB เพื่อเก็บ path ไฟล์ด้วย เช่น doc1_path, doc2_path
+                })
+                .eq('organization_name', currentUser.organization_name);
+
+            if (updateError) throw updateError;
+
+            showAlert('ส่งข้อมูลสำเร็จแล้ว!');
+            loadStatusData(); // โหลดตารางใหม่
+            showSection('main');
+
+        } catch (err) {
+            console.error(err);
+            showAlert('เกิดข้อผิดพลาดในการอัปโหลด: ' + err.message, 'error');
+        }
 });
 
 // แก้ไขฟังก์ชัน recordDownload
