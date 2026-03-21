@@ -705,7 +705,7 @@ function updateAuthUI(user) {
 }
         // --- 🧭 Navigation ---
         function showSection(id) {
-            if (sectionId === 'status' && !currentUser) {
+            if (id=== 'status' && !currentUser) {
                 showAlert('เกิดข้อผิดพลาด: ' + (err.message || 'กรุณาเข้าสู่ระบบเพื่อดูสถานะ'), 'error');
                 //alert('กรุณาเข้าสู่ระบบเพื่อดูสถานะ');
                 return;
